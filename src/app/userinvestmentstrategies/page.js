@@ -4,6 +4,8 @@ import { useState } from "react";
 import InvestorProfileForm from "@/components/InvestorProfileForm";
 import InvestmentPreferencesForm from "@/components/InvestmentPreferencesForm";
 import PropertyProfileForm from "@/components/PropertyProfileForm";
+import PropertyFeaturesForm from "@/components/PropertyFeaturesForm";
+import TargetMetricsForm from "@/components/TargetMetricsForm";
 import styles from "./page.module.css"; 
 
 
@@ -35,6 +37,28 @@ export default function InvestmentStrategies() {
     schoolQuality: "Medium",
     crimeTolerance: "Some",
   });
+
+  const [propertyFeatures, setPropertyFeatures] = useState({
+    minSqft: "",
+    maxSqft: "",
+    minLotSize: "",
+    minBedrooms: "",
+    maxBedrooms: "",
+    minBathrooms: "",
+    maxBathrooms: "",
+    condition: [], 
+    parking: [],    
+  });
+
+  const [targetMetrics, setTargetMetrics] = useState({
+    capRate: 6,
+    cashOnCash: 8,
+    dscr: 1.3,
+    grm: 15,
+  });
+  
+  
+  
 
   // --- All your handlers here ---
   const handleProfileChange = (e) => {
@@ -111,6 +135,25 @@ export default function InvestmentStrategies() {
     alert("Profile Saved! (Check Console)");
   };
 
+  const handlePropertyFeaturesChange = (e) => {
+    const { name, value } = e.target;
+    setPropertyFeatures((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleTargetMetricsChange = (e) => {
+    const { name, value } = e.target;
+    setTargetMetrics((prev) => ({
+      ...prev,
+      [name]: parseFloat(value),
+    }));
+  };
+  
+  
+  
+
   // --- RETURN YOUR HTML HERE ---
   return (
     <div className={styles.container}>
@@ -134,6 +177,18 @@ export default function InvestmentStrategies() {
           onLocationChange={handleLocationChange}
           addLocation={addLocation}
         />
+
+        <PropertyFeaturesForm 
+          propertyFeatures={propertyFeatures}
+          onPropertyFeaturesChange={handlePropertyFeaturesChange}
+        />
+
+        <TargetMetricsForm
+          metrics={targetMetrics}
+          onMetricChange={handleTargetMetricsChange}
+        />
+
+
         <button type="submit" className={styles.submitButton}>Save Profile</button>
       </form>
     </div>

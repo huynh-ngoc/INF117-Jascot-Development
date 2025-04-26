@@ -135,3 +135,57 @@ body {
   border: 1px solid #ccc;
   border-radius: 4px;
 }
+
+/*Property Features Form */
+.range-row {
+  display: flex;
+  align-items: center;
+  gap: 5rem; 
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.range-row span {
+  padding: 0 0.5rem; /* Add horizontal padding inside the "to" */
+  font-weight: normal;
+  color: #555; /* Optional: make "to" slightly lighter */
+}
+
+
+/*target metrics*/
+.metricRow {
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.referenceTable {
+  margin-top: 2rem;
+  overflow-x: auto;
+}
+
+.referenceTable table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+  background-color: #fff;
+}
+
+.referenceTable th,
+.referenceTable td {
+  padding: 0.6rem 1rem;
+  border: 1px solid #ccc;
+  text-align: center;
+}
+
+.referenceTable th {
+  background-color: #f5f5f5;
+  font-weight: 600;
+}
+
+.infoNote {
+  font-size: 0.85rem;
+  color: #666;
+  margin-top: 1rem;
+}

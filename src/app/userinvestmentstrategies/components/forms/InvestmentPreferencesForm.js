@@ -1,6 +1,6 @@
-import Section from "@/components/Section";
-import SelectField from "@/components/SelectField";
-import MultiCheckboxGroup from "@/components/MultiCheckboxGroup";
+import Section from "@/app/userinvestmentstrategies/components/ui/Section";
+import SelectField from "@/app/userinvestmentstrategies/components/ui/SelectField";
+import MultiCheckboxGroup from "@/app/userinvestmentstrategies/components/ui/MultiCheckboxGroup";
 
 export default function InvestmentPreferencesForm({ investmentDetails, onInvestmentChange, onMultiSelectChange }) {
   return (

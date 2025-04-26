@@ -1,5 +1,8 @@
-import Section from "@/components/Section";
-import MultiCheckboxGroup from "@/components/MultiCheckboxGroup";
+import Section from "@/app/userinvestmentstrategies/components/ui/Section";
+import MultiCheckboxGroup from "@/app/userinvestmentstrategies/components/ui/MultiCheckboxGroup";
+import styles from "@/app/userinvestmentstrategies/styles/LocationForm.module.css";
+import styles from "@/app/userinvestmentstrategies/styles/PropertyFeaturesForm.module.css";
+
 
 export default function PropertyFeaturesForm({ propertyFeatures, onPropertyFeaturesChange, onMultiSelectChange }) {
   return (
@@ -92,7 +95,7 @@ export default function PropertyFeaturesForm({ propertyFeatures, onPropertyFeatu
 
       {/* --- Property Condition --- */}
       <div className="form-group">
-        <label>Condition (Select All That Apply)</label>
+        <label>Condition </label>
         <div className="checkbox-grid">
           <MultiCheckboxGroup 
             options={[
@@ -108,7 +111,7 @@ export default function PropertyFeaturesForm({ propertyFeatures, onPropertyFeatu
 
       {/* --- Parking Options --- */}
       <div className="form-group">
-        <label>Parking (Select All That Apply)</label>
+        <label>Parking</label>
         <div className="checkbox-grid">
           <MultiCheckboxGroup 
             options={[

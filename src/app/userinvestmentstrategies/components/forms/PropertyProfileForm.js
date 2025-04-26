@@ -1,7 +1,7 @@
-import Section from "@/components/Section";
-import SelectField from "@/components/SelectField";
-import MultiCheckboxGroup from "@/components/MultiCheckboxGroup";
-import InputField from "@/components/InputField";
+import Section from "@/app/userinvestmentstrategies/components/ui/Section";
+import SelectField from "@/app/userinvestmentstrategies/components/ui/SelectField";
+import MultiCheckboxGroup from "@/app/userinvestmentstrategies/components/ui/MultiCheckboxGroup";
+import InputField from "@/app/userinvestmentstrategies/components/ui/InputField";
 
 export default function PropertyProfileForm({
   investmentDetails,

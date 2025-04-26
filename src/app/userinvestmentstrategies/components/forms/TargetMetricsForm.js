@@ -1,5 +1,7 @@
-import Section from "@/components/Section";
+import Section from "@/app/userinvestmentstrategies/components/ui/Section";
 import styles from "@/app/userinvestmentstrategies/page.module.css";
+import styles from "@/app/userinvestmentstrategies/styles/TargetMetricsForm.module.css";
+
 
 
 export default function TargetMetricsForm({ metrics, onMetricChange }) {

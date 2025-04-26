@@ -1,5 +1,5 @@
-import InputField from "@/components/InputField";
-import Section from "@/components/Section";
+import InputField from "@/app/userinvestmentstrategies/components/ui/InputField";
+import Section from "@/app/userinvestmentstrategies/components/ui/Section";
 
 export default function InvestorProfileForm({ profile, onProfileChange }) {
   return (

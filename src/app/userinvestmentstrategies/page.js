@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import InvestorProfileForm from "@/components/InvestorProfileForm";
-import InvestmentPreferencesForm from "@/components/InvestmentPreferencesForm";
-import PropertyProfileForm from "@/components/PropertyProfileForm";
-import PropertyFeaturesForm from "@/components/PropertyFeaturesForm";
-import TargetMetricsForm from "@/components/TargetMetricsForm";
+import InvestorProfileForm from "@/app/userinvestmentstrategies/components/InvestorProfileForm";
+import InvestmentPreferencesForm from "@/app/userinvestmentstrategies/components/InvestmentPreferencesForm";
+import PropertyProfileForm from "@/app/userinvestmentstrategies/components/PropertyProfileForm";
+import PropertyFeaturesForm from "@/app/userinvestmentstrategies/components/PropertyFeaturesForm";
+import TargetMetricsForm from "@/app/userinvestmentstrategies/components/TargetMetricsForm";
 import styles from "./page.module.css"; 
 
 

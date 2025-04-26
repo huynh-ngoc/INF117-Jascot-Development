@@ -1,11 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import InvestorProfileForm from "@/app/userinvestmentstrategies/components/InvestorProfileForm";
-import InvestmentPreferencesForm from "@/app/userinvestmentstrategies/components/InvestmentPreferencesForm";
-import PropertyProfileForm from "@/app/userinvestmentstrategies/components/PropertyProfileForm";
-import PropertyFeaturesForm from "@/app/userinvestmentstrategies/components/PropertyFeaturesForm";
-import TargetMetricsForm from "@/app/userinvestmentstrategies/components/TargetMetricsForm";
+import InvestorProfileForm from "@/components/forms/InvestorProfileForm";
+import InvestmentPreferencesForm from "@/components/forms/InvestmentPreferencesForm";
+import PropertyProfileForm from "@/components/forms/PropertyProfileForm";
+import PropertyFeaturesForm from "@/components/forms/PropertyFeaturesForm";
+import TargetMetricsForm from "@/components/forms/TargetMetricsForm";
+import NavBar from "@/components/ui/NavBar";
+
+
 import styles from "./page.module.css"; 
 
 
@@ -56,7 +59,8 @@ export default function InvestmentStrategies() {
     dscr: 1.3,
     grm: 15,
   });
-  
+
+  const [showNotice, setShowNotice] = useState(true);
   
   
 
@@ -151,12 +155,27 @@ export default function InvestmentStrategies() {
     }));
   };
   
+  const handleCloseNotice = () => {
+    setShowNotice(false);
+  };
   
+    
   
 
   // --- RETURN YOUR HTML HERE ---
   return (
+
     <div className={styles.container}>
+      {showNotice && (
+      <div className={styles.popupOverlay}>
+        <div className={styles.popupBox}>
+          <p style={{ fontSize: "1.2rem", fontWeight: "bold" }}>Welcome! </p>
+          <p>Taking a few minutes to fill in this page will enable Reana to get you the information you need with the least amount of input per property analyzed.</p>
+          <button onClick={handleCloseNotice} className={styles.popupButton}>OK</button>
+        </div>
+      </div>
+      )}
+
        <h1 className={styles.pageTitle}>Manage Investment Strategies & Preferences</h1>
       <form onSubmit={handleSubmit}>
         <InvestorProfileForm 

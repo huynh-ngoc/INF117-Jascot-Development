@@ -1,39 +1,37 @@
-import Section from "@/app/userinvestmentstrategies/components/ui/Section";
-import MultiCheckboxGroup from "@/app/userinvestmentstrategies/components/ui/MultiCheckboxGroup";
-import styles from "@/app/userinvestmentstrategies/styles/LocationForm.module.css";
-import styles from "@/app/userinvestmentstrategies/styles/PropertyFeaturesForm.module.css";
-
+import Section from "@/components/ui/Section";
+import MultiCheckboxGroup from "@/components/ui/MultiCheckboxGroup";
+import propertyFeaturesStyles from "@/app/userinvestmentstrategies/styles/PropertyFeaturesForm.module.css"; // <-- Important!!
 
 export default function PropertyFeaturesForm({ propertyFeatures, onPropertyFeaturesChange, onMultiSelectChange }) {
   return (
     <Section title="Property Features">
 
       {/* --- Minimum Square Footage --- */}
-      <div className="form-group">
+      <div className={propertyFeaturesStyles.formGroup}>
         <label>Minimum Square Footage Range</label>
-        <div className="range-row">
+        <div className={propertyFeaturesStyles.rangeRow}>
           <input
             type="number"
             name="minSqft"
             placeholder="Min Sqft"
             value={propertyFeatures.minSqft}
             onChange={onPropertyFeaturesChange}
-            className="number-input"
+            className={propertyFeaturesStyles.numberInput}
           />
-          <div className="to-text">to</div>
+          <span className={propertyFeaturesStyles.toText}>to</span>
           <input
             type="number"
             name="maxSqft"
             placeholder="Max Sqft"
             value={propertyFeatures.maxSqft}
             onChange={onPropertyFeaturesChange}
-            className="number-input"
+            className={propertyFeaturesStyles.numberInput}
           />
         </div>
       </div>
 
       {/* --- Minimum Lot Size --- */}
-      <div className="form-group">
+      <div className={propertyFeaturesStyles.formGroup}>
         <label>Minimum Lot Size (Sqft)</label>
         <input
           type="number"
@@ -41,62 +39,62 @@ export default function PropertyFeaturesForm({ propertyFeatures, onPropertyFeatu
           placeholder="Minimum Lot Size"
           value={propertyFeatures.minLotSize}
           onChange={onPropertyFeaturesChange}
-          className="number-input"
+          className={propertyFeaturesStyles.numberInput}
         />
       </div>
 
       {/* --- Total Bedrooms --- */}
-      <div className="form-group">
+      <div className={propertyFeaturesStyles.formGroup}>
         <label>Total Bedrooms Range</label>
-        <div className="range-row">
+        <div className={propertyFeaturesStyles.rangeRow}>
           <input
             type="number"
             name="minBedrooms"
             placeholder="Min Bedrooms"
             value={propertyFeatures.minBedrooms}
             onChange={onPropertyFeaturesChange}
-            className="number-input"
+            className={propertyFeaturesStyles.numberInput}
           />
-          <div className="to-text">to</div>
+          <span className={propertyFeaturesStyles.toText}>to</span>
           <input
             type="number"
             name="maxBedrooms"
             placeholder="Max Bedrooms"
             value={propertyFeatures.maxBedrooms}
             onChange={onPropertyFeaturesChange}
-            className="number-input"
+            className={propertyFeaturesStyles.numberInput}
           />
         </div>
       </div>
 
       {/* --- Total Bathrooms --- */}
-      <div className="form-group">
+      <div className={propertyFeaturesStyles.formGroup}>
         <label>Total Bathrooms Range</label>
-        <div className="range-row">
+        <div className={propertyFeaturesStyles.rangeRow}>
           <input
             type="number"
             name="minBathrooms"
             placeholder="Min Bathrooms"
             value={propertyFeatures.minBathrooms}
             onChange={onPropertyFeaturesChange}
-            className="number-input"
+            className={propertyFeaturesStyles.numberInput}
           />
-          <div className="to-text">to</div>
+          <span className={propertyFeaturesStyles.toText}>to</span>
           <input
             type="number"
             name="maxBathrooms"
             placeholder="Max Bathrooms"
             value={propertyFeatures.maxBathrooms}
             onChange={onPropertyFeaturesChange}
-            className="number-input"
+            className={propertyFeaturesStyles.numberInput}
           />
         </div>
       </div>
 
       {/* --- Property Condition --- */}
-      <div className="form-group">
-        <label>Condition </label>
-        <div className="checkbox-grid">
+      <div className={propertyFeaturesStyles.formGroup}>
+        <label>Condition</label>
+        <div className={propertyFeaturesStyles.checkboxGrid}>
           <MultiCheckboxGroup 
             options={[
               { value: "Turnkey", label: "Turnkey" },
@@ -110,9 +108,9 @@ export default function PropertyFeaturesForm({ propertyFeatures, onPropertyFeatu
       </div>
 
       {/* --- Parking Options --- */}
-      <div className="form-group">
+      <div className={propertyFeaturesStyles.formGroup}>
         <label>Parking</label>
-        <div className="checkbox-grid">
+        <div className={propertyFeaturesStyles.checkboxGrid}>
           <MultiCheckboxGroup 
             options={[
               { value: "Street Only", label: "Street Only" },

@@ -1,13 +1,12 @@
-import Section from "@/app/userinvestmentstrategies/components/ui/Section";
-import styles from "@/app/userinvestmentstrategies/page.module.css";
-import styles from "@/app/userinvestmentstrategies/styles/TargetMetricsForm.module.css";
-
-
+import Section from "@/components/ui/Section";
+import targetMetricsStyles from "@/app/userinvestmentstrategies/styles/TargetMetricsForm.module.css"; // ✅ Only import once and rename
 
 export default function TargetMetricsForm({ metrics, onMetricChange }) {
   return (
     <Section title="Target Metrics">
-      <div className={styles.metricRow}>
+      
+      {/* --- Cap Rate --- */}
+      <div className={targetMetricsStyles.metricRow}>
         <label>Cap Rate (%)</label>
         <input
           type="range"
@@ -21,7 +20,8 @@ export default function TargetMetricsForm({ metrics, onMetricChange }) {
         <span>{metrics.capRate}%</span>
       </div>
 
-      <div className={styles.metricRow}>
+      {/* --- Cash on Cash --- */}
+      <div className={targetMetricsStyles.metricRow}>
         <label>Cash on Cash (CoC) Return at 12 Months (%)</label>
         <input
           type="range"
@@ -35,7 +35,8 @@ export default function TargetMetricsForm({ metrics, onMetricChange }) {
         <span>{metrics.cashOnCash}%</span>
       </div>
 
-      <div className={styles.metricRow}>
+      {/* --- DSCR --- */}
+      <div className={targetMetricsStyles.metricRow}>
         <label>Debt Service Coverage Ratio (DSCR)</label>
         <input
           type="range"
@@ -49,7 +50,8 @@ export default function TargetMetricsForm({ metrics, onMetricChange }) {
         <span>{metrics.dscr}</span>
       </div>
 
-      <div className={styles.metricRow}>
+      {/* --- GRM --- */}
+      <div className={targetMetricsStyles.metricRow}>
         <label>Gross Rent Multiplier (GRM)</label>
         <input
           type="range"
@@ -63,50 +65,52 @@ export default function TargetMetricsForm({ metrics, onMetricChange }) {
         <span>{metrics.grm}</span>
       </div>
 
-      <div className={styles.referenceTable}>
+      {/* --- Reference Table --- */}
+      <div className={targetMetricsStyles.referenceTable}>
         <h4>Area Rule of Thumb (Suggested)</h4>
         <table>
-            <thead>
+          <thead>
             <tr>
-                <th>Metric</th>
-                <th>MSA</th>
-                <th>Micro</th>
-                <th>Rural</th>
+              <th>Metric</th>
+              <th>MSA</th>
+              <th>Micro</th>
+              <th>Rural</th>
             </tr>
-            </thead>
-            <tbody>
+          </thead>
+          <tbody>
             <tr>
-                <td>Cap Rate</td>
-                <td>4 – 7%</td>
-                <td>6 – 8%</td>
-                <td>8 – 12%</td>
-            </tr>
-            <tr>
-                <td>Cash on Cash</td>
-                <td>6 – 10%</td>
-                <td>8 – 12%</td>
-                <td>{">10%"}</td> {/* ✅ JSX-safe */}
+              <td>Cap Rate</td>
+              <td>4 – 7%</td>
+              <td>6 – 8%</td>
+              <td>8 – 12%</td>
             </tr>
             <tr>
-                <td>DSCR</td>
-                <td>1.2 – 1.5</td>
-                <td>1.3 – 1.6</td>
-                <td>1.5 – 2.0</td>
+              <td>Cash on Cash</td>
+              <td>6 – 10%</td>
+              <td>8 – 12%</td>
+              <td>{">10%"}</td> {/* ✅ Correct JSX */}
             </tr>
             <tr>
-                <td>GRM</td>
-                <td>15 – 20</td>
-                <td>10 – 15</td>
-                <td>6 – 10</td>
+              <td>DSCR</td>
+              <td>1.2 – 1.5</td>
+              <td>1.3 – 1.6</td>
+              <td>1.5 – 2.0</td>
             </tr>
-            </tbody>
+            <tr>
+              <td>GRM</td>
+              <td>15 – 20</td>
+              <td>10 – 15</td>
+              <td>6 – 10</td>
+            </tr>
+          </tbody>
         </table>
-        </div>
+      </div>
 
-
-      <p className={styles.infoNote}>
+      {/* --- Info Note --- */}
+      <p className={targetMetricsStyles.infoNote}>
         <strong>Note:</strong> MSA = Metro area with ≥50k population. Micro = 10k–49,999. Rural = under 10k. Check with local agents/lenders for accurate targets.
       </p>
+      
     </Section>
   );
 }

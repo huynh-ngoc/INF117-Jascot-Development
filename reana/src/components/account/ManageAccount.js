@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import AccountForm from './AccountForm'
 import SubscriptionManager from './SubscriptionManager'
 import RoleSelector from '../role/RoleSelector'
@@ -10,6 +11,7 @@ export default function ManageAccount() {
   const [selectedRole, setSelectedRole] = useState(null)
   const [isFormValid, setIsFormValid] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const router = useRouter()
 
   useEffect(() => {
     setMounted(true)
@@ -17,6 +19,12 @@ export default function ManageAccount() {
 
   const handleFormValidityChange = (isValid) => {
     setIsFormValid(isValid)
+  }
+
+  const handleCreateClick = () => {
+    if (isFormValid && selectedRole !== null) {
+      router.push('/dashboard')
+    }
   }
 
   if (!mounted) {
@@ -42,6 +50,7 @@ export default function ManageAccount() {
         <Button
           size="lg"
           disabled={!isFormValid || selectedRole === null}
+          onClick={handleCreateClick}
           className={`min-w-[300px] py-6 px-8 text-lg font-semibold
             transition-all duration-300
             ${isFormValid && selectedRole !== null 

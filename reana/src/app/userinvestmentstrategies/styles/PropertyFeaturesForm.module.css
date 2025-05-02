@@ -1,0 +1,15 @@
+.range-row {
+    display: flex;
+    align-items: center;
+    gap: 5rem;
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+  
+.range-row span {
+    padding: 0 0.5rem;
+    font-weight: normal;
+    color: #555;
+}
+  

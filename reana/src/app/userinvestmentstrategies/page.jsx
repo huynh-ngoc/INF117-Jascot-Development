@@ -6,16 +6,14 @@ import InvestmentPreferencesForm from "@/components/forms/InvestmentPreferencesF
 import PropertyProfileForm from "@/components/forms/PropertyProfileForm";
 import PropertyFeaturesForm from "@/components/forms/PropertyFeaturesForm";
 import TargetMetricsForm from "@/components/forms/TargetMetricsForm";
-import NavBar from "@/components/ui/NavBar";
 
+import { AppSidebar } from "@/components/sidebar/app-sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import DarkLightSwitch from "@/components/mode-toggle/dark-light-switch";
 
-import styles from "./page.module.css"; 
+import styles from "./page.module.css"; // Keep your styles
 
-
-// THIS FUNCTION WRAPS EVERYTHING
 export default function InvestmentStrategies() {
-  
-  // --- All your useState here ---
   const [profile, setProfile] = useState({
     name: "",
     email: "",
@@ -49,8 +47,8 @@ export default function InvestmentStrategies() {
     maxBedrooms: "",
     minBathrooms: "",
     maxBathrooms: "",
-    condition: [], 
-    parking: [],    
+    condition: [],
+    parking: [],
   });
 
   const [targetMetrics, setTargetMetrics] = useState({
@@ -61,75 +59,77 @@ export default function InvestmentStrategies() {
   });
 
   const [showNotice, setShowNotice] = useState(true);
-  
-  
 
-  // --- All your handlers here ---
   const handleProfileChange = (e) => {
     const { name, value } = e.target;
-    setProfile((prevProfile) => ({
-      ...prevProfile,
-      [name]: value,
-    }));
+    setProfile((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleInvestmentChange = (e) => {
     const { name, value } = e.target;
-    setInvestmentDetails((prevDetails) => ({
-      ...prevDetails,
-      [name]: value,
-    }));
+    setInvestmentDetails((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleMultiSelectChange = (field, value) => {
-    setInvestmentDetails((prevDetails) => {
-      const current = prevDetails[field];
-      if (current.includes(value)) {
-        return { ...prevDetails, [field]: current.filter((item) => item !== value) };
-      } else {
-        return { ...prevDetails, [field]: [...current, value] };
-      }
+    setInvestmentDetails((prev) => {
+      const current = prev[field];
+      return {
+        ...prev,
+        [field]: current.includes(value)
+          ? current.filter((item) => item !== value)
+          : [...current, value],
+      };
     });
   };
 
   const handleTenantClassChange = (value) => {
-    setInvestmentDetails((prevDetails) => ({
-      ...prevDetails,
+    setInvestmentDetails((prev) => ({
+      ...prev,
       tenantPreferences: {
-        ...prevDetails.tenantPreferences,
-        tenantClass: prevDetails.tenantPreferences.tenantClass.includes(value)
-          ? prevDetails.tenantPreferences.tenantClass.filter((item) => item !== value)
-          : [...prevDetails.tenantPreferences.tenantClass, value],
+        ...prev.tenantPreferences,
+        tenantClass: prev.tenantPreferences.tenantClass.includes(value)
+          ? prev.tenantPreferences.tenantClass.filter((item) => item !== value)
+          : [...prev.tenantPreferences.tenantClass, value],
       },
     }));
   };
 
   const handleSpecialtyTenantChange = (value) => {
-    setInvestmentDetails((prevDetails) => ({
-      ...prevDetails,
+    setInvestmentDetails((prev) => ({
+      ...prev,
       tenantPreferences: {
-        ...prevDetails.tenantPreferences,
-        specialtyTenants: prevDetails.tenantPreferences.specialtyTenants.includes(value)
-          ? prevDetails.tenantPreferences.specialtyTenants.filter((item) => item !== value)
-          : [...prevDetails.tenantPreferences.specialtyTenants, value],
+        ...prev.tenantPreferences,
+        specialtyTenants: prev.tenantPreferences.specialtyTenants.includes(value)
+          ? prev.tenantPreferences.specialtyTenants.filter((item) => item !== value)
+          : [...prev.tenantPreferences.specialtyTenants, value],
       },
     }));
   };
 
   const addLocation = () => {
-    setInvestmentDetails((prevDetails) => ({
-      ...prevDetails,
-      locations: [...prevDetails.locations, { zipCode: "", radius: 10 }],
+    setInvestmentDetails((prev) => ({
+      ...prev,
+      locations: [...prev.locations, { zipCode: "", radius: 10 }],
     }));
   };
 
   const handleLocationChange = (index, field, value) => {
-    const updatedLocations = [...investmentDetails.locations];
-    updatedLocations[index][field] = value;
-    setInvestmentDetails((prevDetails) => ({
-      ...prevDetails,
-      locations: updatedLocations,
+    const updated = [...investmentDetails.locations];
+    updated[index][field] = value;
+    setInvestmentDetails((prev) => ({
+      ...prev,
+      locations: updated,
     }));
+  };
+
+  const handlePropertyFeaturesChange = (e) => {
+    const { name, value } = e.target;
+    setPropertyFeatures((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleTargetMetricsChange = (e) => {
+    const { name, value } = e.target;
+    setTargetMetrics((prev) => ({ ...prev, [name]: parseFloat(value) }));
   };
 
   const handleSubmit = (e) => {
@@ -139,77 +139,65 @@ export default function InvestmentStrategies() {
     alert("Profile Saved! (Check Console)");
   };
 
-  const handlePropertyFeaturesChange = (e) => {
-    const { name, value } = e.target;
-    setPropertyFeatures((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleTargetMetricsChange = (e) => {
-    const { name, value } = e.target;
-    setTargetMetrics((prev) => ({
-      ...prev,
-      [name]: parseFloat(value),
-    }));
-  };
-  
   const handleCloseNotice = () => {
     setShowNotice(false);
   };
-  
-    
-  
 
-  // --- RETURN YOUR HTML HERE ---
   return (
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <header className="flex h-16 items-center justify-between px-8">
+          <h1 className="text-2xl font-semibold">Investment Strategy</h1>
+          <DarkLightSwitch />
+        </header>
 
-    <div className={styles.container}>
-      {showNotice && (
-      <div className={styles.popupOverlay}>
-        <div className={styles.popupBox}>
-          <p style={{ fontSize: "1.2rem", fontWeight: "bold" }}>Welcome! </p>
-          <p>Taking a few minutes to fill in this page will enable Reana to get you the information you need with the least amount of input per property analyzed.</p>
-          <button onClick={handleCloseNotice} className={styles.popupButton}>OK</button>
+        <div className="flex flex-col gap-4 px-8 py-4">
+          {showNotice && (
+            <div className={styles.popupOverlay}>
+              <div className={styles.popupBox}>
+                <p style={{ fontSize: "1.2rem", fontWeight: "bold" }}>Welcome! </p>
+                <p>
+                  Taking a few minutes to fill in this page will enable Reana to get you the information you need with the least amount of input per property analyzed.
+                </p>
+                <button onClick={handleCloseNotice} className={styles.popupButton}>
+                  OK
+                </button>
+              </div>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+            <InvestorProfileForm profile={profile} onProfileChange={handleProfileChange} />
+            <InvestmentPreferencesForm
+              investmentDetails={investmentDetails}
+              onInvestmentChange={handleInvestmentChange}
+              onMultiSelectChange={handleMultiSelectChange}
+            />
+            <PropertyProfileForm
+              investmentDetails={investmentDetails}
+              onInvestmentChange={handleInvestmentChange}
+              onMultiSelectChange={handleMultiSelectChange}
+              onTenantClassChange={handleTenantClassChange}
+              onSpecialtyTenantChange={handleSpecialtyTenantChange}
+              onLocationChange={handleLocationChange}
+              addLocation={addLocation}
+            />
+            <PropertyFeaturesForm
+              propertyFeatures={propertyFeatures}
+              onPropertyFeaturesChange={handlePropertyFeaturesChange}
+            />
+            <TargetMetricsForm
+              metrics={targetMetrics}
+              onMetricChange={handleTargetMetricsChange}
+            />
+
+            <button type="submit" className={styles.submitButton}>
+              Save Profile
+            </button>
+          </form>
         </div>
-      </div>
-      )}
-
-       <h1 className={styles.pageTitle}>Manage Investment Strategies & Preferences</h1>
-      <form onSubmit={handleSubmit}>
-        <InvestorProfileForm 
-          profile={profile} 
-          onProfileChange={handleProfileChange} 
-        />
-        <InvestmentPreferencesForm 
-          investmentDetails={investmentDetails}
-          onInvestmentChange={handleInvestmentChange}
-          onMultiSelectChange={handleMultiSelectChange}
-        />
-        <PropertyProfileForm 
-          investmentDetails={investmentDetails}
-          onInvestmentChange={handleInvestmentChange}
-          onMultiSelectChange={handleMultiSelectChange}
-          onTenantClassChange={handleTenantClassChange}
-          onSpecialtyTenantChange={handleSpecialtyTenantChange}
-          onLocationChange={handleLocationChange}
-          addLocation={addLocation}
-        />
-
-        <PropertyFeaturesForm 
-          propertyFeatures={propertyFeatures}
-          onPropertyFeaturesChange={handlePropertyFeaturesChange}
-        />
-
-        <TargetMetricsForm
-          metrics={targetMetrics}
-          onMetricChange={handleTargetMetricsChange}
-        />
-
-
-        <button type="submit" className={styles.submitButton}>Save Profile</button>
-      </form>
-    </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

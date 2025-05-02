@@ -34,88 +34,34 @@ const data = {
   },
   navMain: [
     {
-      title: "Page 1",
-      url: "#",
+      title: "Dashboard",
+      url: "/dashboard",
       icon: SquareTerminal,
-      isActive: true,
-      items: [
-        {
-          title: "Sub Page 1",
-          url: "#",
-        },
-        {
-          title: "Sub Page 2",
-          url: "#",
-        },
-        {
-          title: "Sub Page 3",
-          url: "#",
-        },
-      ],
+      isActive: false,
+      items: [],
     },
     {
-      title: "Page 2",
-      url: "#",
+      title: "Investment Strategies",
+      url: "/userinvestmentstrategies",
       icon: Bot,
-      items: [
-        {
-          title: "Sub Page 1",
-          url: "#",
-        },
-        {
-          title: "Sub Page 2",
-          url: "#",
-        },
-        {
-          title: "Sub Page 3",
-          url: "#",
-        },
-      ],
+      items: [],
     },
     {
-      title: "Page 3",
-      url: "#",
+      title: "Location Reports",
+      url: "/location-reports",
       icon: BookOpen,
-      items: [
-        {
-          title: "Sub Page 1",
-          url: "#",
-        },
-        {
-          title: "Get Sub Page 2",
-          url: "#",
-        },
-        {
-          title: "Sub Page 3",
-          url: "#",
-        },
-      ],
+      items: [],
     },
     {
-      title: "Page 4",
-      url: "#",
+      title: "Property Report",
+      url: "/property-report",
       icon: Settings2,
-      items: [
-        {
-          title: "Sub Page 1",
-          url: "#",
-        },
-        {
-          title: "Sub Page 2",
-          url: "#",
-        },
-        {
-          title: "Sub Page 3",
-          url: "#",
-        },
-      ],
-    },
+      items: [],
+    }
   ],
 }
 
-export function AppSidebar({
-  ...props
-}) {
+export function AppSidebar({ ...props }) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>

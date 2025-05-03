@@ -58,15 +58,14 @@ function Dashboard({ userName = 'User' }) {
                     icon: <FilePlus2 className="h-6 w-6 text-blue-500" />,
                     title: "Create New Investor Profile",
                     btn: "Create Now",
-                    // change path to User Investment Strategies page (blank)
-                    path: "/"
+                    path: "/userinvestmentstrategies"
                 }, { 
                     id: 2,
                     icon: <FilePen className="h-6 w-6 text-green-500" />,
                     title: "Edit Existing Investor Profile",
                     btn: "Edit Profile",
-                    // change path to User Investment Strategies page (exist)
-                    path: "/"
+                    // change path to User Investment Strategies page (exist file in database)
+                    path: "/userinvestmentstrategies"
                 }, { 
                     id: 3,
                     icon: <ChartNoAxesCombined className="h-6 w-6 text-red-500" />,

@@ -1,4 +1,5 @@
-"use client"
+// src/components/sidebar/app-sidebar.jsx
+'use client'
 
 import * as React from "react"
 import {
@@ -15,17 +16,15 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
-  SidebarMenu,
-  SidebarMenuItem,
   SidebarRail,
-  SidebarTrigger
+  SidebarTrigger,
 } from "@/components/ui/sidebar"
 
 const data = {
   app: {
     name: "Reana",
     slogan: "Real Estate Investment Assistant",
-    logo: "/image/logo.jpg"
+    logo: "/image/logo.jpg",
   },
   user: {
     name: "User",
@@ -57,7 +56,28 @@ const data = {
       url: "/property-report",
       icon: Settings2,
       items: [],
-    }
+    },
+  ],
+  // Put RJ review links here
+  navRJ: [
+    {
+      title: "Realtor Profile",
+      url: "/realtor-pop-up",
+      icon: BookOpen,
+      items: [],
+    },
+    {
+      title: "Investor Cash",
+      url: "/investor-cash",
+      icon: SquareTerminal,
+      items: [],
+    },
+    {
+      title: "Income Unit Mix",
+      url: "/income-unit-mix",
+      icon: Bot,
+      items: [],
+    },
   ],
 }
 
@@ -65,16 +85,26 @@ export function AppSidebar({ ...props }) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <SidebarTrigger className="place-content-center cone-ml-1" />
+        <SidebarTrigger className="place-content-center ml-1" />
         <AboutApp app={data.app} />
       </SidebarHeader>
+
       <SidebarContent>
+        {/* primary pages */}
         <NavMain items={data.navMain} />
+
+        {/* header for RJ review links */}
+        <div className="px-4 pt-6 pb-2 text-xs font-semibold uppercase text-gray-500">
+          Pages below for RJ review 
+        </div>
+        <NavMain items={data.navRJ} />
       </SidebarContent>
+
       <SidebarFooter>
         <NavUser user={data.user} />
       </SidebarFooter>
+
       <SidebarRail />
     </Sidebar>
-  );
+  )
 }

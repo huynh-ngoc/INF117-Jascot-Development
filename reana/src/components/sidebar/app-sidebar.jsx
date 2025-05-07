@@ -78,6 +78,24 @@ const data = {
       icon: Bot,
       items: [],
     },
+    {
+      title: "DSCR Bridge Loan",
+      url: "/dscr-bridge-loan",
+      icon: BookOpen,
+      items: [],
+    },
+    {
+      title: "DSCR Bridge Perm",
+      url: "/dscr-bridge-perm",
+      icon: SquareTerminal,
+      items: [],
+    },
+    {
+      title: "DSCR Bridge Rehab",
+      url: "/dscr-bridge-rehab",
+      icon: Bot,
+      items: [],
+    },
   ],
 }
 

@@ -83,16 +83,32 @@ const defaultData = [
 export default function RuleOfThumbTable() {
     const [tableData, setTableData] = useState(defaultData);
 
-  // Load from localStorage when component mounts
+    // Load from localStorage when component mounts
     useEffect(() => {
-    const savedData = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (savedData) {
-        setTableData(JSON.parse(savedData));
-    }
+        const savedData = localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (savedData) {
+            setTableData(JSON.parse(savedData));
+        }
     }, []);
+
+    const formatNumberWithTwoDecimals = (value) => {
+        // Remove any existing % symbol and trim
+        const cleanValue = value.replace('%', '').trim();
+        // Convert to number and format to 2 decimal places
+        const formattedValue = Number(cleanValue).toFixed(2);
+        return formattedValue;
+    };
 
     const handleInputChange = (index, newValue) => {
         const updatedData = [...tableData];
+        // Just update the raw value during typing
+        updatedData[index].value = newValue;
+        setTableData(updatedData);
+    };
+
+    const handleInputBlur = (index) => {
+        const updatedData = [...tableData];
+        const currentValue = updatedData[index].value;
 
         // Check if it's one of the fields that should be a percentage
         const isPercentageField = updatedData[index].title.toLowerCase().includes('rate')
@@ -105,20 +121,21 @@ export default function RuleOfThumbTable() {
             || updatedData[index].title.toLowerCase().includes('management')
             || updatedData[index].title.toLowerCase().includes('sale');
         
-        // Remove any existing % symbol to avoid duplicates
-        let cleanedValue = newValue.replace('%', '').trim();
+        // Format the number with two decimal places
+        let formattedValue = formatNumberWithTwoDecimals(currentValue);
         
-        if (isPercentageField && cleanedValue !== '') {
-            cleanedValue += '%';
+        // Add % symbol if it's a percentage field
+        if (isPercentageField && formattedValue !== '') {
+            formattedValue += '%';
         }
         
-        updatedData[index].value = cleanedValue;
+        updatedData[index].value = formattedValue;
         setTableData(updatedData);
     };
 
     const handleSave = () => {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(tableData));
-    alert('Data saved successfully and will persist next time you visit.');
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(tableData));
+        alert('Data saved successfully and will persist next time you visit.');
     };
 
     return (
@@ -146,20 +163,17 @@ export default function RuleOfThumbTable() {
                     <td className="p-3">{row.title}</td>
                     <td className="p-3">
                         <div className="relative w-32">
-                            {defaultData[index].value.includes('$') && (
-                            <span className="absolute inset-y-0 left-2 flex items-center text-sm text-muted-foreground">
-                                $
-                            </span>
-                            )}
                             <Input
                             type="number"
+                            step="0.01"
                             value={row.value.replace(/[^0-9.]/g, '')}
                             onChange={(e) => handleInputChange(index, e.target.value)}
+                            onBlur={() => handleInputBlur(index)}
                             className={`text-center ${
-                                defaultData[index].value.includes('%') ? 'pr-6' : ''
-                            } ${defaultData[index].value.includes('$') ? 'pl-6' : ''}`}
+                                row.value.includes('%') ? 'pr-6' : ''
+                            }`}
                             />
-                            {defaultData[index].value.includes('%') && (
+                            {row.value.includes('%') && (
                             <span className="absolute inset-y-0 right-2 flex items-center text-sm text-muted-foreground">
                                 %
                             </span>

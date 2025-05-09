@@ -7,6 +7,7 @@ import {
   Bot,
   Settings2,
   SquareTerminal,
+  Ruler,
 } from "lucide-react"
 import { NavMain } from "@/components/sidebar/nav-main"
 import { AboutApp } from "./about-app"
@@ -94,6 +95,18 @@ const data = {
       title: "DSCR Bridge Rehab",
       url: "/dscr-bridge-rehab",
       icon: Bot,
+      items: [],
+    },
+    {
+      title: "Rule of Thumb Metrics",
+      url: "/rule-of-thumb-metrics",
+      icon: Ruler,
+      items: [],
+    },
+    {
+      title: "Rule of Thumb Operating Budget",
+      url: "/rule-of-thumb-opr-budget",
+      icon: Ruler,
       items: [],
     },
   ],

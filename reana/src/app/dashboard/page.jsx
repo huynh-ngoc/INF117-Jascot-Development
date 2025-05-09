@@ -71,8 +71,7 @@ function Dashboard({ userName = 'User' }) {
                     icon: <ChartNoAxesCombined className="h-6 w-6 text-red-500" />,
                     title: "Analyze a Property",
                     btn: "Analyze Now",
-                    // change path to Property Analysis Dashboard
-                    path: "/"
+                    path: "/prop-analysis-list"
                 }, { 
                     id: 4,
                     icon: <ScanSearch className="h-6 w-6 text-fuchsia-500" />,

@@ -1,6 +1,6 @@
 "use client"
 
-import React from 'react';
+import React, { Suspense }  from 'react';
 import Link from 'next/link';
 import { AppSidebar } from "@/components/sidebar/app-sidebar"
 import {
@@ -14,10 +14,9 @@ import {
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import DarkLightSwitch from "@/components/mode-toggle/dark-light-switch";
 import NeighborhoodMap from '@/components/maps/neighborhood-map';
-import { LoadScript } from "@react-google-maps/api";
 import { useSearchParams } from "next/navigation";
 
-function NeighborhoodMaPage() {
+function InnerNeighborhoodMapPage() {
   const params = useSearchParams();
   const address = params.get("address") ?? "Unknown";
   return (
@@ -64,5 +63,10 @@ function NeighborhoodMaPage() {
     </SidebarProvider>
   );
 }
-
-export default NeighborhoodMaPage;
+export default function NeighborhoodMapPage() {
+  return (
+    <Suspense fallback={<div>Loading…</div>}>
+      <InnerNeighborhoodMapPage />
+    </Suspense>
+  );
+}

@@ -1,6 +1,6 @@
 "use client"
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import { AppSidebar } from "@/components/sidebar/app-sidebar"
 import {
   Breadcrumb,
@@ -15,7 +15,7 @@ import DarkLightSwitch from "@/components/mode-toggle/dark-light-switch";
 import PropAnalysisDashboard from '@/components/prop-analysis/prop-analysis-dashboard';
 import { useSearchParams } from "next/navigation";
 
-function PropAnalysisDashboardPage() {
+function InnerPropAnalysisDashboardPage() {
   const params = useSearchParams();
   const address = params.get("address") ?? "Unknown";
   return (
@@ -57,4 +57,10 @@ function PropAnalysisDashboardPage() {
   );
 }
 
-export default PropAnalysisDashboardPage;
+export default function PropAnalysisDashboardPage() {
+    return (
+      <Suspense fallback={<div>Loading…</div>}>
+        <InnerPropAnalysisDashboardPage />
+      </Suspense>
+    );
+  }

@@ -1,7 +1,6 @@
 "use client"
 
 import React from 'react';
-import Link from 'next/link';
 import { AppSidebar } from "@/components/sidebar/app-sidebar"
 import {
   Breadcrumb,
@@ -13,11 +12,10 @@ import {
 } from "@/components/ui/breadcrumb"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import DarkLightSwitch from "@/components/mode-toggle/dark-light-switch";
-import NeighborhoodMap from '@/components/maps/neighborhood-map';
-import { LoadScript } from "@react-google-maps/api";
+import PropAnalysisDashboard from '@/components/prop-analysis/prop-analysis-dashboard';
 import { useSearchParams } from "next/navigation";
 
-function NeighborhoodMaPage() {
+function PropAnalysisDashboardPage() {
   const params = useSearchParams();
   const address = params.get("address") ?? "Unknown";
   return (
@@ -29,13 +27,13 @@ function NeighborhoodMaPage() {
               <Breadcrumb>
                 <BreadcrumbList>
                   <BreadcrumbItem className="hidden md:block">
-                    <BreadcrumbLink href="/dashboard">
-                      Dashboard
+                    <BreadcrumbLink href="/prop-analysis-list">
+                      Property List
                     </BreadcrumbLink>
                   </BreadcrumbItem>
                   <BreadcrumbSeparator className="hidden md:block" />
                   <BreadcrumbLink href="#">
-                      Neighborhood Map
+                    Property Analysis Dashboard
                   </BreadcrumbLink>
                 </BreadcrumbList>
               </Breadcrumb>
@@ -47,17 +45,11 @@ function NeighborhoodMaPage() {
 
         <div className="flex flex-1 flex-col gap-4 px-8 p-4 pt-0">
           <header >
-            <h1 className="text-5xl font-bold">Neighborhood Map</h1>
-            <p className="mt-1 text-xl"></p>
+            <h1 className="text-5xl font-bold">Property Analysis Dashboard</h1>
+            <p className="mt-0 text-xl"></p>
           </header>
             <div>
-              {/* Example address */}
-              {/* <LoadScript
-            googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}
-            libraries={["places", "geometry"]}
-        >
-          </LoadScript> */}
-              <NeighborhoodMap address={address} range={10}/>
+                <PropAnalysisDashboard address={address}/>
             </div>
         </div>
       </SidebarInset>
@@ -65,4 +57,4 @@ function NeighborhoodMaPage() {
   );
 }
 
-export default NeighborhoodMaPage;
+export default PropAnalysisDashboardPage;

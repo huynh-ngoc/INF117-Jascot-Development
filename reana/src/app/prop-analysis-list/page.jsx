@@ -1,5 +1,3 @@
-"use client"
-
 import React from 'react';
 import Link from 'next/link';
 import { AppSidebar } from "@/components/sidebar/app-sidebar"
@@ -13,13 +11,10 @@ import {
 } from "@/components/ui/breadcrumb"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import DarkLightSwitch from "@/components/mode-toggle/dark-light-switch";
-import NeighborhoodMap from '@/components/maps/neighborhood-map';
-import { LoadScript } from "@react-google-maps/api";
-import { useSearchParams } from "next/navigation";
+import PropAnalysisList from '@/components/prop-analysis/prop-analysis-list';
 
-function NeighborhoodMaPage() {
-  const params = useSearchParams();
-  const address = params.get("address") ?? "Unknown";
+
+function PropAnalysisListPage() {
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -35,7 +30,7 @@ function NeighborhoodMaPage() {
                   </BreadcrumbItem>
                   <BreadcrumbSeparator className="hidden md:block" />
                   <BreadcrumbLink href="#">
-                      Neighborhood Map
+                      Property List
                   </BreadcrumbLink>
                 </BreadcrumbList>
               </Breadcrumb>
@@ -47,17 +42,11 @@ function NeighborhoodMaPage() {
 
         <div className="flex flex-1 flex-col gap-4 px-8 p-4 pt-0">
           <header >
-            <h1 className="text-5xl font-bold">Neighborhood Map</h1>
+            <h1 className="text-5xl font-bold">Your Properties</h1>
             <p className="mt-1 text-xl"></p>
           </header>
             <div>
-              {/* Example address */}
-              {/* <LoadScript
-            googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}
-            libraries={["places", "geometry"]}
-        >
-          </LoadScript> */}
-              <NeighborhoodMap address={address} range={10}/>
+                <PropAnalysisList />
             </div>
         </div>
       </SidebarInset>
@@ -65,4 +54,4 @@ function NeighborhoodMaPage() {
   );
 }
 
-export default NeighborhoodMaPage;
+export default PropAnalysisListPage;

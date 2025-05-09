@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import { AppSidebar } from "@/components/sidebar/app-sidebar"
 import {
   Breadcrumb,
@@ -15,7 +15,7 @@ import DarkLightSwitch from "@/components/mode-toggle/dark-light-switch";
 import NeighborhoodDemographics from '@/components/neighborhood/neighborhood-demographics';
 import { useSearchParams } from "next/navigation";
 
-function NeighborhoodDemographicsPage() {
+function InnerNeighborhoodDemographicsPage() {
 
   const params = useSearchParams();
   const address = params.get("address") ?? "Unknown";
@@ -59,4 +59,10 @@ function NeighborhoodDemographicsPage() {
   );
 }
 
-export default NeighborhoodDemographicsPage;
+export default function NeighborhoodDemographicsPage() {
+  return (
+    <Suspense fallback={<div>Loading…</div>}>
+      <InnerNeighborhoodDemographicsPage />
+    </Suspense>
+  );
+}

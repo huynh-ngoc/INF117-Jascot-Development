@@ -1,0 +1,63 @@
+/* UnitRentTable.module.css */
+
+.card {
+  background: #fff;
+  border: 2px solid #000;     /* Ouline*/
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  padding: 1rem;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse; 
+}
+
+.table thead th {
+  position: sticky;
+  top: 0;
+  background: #f9fafb;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.75rem;
+  border-right: 1px solid #e5e7eb; /* Vertical lines in the header */
+}
+
+.table th,
+.table td {
+  padding: 0.5rem 0.75rem;
+  border-right: 1px solid #e5e7eb; /* vertical seperators */
+}
+
+.table th:last-child,
+.table td:last-child {
+  border-right: none; 
+}
+
+.table tbody tr:nth-child(even) {
+  background: #fcfcfc;
+}
+
+.table tr:hover {
+  background: #f1f5f9;
+}
+
+/* optional horizontal lines between all rows(was testing) */
+.table tbody tr:not(:last-child) td {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.inputCell {
+  width: 100%;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  background: #fff;
+}
+
+.totalsRow {
+  background: #f3f4f6;
+  font-weight: 600;
+}

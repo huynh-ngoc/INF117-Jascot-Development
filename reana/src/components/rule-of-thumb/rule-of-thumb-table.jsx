@@ -154,7 +154,6 @@ export default function RuleOfThumbTable() {
                 <tr>
                 <th className="p-3 text-left font-semibold">Item</th>
                 <th className="p-3 text-left font-semibold">Value</th>
-                <th className="p-3 text-left font-semibold">Notes</th>
                 </tr>
             </thead>
             <tbody>
@@ -165,10 +164,8 @@ export default function RuleOfThumbTable() {
                         <div className="relative w-32">
                             <Input
                             type="number"
-                            step="0.01"
                             value={row.value.replace(/[^0-9.]/g, '')}
                             onChange={(e) => handleInputChange(index, e.target.value)}
-                            onBlur={() => handleInputBlur(index)}
                             className={`text-center ${
                                 row.value.includes('%') ? 'pr-6' : ''
                             }`}
@@ -180,7 +177,6 @@ export default function RuleOfThumbTable() {
                             )}
                         </div>
                     </td>
-                    <td className="p-3 text-muted-foreground">{row.notes}</td>
                 </tr>
                 ))}
             </tbody>

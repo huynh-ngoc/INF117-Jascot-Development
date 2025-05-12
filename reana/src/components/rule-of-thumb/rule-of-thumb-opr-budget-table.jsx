@@ -64,16 +64,27 @@ export default function RuleOfThumbOprBudgetTable() {
               </tr>
             </thead>
             <tbody>
-              {budgetData.map((row, index) => (
-                <tr key={index} className="border-t">
-                  <td className={`p-3 ${row.title === 'Cash Flow (Year 1)' ? 'font-semibold' : ''}`}>
-                    {row.title}
-                  </td>
-                  <td className="p-3">{row.ruleOfThumb}</td>
-                  <td className="p-3">{row.monthly}</td>
-                  <td className="p-3">{row.annual}</td>
-                </tr>
-              ))}
+              {budgetData.map((row, index) => {
+                const isNOI = row.title === 'Net Operating Income (NOI)';
+                const isCashFlow = row.title === 'Cash Flow (Year 1)';
+                const isTotalOpEx = row.title === 'Total Operating Expenses';
+                return (
+                  <tr key={index} className="border-t">
+                    <td className={`p-3 ${(isNOI || isCashFlow || isTotalOpEx) ? 'font-semibold' : ''}`}>
+                      {row.title}
+                    </td>
+                    <td className={`p-3 ${(isNOI || isCashFlow) ? 'font-semibold' : ''}`}>
+                      {row.ruleOfThumb}
+                    </td>
+                    <td className={`p-3 ${(isNOI || isCashFlow) ? 'font-semibold' : ''}`}>
+                      {row.monthly}
+                    </td>
+                    <td className={`p-3 ${(isNOI || isCashFlow) ? 'font-semibold' : ''}`}>
+                      {row.annual}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

@@ -14,12 +14,15 @@ import {
   BarChart2,
   MapPin,
   Download,
-  ExternalLink,
+  MapPinHouse,
   HandCoins,
   CircleDollarSign,
   DollarSign,
   PencilRuler,
-  PiggyBank
+  PiggyBank,
+  ClipboardPlus,
+  Wallet,
+  Calculator
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -49,9 +52,18 @@ import {
 import { Input } from '@/components/ui/input';
 import { useRouter } from 'next/navigation'
 
+// Get address image from Google Street View  
+const getStreetViewUrl = (address) => {
+  const size = "550x300";
+  const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+  const loc = encodeURIComponent(address);
+  return `https://maps.googleapis.com/maps/api/streetview?size=${size}&location=${loc}&key=${key}`;
+};
+
 export default function PropAnalysisDashboard({ address }) {
   const router = useRouter()
   const backdropVariants = { hidden: { opacity: 0 }, visible: { opacity: 1 } };
+  const streetViewUrl = getStreetViewUrl(address);
 
   const handleToggle = () => {
     if (!isExpanded) {
@@ -104,7 +116,7 @@ export default function PropAnalysisDashboard({ address }) {
     contingency: "12.50%",
   };
 
-  const operatingBudgetActions = ["Use Rule of Thumb", "Detail Your Projections"];
+  const operatingBudgetActions = ["Use \"Rule of Thumb\"", "Detail Your Projections"];
 
   const operatingBudget = {
     gsi: 32400,
@@ -113,6 +125,7 @@ export default function PropAnalysisDashboard({ address }) {
     cashFlow: -3120,
   };
 
+  const financingActions = ["Use \"Rule of Thumb\"", "Use \"Detailed\""]
   const financingTerms = {
     annualDebtService: 9055,
     totalBorrowed: 103500,
@@ -235,52 +248,28 @@ export default function PropAnalysisDashboard({ address }) {
   }
   ]
 
+  // Animation variants
   const cardVariants = {
     collapsed: {
-      maxWidth: "24rem", // sm card width
-      width: "100%", // Take up 1/3 of the screen
+      maxWidth: "27rem",
+      width: "100%",
       x: 0,
       y: 0
     },
     expanded: {
-      maxWidth: "42rem", // xl card width
-      width: "80%", // Wider when expanded
+      maxWidth: "42rem",
+      width: "80%",
       x: 0,
       y: 0,
-      // transition: {
-      //   type: "spring",
-      //   damping: 25,
-      //   stiffness: 300
-      // }
     }
   };
 
-  const contentVariants = {
-    collapsed: {
-      opacity: 0,
-      height: 0,
-      transition: {
-        duration: 0.2,
-        delay: 0.1
-      }
-    },
-    expanded: {
-      opacity: 1,
-      height: "auto",
-      // transition: {
-      //   type: "tween",
-      //   duration: 0.2,
-      //   delay: 0.1
-      // }
-    }
-  };
-
-  const MotionCard = motion(Card);
-  const MotionCardContent = motion(CardContent);
-  const MotionCardHeader = motion(CardHeader);
-  const MotionCardTitle = motion(CardTitle);
-  const MotionCardDescription = motion(CardDescription);
-  const MotionCardFooter = motion(CardFooter);
+  const MotionCard = motion.create(Card);
+  const MotionCardContent = motion.create(CardContent);
+  const MotionCardHeader = motion.create(CardHeader);
+  const MotionCardTitle = motion.create(CardTitle);
+  const MotionCardDescription = motion.create(CardDescription);
+  const MotionCardFooter = motion.create(CardFooter);
 
   return (
     <div className="flex flex-col min-h-screen p-4 relative">
@@ -301,6 +290,15 @@ export default function PropAnalysisDashboard({ address }) {
           </AnimatePresence>
 
           <div>
+            {isExpanded && (
+              <div 
+                className="invisible mb-5" 
+                style={{ 
+                  height: '27rem',
+                  width: '100%'
+                }}
+              />
+            )}
             <MotionCard
               className={`overflow-visible ${isExpanded ?
                 'z-20 fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2'
@@ -312,12 +310,19 @@ export default function PropAnalysisDashboard({ address }) {
               transition={{ type: "spring", duration: 0.6 }}
             >
               {/* Card Image */}
-              <motion.div layoutId="card-image-container">
+              <motion.div 
+                layoutId="card-image-container" 
+                className="overflow-hidden"
+              >
                 <motion.img
-                  src={cardData.image}
-                  alt="Card header image"
-                  className={`w-full object-cover transition-all duration-500 ${isExpanded ? 'h-54' : 'h-48'}`}
+                  src={streetViewUrl} 
+                  alt="Street View"
+                  className={`w-full object-cover transition-all duration-500 ${isExpanded ? 'h-64' : 'h-48'}`}
                   layoutId="card-image"
+                  style={{
+                    scale: isExpanded ? 1.15 : 1,
+                    transition: "scale 0.6s ease"
+                  }}
                 />
               </motion.div>
 
@@ -514,8 +519,8 @@ export default function PropAnalysisDashboard({ address }) {
 
         {/* Right Column - 2/3 width */}
         <div className="w-2/3 space-y-4 overflow-y-auto max-h-screen">
-          {/* Income */}
           <div className="grid grid-cols-1 gap-4">
+            {/* Income */}
             <SectionCard
               title="Income"
               icon={<HandCoins className="text-blue-500" />}
@@ -533,25 +538,25 @@ export default function PropAnalysisDashboard({ address }) {
               buttons={[
                 {
                   label: "Unit Mix & Rent Variables",
-                  icon: <BarChart2 className="w-4 h-4" />,
-                  onClick: () => console.log("Viewing Unit Mix & Rent Variables"),
+                  icon: <ClipboardPlus className="w-4 h-4" />,
+                  onClick: () => router.push(`/income-unit-mix`),
                 },
                 {
                   label: "Tennancy Details",
-                  icon: <Download className="w-4 h-4" />,
+                  icon: <Plus className="w-4 h-4" />,
                   onClick: () => console.log("Tennancy Details"),
                 },
                 {
                   label: "Rental Comps",
-                  icon: <ExternalLink className="w-4 h-4" />,
-                  onClick: () => console.log("Viewing Rental Comps"),
+                  icon: <MapPinHouse className="w-4 h-4" />,
+                  onClick: () => router.push(`/rental-comps?address=${encodeURIComponent(address)}`)
                 }
               ]}
             />
             {/* Rule of Thumb */}
             <SectionCard
               title="Local Rule of Thumb (Know Your Market)"
-              icon={<PencilRuler className="text-gray-500" />}
+              icon={<PencilRuler className="text-slate-500 dark:text-neutral-400" />}
               items={[{
                 title: "Area Appreciation Rate (5 yr running avg.)",
                 content: ruleOfThumb.appreciation
@@ -600,7 +605,7 @@ export default function PropAnalysisDashboard({ address }) {
                 }, {
                   title: "Operating Budget Choices",
                   content: (
-                    <Select defaultValue={financingTypes[0]}>
+                    <Select defaultValue={operatingBudgetActions[0]}>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select Financing" />
                       </SelectTrigger>
@@ -626,21 +631,27 @@ export default function PropAnalysisDashboard({ address }) {
                 }, {
                   title: "Total Amount Borrowed",
                   content: "$" + financingTerms.totalBorrowed
+                },{
+                  title: "Loan Costs",
+                  content: (
+                    <Select defaultValue={financingActions[0]}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select Financing" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {financingActions.map((f) => (
+                          <SelectItem key={f} value={f}>{f}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )
                 }
               ]}
               buttons={[
                 {
                   label: "Detail Loan Terms",
-                  icon: <BarChart2 className="w-4 h-4" />,
+                  icon: <ClipboardPlus className="w-4 h-4" />,
                   onClick: () => console.log("Detail Loan Terms"),
-                }, {
-                  label: "Loan Costs: use \"Rule of Thumb\"",
-                  icon: <BarChart2 className="w-4 h-4" />,
-                  onClick: () => console.log("Loan Costs: use \"Rule of Thumb\""),
-                }, {
-                  label: "Loan Costs: use \"Detailed\"",
-                  icon: <BarChart2 className="w-4 h-4" />,
-                  onClick: () => console.log("Loan Costs: use \"Detailed\""),
                 }
               ]}
             />
@@ -652,7 +663,7 @@ export default function PropAnalysisDashboard({ address }) {
                 {
                   title: "Property Condition ",
                   content: (
-                    <Select defaultValue={financingTypes[0]}>
+                    <Select defaultValue={rehabActions[0]}>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select Financing" />
                       </SelectTrigger>
@@ -677,15 +688,15 @@ export default function PropAnalysisDashboard({ address }) {
               buttons={[
                 {
                   label: "Quick Calculate",
-                  icon: <BarChart2 className="w-4 h-4" />,
-                  onClick: () => console.log("Quick Calculate"),
+                  icon: <Wallet className="w-4 h-4" />,
+                  onClick: () => router.push(`/rehab-renovation`)
                 }, {
                   label: "DSCR Loan Rehab Calculator",
-                  icon: <BarChart2 className="w-4 h-4" />,
+                  icon: <Calculator className="w-4 h-4" />,
                   onClick: () => console.log("DSCR Loan Rehab Calculator"),
                 }, {
                   label: "Initial Rehab Estimater",
-                  icon: <BarChart2 className="w-4 h-4" />,
+                  icon: <Calculator className="w-4 h-4" />,
                   onClick: () => console.log("Initial Rehab Estimater"),
                 }
               ]}

@@ -4,9 +4,11 @@ import React, { useState, useCallback } from 'react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { LoadScript, Autocomplete } from "@react-google-maps/api";
+import { useJsApiLoader, Autocomplete } from "@react-google-maps/api";
 import { Plus, Trash2, FileChartColumn } from "lucide-react";
 import { useRouter } from "next/navigation";
+
+const LIBRARIES = ['places', 'geometry'];
 
 export default function PropAnalysisList() {
   const [addressList, setAddressList] = useState([]);
@@ -14,6 +16,12 @@ export default function PropAnalysisList() {
   const [error, setError] = useState("");
   const [autoComplete, setAutoComplete] = useState(null);
   const router = useRouter();
+
+  const { isLoaded } = useJsApiLoader({
+    id: 'google-map-script',
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
+    libraries: LIBRARIES
+  });
 
   const onLoadAutocomplete = useCallback((autocompleteInstance) => {
     setAutoComplete(autocompleteInstance);
@@ -50,13 +58,11 @@ export default function PropAnalysisList() {
     setAddressList(addressList.filter(addr => addr.id !== id));
   };
 
-  const isApiReady =
-    typeof window !== 'undefined' &&
-    window.google &&
-    window.google.maps &&
-    window.google.maps.places;
+  if (!isLoaded) {
+    return <div className="max-w-4xl mx-auto p-4">Loading ...</div>;
+  }
 
-  const content = (
+  return (
     <div className="max-w-4xl mx-auto p-4 space-y-10">
       <Card className="flex justify-between">
         <CardContent className="flex-grow flex justify-between space-x-2">
@@ -93,13 +99,5 @@ export default function PropAnalysisList() {
         ))}
       </div>
     </div>
-  );
-
-  return isApiReady ? (
-    content
-  ) : (
-    <LoadScript googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY} libraries={["places", "geometry"]}>
-      {content}
-    </LoadScript>
   );
 }

@@ -21,10 +21,32 @@ export default function IncomeUnitMixPage() {
       <AppSidebar />
 
       <SidebarInset>
-        {/* … your header / breadcrumb / toggle … */}
+      <header className="flex h-16 shrink-0 items-center justify-between transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+          <div className="flex items-center gap-2 px-8">
+              <Breadcrumb>
+                <BreadcrumbList>
+                  <BreadcrumbItem className="hidden md:block">
+                    <BreadcrumbLink href="/dashboard">
+                      Dashboard
+                    </BreadcrumbLink>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator className="hidden md:block" />
+                  <BreadcrumbLink href="#">
+                    Income Unit Mix
+                  </BreadcrumbLink>
+                </BreadcrumbList>
+              </Breadcrumb>
+            </div>
+          <div className="px-8">
+            <DarkLightSwitch className="place-content-center" />
+          </div>
+        </header>
 
         <div className="flex-1 flex flex-col gap-4 px-8 py-6">
-          {/* … title / subtitle … */}
+          <header >
+            <h1 className="text-5xl font-bold">Income Unit Mix</h1>
+            <p className="mt-1 text-xl"></p>
+          </header>
 
           <div className="flex items-center gap-2">
             <label htmlFor="unitCount"># of Units:</label>

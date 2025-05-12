@@ -1,21 +1,26 @@
 "use client"
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Card, CardTitle, CardContent } from "@/components/ui/card";
-import { LoadScript, GoogleMap, Marker } from "@react-google-maps/api";
+import { GoogleMap, Marker, useJsApiLoader } from "@react-google-maps/api";
 
+const LIBRARIES = ['places', 'geometry'];
+const DEFAULT_CENTER = { lat: 40.7685, lng: -73.9822 };
 
 export default function NeighborhoodMap({ address, range }) {
-    const mapRef = useRef(null);
-    const [coords, setCoords] = useState(null);
-    const [userHasPanned, setUserHasPanned] = useState(false);
+    const [coords, setCoords] = useState(DEFAULT_CENTER);
     const [zipCenter, setZipCenter] = useState(null);
     const [distanceInfo, setDistanceInfo] = useState("");
     const [zipCode, setZipCode] = useState("");
-    const isApiReady = typeof window !== "undefined" && window.google && window.google.maps;
 
-    const calculateDistance = (origin, destination) => {
-        if (!window.google || !origin || !destination) return;
+    const { isLoaded } = useJsApiLoader({
+        id: 'google-map-script',
+        googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
+        libraries: LIBRARIES
+    });
+    
+    const calculateDistance = useCallback((origin, destination) => {
+        if (!isLoaded || !origin || !destination) return;
         try {
             const distance = window.google.maps.geometry.spherical.computeDistanceBetween(origin, destination);
             const distanceInMiles = (distance * 0.000621371).toFixed(2);
@@ -28,87 +33,62 @@ export default function NeighborhoodMap({ address, range }) {
             console.error("Distance calculation failed:", error);
             setDistanceInfo("Unable to calculate distance.");
         }
-    };
+    }, [isLoaded, zipCode]);
 
-    const extractZipCode = (addressComponents) => {
+    const extractZipCode = useCallback((addressComponents) => {
         const zipComponent = addressComponents.find(c =>
             c.types.includes("postal_code")
         );
         if (zipComponent) {
-            setZipCode(zipComponent.long_name);
             return zipComponent.long_name;
         }
         return null;
-    };
+    }, []);
 
-    const findZipCodeCenter = (zipCode) => {
-        if (!zipCode) return null;
+    // Address geocoding
+    useEffect(() => {
+        if (!isLoaded || !address) return;
+        const geocoder = new window.google.maps.Geocoder();
+        geocoder.geocode({ address }, (results, status) => {
+            if (status === 'OK' && results[0]) {
+                const locationCoords = results[0].geometry.location.toJSON();
+                setCoords(locationCoords);
+                
+                const extractedZipCode = extractZipCode(results[0].address_components);
+                if (extractedZipCode) {
+                    setZipCode(extractedZipCode);
+                } else {
+                    setDistanceInfo("Could not find a zip code in the address.");
+                }
+            } else {
+                console.error("Address geocoding failed:", status);
+            }
+        });
+    }, [isLoaded, address, extractZipCode]);
 
+    // Find zip code center
+    useEffect(() => {
+        if (!isLoaded || !zipCode) return;
         const geocoder = new window.google.maps.Geocoder();
         geocoder.geocode({ address: zipCode }, (results, status) => {
             if (status === "OK" && results[0]) {
-                const centerLat = results[0].geometry.location.lat();
-                const centerLng = results[0].geometry.location.lng();
-                setZipCenter({ lat: centerLat, lng: centerLng });
-                if (coords) {
-                    const originLatLng = new window.google.maps.LatLng(coords.lat, coords.lng);
-                    const destLatLng = new window.google.maps.LatLng(centerLat, centerLng);
-                    calculateDistance(originLatLng, destLatLng);
-                }
+                const zipCenterCoords = results[0].geometry.location.toJSON();
+                setZipCenter(zipCenterCoords);
             } else {
                 console.error("Zip code center lookup failed:", status);
                 setDistanceInfo(`Could not determine the center of zip code ${zipCode}.`);
             }
         });
-    };
+    }, [isLoaded, zipCode]);
 
-    const geocodeAddress = useCallback(async (addressToGeocode) => {
-        if (!addressToGeocode || addressToGeocode.trim() === "") {
-            setGeocodeError("Please enter an address to search");
-            setShowPopup(true);
-            return;
-        }
-        try {
-            const geocoder = new window.google.maps.Geocoder();
-            geocoder.geocode({ address: addressToGeocode }, (results, status) => {
-                if (status === "OK" && results[0]) {
-                    const { lat, lng } = results[0].geometry.location;
-                    const newCoords = { lat: lat(), lng: lng() };
-                    setCoords(newCoords);
-                    const zipCode = extractZipCode(results[0].address_components);
-                    if (zipCode) {
-                        findZipCodeCenter(zipCode, results[0].formatted_address);
-                    } else {
-                        setDistanceInfo("Could not find a zip code in the address.");
-                    }
-                } else {
-                    console.error("Geocoding failed:", status);
-                    setGeocodeError(`Could not find coordinates for: ${addressToGeocode}`);
-                }
-            });
-        } catch (error) {
-            console.error("Error geocoding address:", error);
-            setGeocodeError("Error while trying to find coordinates");
-        }
-    }, [coords]);
-
+    // Calculate distance
     useEffect(() => {
-        if (address && typeof address === 'string') {
-            const checkGoogleMapsLoaded = setInterval(() => {
-                if (window.google && window.google.maps) {
-                    clearInterval(checkGoogleMapsLoaded);
-                    geocodeAddress(address);
-                }
-            }, 300);
-            setTimeout(() => clearInterval(checkGoogleMapsLoaded), 5000);
-        }
-    }, [address, geocodeAddress]);
-
-    useEffect(() => {
-        if (mapRef.current && coords && !userHasPanned) {
-          mapRef.current.panTo(coords);
-        }
-      }, [coords, userHasPanned]);
+        if (!isLoaded || !coords || !zipCenter) return;
+        
+        const originLatLng = new window.google.maps.LatLng(coords.lat, coords.lng);
+        const destLatLng = new window.google.maps.LatLng(zipCenter.lat, zipCenter.lng);
+        calculateDistance(originLatLng, destLatLng);
+    }, [isLoaded, coords, zipCenter, calculateDistance]);
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
@@ -116,7 +96,7 @@ export default function NeighborhoodMap({ address, range }) {
                 {address}
             </h1>
             <div className="h-[500px] w-full max-w-4xl mx-auto rounded-lg overflow-hidden shadow-lg">
-                {isApiReady ? (
+                {isLoaded ? (
                     <GoogleMap
                         mapContainerStyle={{ width: '100%', height: '100%' }}
                         center={coords}
@@ -138,31 +118,7 @@ export default function NeighborhoodMap({ address, range }) {
                         )}
                     </GoogleMap>
                 ) : (
-                    <LoadScript
-                        googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}
-                        libraries={["places", "geometry"]}
-                    >
-                        <GoogleMap
-                            mapContainerStyle={{ width: '100%', height: '100%' }}
-                            center={coords}
-                            zoom={16}
-                        >
-                            <Marker position={coords} />
-                            {zipCenter && typeof window !== "undefined" && window.google?.maps && (
-                                <Marker
-                                    position={zipCenter}
-                                    icon={{
-                                        path: window.google.maps.SymbolPath.CIRCLE,
-                                        scale: 10,
-                                        fillColor: "#0000FF",
-                                        fillOpacity: 1,
-                                        strokeWeight: 1,
-                                        strokeColor: "#FFFFFF"
-                                    }}
-                                />
-                            )}
-                        </GoogleMap>
-                    </LoadScript>
+                    <p>Loading map...</p>
                 )}
             </div>
             {coords && (

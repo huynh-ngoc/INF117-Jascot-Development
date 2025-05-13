@@ -110,13 +110,29 @@ const data = {
       items: [],
     },
     {
+      title: "Rule of Thumb Loan Cost",
+      url: "/rule-of-thumb-loan-cost",
+      icon: Ruler,
+      items: [],
+    },
+    {
+      title: "Rule of Thumb Loan Terms",
+      url: "/rule-of-thumb-loan-terms",
+      icon: Ruler,
+      items: [],
+    },
+    {
+      title: "Existing Loan",
+      url: "/existing-loan",
+      icon: Ruler,
+      items: [],
+    },
+    {
       title: "Rehab and Renovation",
       url: "/rehab-renovation",
       icon: Ruler,
       items: [],
     },
-    
-
   ],
 }
 

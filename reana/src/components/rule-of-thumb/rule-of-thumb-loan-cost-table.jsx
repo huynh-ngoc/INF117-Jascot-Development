@@ -77,7 +77,7 @@ export default function RuleOfThumbLoanCostTable() {
                       max="100"
                       value={row.percent}
                       onChange={e => handleCostChange(idx, 'percent', e.target.value)}
-                      className="w-20 bg-green-100 border-green-300 focus:ring-green-200"
+                      className="w-20 text-center"
                     />
                     <span className="ml-1">%</span>
                   </td>
@@ -104,7 +104,7 @@ export default function RuleOfThumbLoanCostTable() {
                       max="100"
                       value={disposition.percent}
                       onChange={e => handleDispositionChange('percent', e.target.value)}
-                      className="w-20 bg-green-100 border-green-300 focus:ring-green-200 font-normal"
+                      className="w-20 text-center"
                     />
                     <span className="ml-1">%</span>
                   </div>

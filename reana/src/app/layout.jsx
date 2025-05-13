@@ -1,18 +1,35 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Montserrat, Lato } from "next/font/google";
 import "./globals.css";
 
 import { ThemeProvider } from "@/components/mode-toggle/theme-provider"
 
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+const montserrat = Montserrat({
+  weight: ['400', '600', '700', '900'],
+  subsets: ['latin'],
+  display: 'swap',
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const lato = Lato({
+  weight: ['300', '400', '700'],
+  subsets: ['latin'],
+  display: 'swap',
 });
+
+export function Header1() {
+  return <h1 className={montserrat.className}>Title 1</h1>;
+}
+
+export function Header2() {
+  return <h2 className={montserrat.className}>Title 2</h2>;
+}
+
+export function Header3() {
+  return <h3 className={montserrat.className}>Title 3</h3>;
+}
+
+export function Paragraph({ children }) {
+  return <p className={lato.className}>{children}</p>;
+}
 
 export const metadata = {
   title: "Create Next App",
@@ -21,11 +38,8 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        suppressHydrationWarning
-      >
+    <html lang="en" className={montserrat.className}>
+      <body className={lato.className}>
         <ThemeProvider
             attribute="class"
             defaultTheme="system"

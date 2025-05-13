@@ -89,7 +89,7 @@ export function PopoverTrigger({
       key="button"
       layoutId={`popover-${uniqueId}`}
       className={cn(
-        "flex h-9 items-center border border-zinc-950/10 dark:hover:bg-zinc-500 hover:bg-zinc-700 bg-zinc-900 px-3 text-zinc-50 dark:border-zinc-50/10 dark:bg-zinc-700",
+        "flex h-9 items-center px-3 bg-[#00A3E0] text-primary-foreground shadow-xs hover:bg-sky-600",
         className
       )}
       style={{
@@ -267,7 +267,7 @@ export function PopoverBody({
   children,
   className
 }) {
-  return <div className={cn("p-4", className)}>{children}</div>;
+  return <div className={cn("p-4 bg-[#E5E5E5]", className)}>{children}</div>;
 }
 
 // New component: PopoverButton
@@ -279,7 +279,7 @@ export function PopoverButton({
   return (
     <button
       className={cn(
-        "flex w-full items-center gap-2 rounded-md px-1 py-2 text-left text-sm hover:bg-zinc-100 dark:hover:bg-zinc-500",
+        "flex w-full items-center gap-2 rounded-md px-1 py-2 text-left text-sm bg-[#C0C0C0] text-[#4F5D75]",
         className
       )}
       onClick={onClick}>

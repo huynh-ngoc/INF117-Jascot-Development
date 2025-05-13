@@ -220,12 +220,14 @@ export default function PropAnalysisDashboard({ address }) {
   const NeiborhoodActions = [{
     icon: <Map className="w-4 h-4" />,
     label: "Map",
+    variant: "default",
     action: () => {
       router.push(`/neighborhood-map?address=${encodeURIComponent(address)}`);
     }
   }, {
     icon: <ChartColumn className="w-4 h-4" />,
     label: "Demograpphics",
+    variant: "default",
     action: () => {
       router.push(`/neighborhood-demographics?address=${encodeURIComponent(address)}`);
     }
@@ -348,8 +350,11 @@ export default function PropAnalysisDashboard({ address }) {
                     <motion.button
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
+                      className="bg-[#E5E5E5] text-secondary-foreground"
                     >
-                      {isExpanded ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+                      {isExpanded ? 
+                        <Minimize2 className="text-secondary-foreground" size={18} /> 
+                        : <Maximize2 className="text-secondary-foreground" size={18} />}
                     </motion.button>
                   </Button>
                 </motion.div>
@@ -411,10 +416,7 @@ export default function PropAnalysisDashboard({ address }) {
                           <label className="block text-sm font-medium mb-1">After Rehab Value (ARV)</label>
                           <Input defaultValue={arvDefault} />
                         </div>
-                        <Button
-                          variant="outline"
-                          className="border border-zinc-950/10 dark:hover:bg-zinc-500 hover:bg-zinc-700 bg-zinc-900 px-3 text-zinc-50 hover:text-zinc-50 dark:border-zinc-50/10 dark:bg-zinc-700"
-                        >
+                        <Button variant="secondary">
                           Sale Comps
                         </Button>
                       </div>
@@ -504,7 +506,7 @@ export default function PropAnalysisDashboard({ address }) {
                     <Button
                       key={index}
                       onClick={action.action}
-                      className="border border-zinc-950/10 dark:hover:bg-zinc-500 hover:bg-zinc-700 bg-zinc-900 px-3 text-zinc-50 hover:text-zinc-50 dark:border-zinc-50/10 dark:bg-zinc-700"
+                      variant={`${action.variant|| 'disabled' }`}
                     >
                       {action.icon}
                       <span>{action.label}</span>
@@ -545,6 +547,7 @@ export default function PropAnalysisDashboard({ address }) {
                   label: "Tennancy Details",
                   icon: <Plus className="w-4 h-4" />,
                   onClick: () => console.log("Tennancy Details"),
+                  variant: "disabled"
                 },
                 {
                   label: "Rental Comps",
@@ -693,10 +696,12 @@ export default function PropAnalysisDashboard({ address }) {
                 }, {
                   label: "DSCR Loan Rehab Calculator",
                   icon: <Calculator className="w-4 h-4" />,
+                  variant: "disabled",
                   onClick: () => console.log("DSCR Loan Rehab Calculator"),
                 }, {
                   label: "Initial Rehab Estimater",
                   icon: <Calculator className="w-4 h-4" />,
+                  variant: "disabled",
                   onClick: () => console.log("Initial Rehab Estimater"),
                 }
               ]}
@@ -706,7 +711,7 @@ export default function PropAnalysisDashboard({ address }) {
           <Card>
             <CardHeader><CardTitle>Settlement / Escrow / Attorney Costs</CardTitle></CardHeader>
             <CardContent className="flex space-x-2">
-              {settlementActions.map(action => <Button key={action}>{action}</Button>)}
+              {settlementActions.map(action => <Button variant="disabled" key={action}>{action}</Button>)}
             </CardContent>
           </Card>
         </div>
@@ -787,7 +792,7 @@ export default function PropAnalysisDashboard({ address }) {
               </div>
             </div>
             <div className="flex justify-center items-center">
-              <div className="text-center bg-blue-600 dark:bg-blue-700 text-white px-12 py-4 rounded-lg shadow-lg">
+              <div className="text-center bg-[#00A3E0] dark:bg-blue-700 text-white px-12 py-4 rounded-lg shadow-lg">
                 <p className="text-lg">My Offer</p>
                 <p className="text-3xl font-bold">${offerStructure.myOffer.toLocaleString()}</p>
               </div>
@@ -875,7 +880,7 @@ function SectionCard({ title, icon, items, buttons }) {
               {buttons.map((button, index) => (
                 <Button
                   key={index}
-                  className={`px-4 py-2 rounded-md transition-colors duration-200 flex items-center space-x-2 border border-zinc-950/10 dark:hover:bg-zinc-500 hover:bg-zinc-700 bg-zinc-900 px-3 text-zinc-50 hover:text-zinc-50 dark:border-zinc-50/10 dark:bg-zinc-700`}
+                  variant={`${button.variant|| 'default'}`}
                   onClick={(e) => {
                     e.stopPropagation();
                     button.onClick();

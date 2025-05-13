@@ -155,19 +155,19 @@ export default function DSCRBridgeLoanPage() {
 
               {/* Term 1-30 */}
               {!isIO && (
-                <div className="relative">
-                  <Label>Term (Years)</Label>
-                  <Input
-                    type="text"
-                    className="pl-2 pr-7"
-                    value={`${fmt(amortTerm,0)}`}
-                    onChange={e => {
-                      const v = Math.min(30, Math.max(1, parseNum(e.target.value)));
-                      setAmortTerm(v);
-                    }}
-                  />
-                </div>
-              )}
+              <div className="relative">
+                <Label>Term (Years)</Label>
+                <input
+                  type="range"
+                  min={1}
+                  max={30}
+                  value={amortTerm}
+                  onChange={e => setAmortTerm(+e.target.value)}
+                  className="w-full"
+                />
+                <div className="mt-1 text-sm">{amortTerm} yrs</div>
+              </div>
+            )}
             </CardContent>
           </Card>
 

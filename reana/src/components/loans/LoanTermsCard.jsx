@@ -74,7 +74,7 @@ export default function LoanTermsCard({ title, fields, onFieldChange, onEnterClo
                               }
                             }
                           }}
-                          className="w-20 bg-green-100 border-green-300 focus:ring-green-200"
+                          className="w-20 text-center"
                         />
                         {symbolSuffix && <span>{symbolSuffix}</span>}
                       </div>

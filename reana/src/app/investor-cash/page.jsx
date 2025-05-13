@@ -15,8 +15,12 @@ export default function InvestorCashPage() {
     carryingCosts: '',
   });
 
+  const parseNum = str => parseFloat(str.replace(/[^\d.-]/g, '')) || 0;
+  const fmt = n => n.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+
   const handleChange = (field) => (e) => {
-    setBudget((prev) => ({ ...prev, [field]: e.target.value }));
+    const num = parseNum(e.target.value);
+    setBudget((prev) => ({ ...prev, [field]: num.toString() }));
   };
 
   const totalCash = Object.values(budget)
@@ -33,7 +37,6 @@ export default function InvestorCashPage() {
           </h1>
 
           <div className="overflow-x-auto">
-            {/* add a black outline around the table */}
             <table className="w-full table-auto border-collapse border-2 border-black">
               <thead>
                 <tr className="bg-gray-100">
@@ -54,9 +57,9 @@ export default function InvestorCashPage() {
                     <td className="p-2">{label}</td>
                     <td className="p-2 text-right">
                       <input
-                        type="number"
-                        placeholder="0"
-                        value={budget[key]}
+                        type="text"
+                        placeholder="$0"
+                        value={budget[key] === '' ? '' : `$${fmt(Number(budget[key]))}`}
                         onChange={handleChange(key)}
                         className="w-32 text-right border rounded px-2 py-1"
                       />
@@ -67,7 +70,7 @@ export default function InvestorCashPage() {
                 <tr className="border-t font-semibold bg-gray-100">
                   <td className="p-2">Total Cash Budget</td>
                   <td className="p-2 text-right">
-                    ${totalCash.toLocaleString()}
+                    ${fmt(totalCash)}
                   </td>
                 </tr>
               </tbody>

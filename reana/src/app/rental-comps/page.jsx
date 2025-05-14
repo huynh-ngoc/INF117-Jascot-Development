@@ -13,9 +13,10 @@ import {
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import DarkLightSwitch from "@/components/mode-toggle/dark-light-switch";
 import RentalComps from "@/components/maps/rental-comps"
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 
 function InnerRentalCompsPage() {
+  const router = useRouter();
   const params = useSearchParams();
   const address = params.get("address") ?? "Unknown";
   return (
@@ -27,12 +28,12 @@ function InnerRentalCompsPage() {
               <Breadcrumb>
                 <BreadcrumbList>
                   <BreadcrumbItem className="hidden md:block">
-                    <BreadcrumbLink href="/dashboard">
-                      Dashboard
+                    <BreadcrumbLink onClick={() => router.back()}>
+                      Property Analysis Dashboard
                     </BreadcrumbLink>
                   </BreadcrumbItem>
                   <BreadcrumbSeparator className="hidden md:block" />
-                  <BreadcrumbLink href="#">
+                  <BreadcrumbLink >
                       Rental Comparables
                   </BreadcrumbLink>
                 </BreadcrumbList>

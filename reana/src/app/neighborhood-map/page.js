@@ -14,9 +14,10 @@ import {
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import DarkLightSwitch from "@/components/mode-toggle/dark-light-switch";
 import NeighborhoodMap from '@/components/maps/neighborhood-map';
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 
 function InnerNeighborhoodMapPage() {
+  const router = useRouter();
   const params = useSearchParams();
   const address = params.get("address") ?? "Unknown";
   return (
@@ -28,12 +29,12 @@ function InnerNeighborhoodMapPage() {
               <Breadcrumb>
                 <BreadcrumbList>
                   <BreadcrumbItem className="hidden md:block">
-                    <BreadcrumbLink href="/dashboard">
-                      Dashboard
+                    <BreadcrumbLink onClick={() => router.back()}>
+                      Property Analysis Dashboard
                     </BreadcrumbLink>
                   </BreadcrumbItem>
                   <BreadcrumbSeparator className="hidden md:block" />
-                  <BreadcrumbLink href="#">
+                  <BreadcrumbLink >
                       Neighborhood Map
                   </BreadcrumbLink>
                 </BreadcrumbList>

@@ -654,7 +654,7 @@ export default function PropAnalysisDashboard({ address }) {
                 {
                   label: "Detail Loan Terms",
                   icon: <ClipboardPlus className="w-4 h-4" />,
-                  onClick: () => console.log("Detail Loan Terms"),
+                  onClick: () => router.push(`/conventional-financing`),
                 }
               ]}
             />

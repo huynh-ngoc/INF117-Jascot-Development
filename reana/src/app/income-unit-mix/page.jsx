@@ -12,8 +12,10 @@ import {
 } from '@/components/ui/breadcrumb';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import DarkLightSwitch from '@/components/mode-toggle/dark-light-switch';
+import { useRouter } from 'next/navigation';
 
-export default function IncomeUnitMixPage() {    
+export default function IncomeUnitMixPage() {
+  const router = useRouter();
   const [unitCount, setUnitCount] = useState(5);
 
   return (
@@ -26,12 +28,12 @@ export default function IncomeUnitMixPage() {
               <Breadcrumb>
                 <BreadcrumbList>
                   <BreadcrumbItem className="hidden md:block">
-                    <BreadcrumbLink href="/dashboard">
-                      Dashboard
+                    <BreadcrumbLink onClick={() => router.back()}>
+                      Property Analysis Dashboard
                     </BreadcrumbLink>
                   </BreadcrumbItem>
                   <BreadcrumbSeparator className="hidden md:block" />
-                  <BreadcrumbLink href="#">
+                  <BreadcrumbLink >
                     Income Unit Mix
                   </BreadcrumbLink>
                 </BreadcrumbList>

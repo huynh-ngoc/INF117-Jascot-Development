@@ -13,10 +13,10 @@ import {
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import DarkLightSwitch from "@/components/mode-toggle/dark-light-switch";
 import NeighborhoodDemographics from '@/components/neighborhood/neighborhood-demographics';
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 
 function InnerNeighborhoodDemographicsPage() {
-
+  const router = useRouter();
   const params = useSearchParams();
   const address = params.get("address") ?? "Unknown";
 
@@ -29,12 +29,12 @@ function InnerNeighborhoodDemographicsPage() {
               <Breadcrumb>
                 <BreadcrumbList>
                   <BreadcrumbItem className="hidden md:block">
-                    <BreadcrumbLink href="/dashboard">
-                      Dashboard
-                    </BreadcrumbLink>
+                  <BreadcrumbLink onClick={() => router.back()}>
+                    Property Analysis Dashboard
+                  </BreadcrumbLink>
                   </BreadcrumbItem>
                   <BreadcrumbSeparator className="hidden md:block" />
-                  <BreadcrumbLink href="#">
+                  <BreadcrumbLink >
                     Neighborhood Demographics
                   </BreadcrumbLink>
                 </BreadcrumbList>

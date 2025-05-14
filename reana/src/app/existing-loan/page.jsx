@@ -60,15 +60,15 @@ export default function AssumeExistingLoanPage() {
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <header className="flex h-16 items-center justify-between px-8">
+        <header className="flex h-16 items-center justify-between px-8 border-b border-[#4F5D75]">
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
+                <BreadcrumbLink href="/dashboard" className="text-[#00A3E0] font-montserrat hover:text-[#0077AC]">Dashboard</BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbLink href="#">Existing Loan</BreadcrumbLink>
+                <BreadcrumbLink href="#" className="text-[#2D3142] font-montserrat">Existing Loan</BreadcrumbLink>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
@@ -80,7 +80,12 @@ export default function AssumeExistingLoanPage() {
             onFieldChange={handleFieldChange}
             onEnterClose={() => {}}
           />
-          <Button variant="outline" className="w-full font-bold mb-4">Add Another Loan (Secondary Financing)</Button>
+          <Button 
+            variant="outline" 
+            className="w-full font-montserrat text-[#2D3142] border-[#4F5D75] hover:bg-[#F8F9FA]"
+          >
+            Add Another Loan (Secondary Financing)
+          </Button>
           <SettlementCostsActions />
         </main>
       </SidebarInset>

@@ -11,8 +11,10 @@ import {
 } from "@/components/ui/breadcrumb";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import DarkLightSwitch from "@/components/mode-toggle/dark-light-switch";
+import { useRouter } from "next/navigation";
 
 export default function RehabRenovation() {
+  const router = useRouter();
   const [materialLaborCost, setMaterialLaborCost] = useState(15150);
   const [holdingCost, setHoldingCost] = useState(1500);
   const [bufferPercent, setBufferPercent] = useState(10);
@@ -36,10 +38,12 @@ export default function RehabRenovation() {
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
+                  <BreadcrumbLink onClick={() => router.back()}>
+                    Property Analysis Dashboard
+                  </BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />
-                <BreadcrumbLink href="#">Rehab & Renovation</BreadcrumbLink>
+                <BreadcrumbLink >Rehab & Renovation</BreadcrumbLink>
               </BreadcrumbList>
             </Breadcrumb>
           </div>

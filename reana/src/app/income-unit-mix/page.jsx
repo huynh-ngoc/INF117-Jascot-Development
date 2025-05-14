@@ -1,3 +1,4 @@
+// src/app/investor-cash/page.jsx
 'use client';
 
 import React, { useState } from 'react';
@@ -23,7 +24,7 @@ export default function IncomeUnitMixPage() {
       <AppSidebar />
 
       <SidebarInset>
-      <header className="flex h-16 shrink-0 items-center justify-between transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+        <header className="flex h-16 shrink-0 items-center justify-between transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
           <div className="flex items-center gap-2 px-8">
               <Breadcrumb>
                 <BreadcrumbList>
@@ -35,17 +36,17 @@ export default function IncomeUnitMixPage() {
                   <BreadcrumbSeparator className="hidden md:block" />
                   <BreadcrumbLink >
                     Income Unit Mix
-                  </BreadcrumbLink>
-                </BreadcrumbList>
-              </Breadcrumb>
-            </div>
+                </BreadcrumbLink>
+              </BreadcrumbList>
+            </Breadcrumb>
+          </div>
           <div className="px-8">
             <DarkLightSwitch className="place-content-center" />
           </div>
         </header>
 
         <div className="flex-1 flex flex-col gap-4 px-8 py-6">
-          <header >
+          <header>
             <h1 className="text-5xl font-bold">Income Unit Mix</h1>
             <p className="mt-1 text-xl"></p>
           </header>
@@ -62,7 +63,6 @@ export default function IncomeUnitMixPage() {
             />
           </div>
 
-          {/* render the table */}
           <UnitRentTable unitCount={unitCount} />
         </div>
       </SidebarInset>

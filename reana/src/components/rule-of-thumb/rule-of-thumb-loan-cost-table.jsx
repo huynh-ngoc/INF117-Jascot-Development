@@ -54,7 +54,7 @@ export default function RuleOfThumbLoanCostTable() {
   return (
     <Card>
       <CardHeader>
-        <h2 className="text-xl font-semibold">Costs by Rule of Thumb</h2>
+        <h2 className="text-xl font-montserrat font-semibold text-[#2D3142]">Loan Costs by Rule of Thumb</h2>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">

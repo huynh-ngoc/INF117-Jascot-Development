@@ -48,9 +48,9 @@ export default function RuleOfThumbOprBudgetTable() {
   return (
     <Card className="border border-[#4F5D75]">
       <CardHeader>
-        <h2 className="text-xl font-montserrat font-semibold text-[#2D3142]">Operating Budget Projections (1 Yr.)</h2>
+        <h2 className="text-xl font-montserrat font-semibold text-[#2D3142]">LTR / BRRR Operating Budget Projections (1 yr.) Using Rule of Thumb</h2>
         <p className="text-sm font-lato text-[#4F5D75]">
-          This table summarizes your 1-year operating budget based on your current assumptions and inputs.
+          This table summarizes your operating budget based on "rule of thumb" operating expenses and your other inputs.
         </p>
       </CardHeader>
       <CardContent>

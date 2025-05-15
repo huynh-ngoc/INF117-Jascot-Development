@@ -140,7 +140,7 @@ export default function RuleOfThumbTable() {
     return (
         <Card>
             <CardHeader>
-                <h2 className="text-xl font-montserrat font-semibold text-[#2D3142]">Rule of Thumb Metrics</h2>
+                <h2 className="text-xl font-montserrat font-semibold text-[#2D3142]">Local Rule of Thumb</h2>
                 <p className="text-sm font-lato text-[#4F5D75]">
                     These numbers are essential for calculations. Defaults are shown below, but once you edit,
                     your inputs will be saved automatically until you change them again.

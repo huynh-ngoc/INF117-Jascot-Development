@@ -18,7 +18,7 @@ export default function RehabRenovation() {
   const [materialLaborCost, setMaterialLaborCost] = useState(15150);
   const [holdingCost, setHoldingCost] = useState(1500);
   const [bufferPercent, setBufferPercent] = useState(10);
-  const [amountFinanced, setAmountFinanced] = useState(0); // Editable if needed
+  const [amountFinanced, setAmountFinanced] = useState(0); 
   const [arv, setARV] = useState(175000);
 
   const [isEditing, setIsEditing] = useState(false);
@@ -56,7 +56,6 @@ export default function RehabRenovation() {
         <div className="flex flex-col gap-6 px-8 pt-0 pb-12">
           <header className="mt-4">
             <h1 className="text-4xl font-bold">Rehab & Renovation Budget</h1>
-            <p className="text-lg text-muted-foreground">Plan your renovation with detailed breakdown</p>
           </header>
 
           <div className="overflow-x-auto rounded border border-gray-300 shadow-sm bg-white">

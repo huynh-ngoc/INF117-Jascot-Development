@@ -1,5 +1,5 @@
 "use client"
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Maximize2,
   Minimize2,
@@ -64,6 +64,26 @@ export default function PropAnalysisDashboard({ address }) {
   const router = useRouter()
   const backdropVariants = { hidden: { opacity: 0 }, visible: { opacity: 1 } };
   const streetViewUrl = getStreetViewUrl(address);
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setLoading(true);
+    fetch(`/api/property-data?address=${encodeURIComponent(address)}`)
+      .then((res) => res.json())
+      .then((d) => setData(d))
+      .catch((err) => {
+        console.error('Failed to fetch property data:', err);
+      })
+      .finally(() => setLoading(false));
+  }, [address]);
+
+  if (loading) return <p>Loading property details…</p>;
+  if (!data)    return <p>Unable to load property details.</p>;
+
+  const { askingPrice, metrics } = data;
 
   const handleToggle = () => {
     if (!isExpanded) {
@@ -72,7 +92,6 @@ export default function PropAnalysisDashboard({ address }) {
       setTimeout(() => setIsExpanded(false), 200);
     }
   };
-  const [isExpanded, setIsExpanded] = useState(false);
 
   // Sample card data
   const cardData = {
@@ -81,23 +100,30 @@ export default function PropAnalysisDashboard({ address }) {
     image: "/api/placeholder/600/400"
   };
 
-  const investmentTypes = ["Long Term Rental(LTR)", "Short Term Rental(STR)", "Fix & Flip", "Brrr"];
-  const financingTypes = ["Pay Cash(No Financing)",
+  const investmentTypes = [
+    "Long Term Rental(LTR)", 
+    "Short Term Rental(STR)", 
+    "Fix & Flip", 
+    "Brrr"
+  ];
+  const financingTypes = [
+    "Pay Cash(No Financing)",
     "Conventional Loan",
     "DSCR Bridge Loan(Fix & Flip)",
     "DSCR Bridge Loan + Permanent Loan(Brrr)",
-    "Seller Financing"];
-  const askingPrice = "$149,900";
+    "Seller Financing"
+  ];
+  //const askingPrice = "$149,900";
   const arvDefault = "17500";
-  const metrics = {
-    daysOnMarket: 45,
-    units: 4,
-    sqft: 2400,
-    age: 15,
-    beds: 3,
-    baths: 2,
-    photo: "/api/placeholder/300/200",
-  };
+  // const metrics = {
+  //   daysOnMarket: 45,
+  //   units: 4,
+  //   sqft: 2400,
+  //   age: 15,
+  //   beds: 3,
+  //   baths: 2,
+  //   photo: "/api/placeholder/300/200",
+  // };
 
   const incomeData = {
     current: 18600,
@@ -275,9 +301,9 @@ export default function PropAnalysisDashboard({ address }) {
 
   return (
     <div className="flex flex-col min-h-screen p-4 relative">
-      <div className="flex flex-grow mb-8">
+      <div className="flex mb-8 h-[700px]">
         {/* Left Column - 1/3 width */}
-        <div className="w-1/3 pr-4">
+        <div className="w-1/3 pr-4 flex flex-col justify-between">
           {/* Backdrop when expanded */}
           <AnimatePresence>
             {isExpanded && (
@@ -429,23 +455,23 @@ export default function PropAnalysisDashboard({ address }) {
                         </div>
                         <div>
                           <label className="block text-sm font-medium mb-1"># of Units</label>
-                          <div>{metrics.units}</div>
+                          <div>{metrics.numberOfUnits}</div>
                         </div>
                         <div>
                           <label className="block text-sm font-medium mb-1">Sq Ft Total</label>
-                          <div>{metrics.sqft}</div>
+                          <div>{metrics.propertySize}</div>
                         </div>
                         <div>
                           <label className="block text-sm font-medium mb-1">Building Age</label>
-                          <div>{metrics.age} yrs</div>
+                          <div>{metrics.propertyAge} yrs</div>
                         </div>
                         <div>
                           <label className="block text-sm font-medium mb-1">Tot Bedrooms</label>
-                          <div>{metrics.beds}</div>
+                          <div>{metrics.numberOfbedrooms}</div>
                         </div>
                         <div>
                           <label className="block text-sm font-medium mb-1">Tot Bathrooms</label>
-                          <div>{metrics.baths}</div>
+                          <div>{metrics.numberOfbathrooms}</div>
                         </div>
                       </div>
                     </motion.div>
@@ -520,8 +546,8 @@ export default function PropAnalysisDashboard({ address }) {
         </div>
 
         {/* Right Column - 2/3 width */}
-        <div className="w-2/3 space-y-4 overflow-y-auto max-h-screen">
-          <div className="grid grid-cols-1 gap-4">
+        <div className="w-2/3 flex flex-col">
+          <div className="overflow-y-auto flex-1 space-y-4">
             {/* Income */}
             <SectionCard
               title="Income"
@@ -706,14 +732,14 @@ export default function PropAnalysisDashboard({ address }) {
                 }
               ]}
             />
+            {/* Settlement */}
+            <Card className="mb-4">
+              <CardHeader><CardTitle>Settlement / Escrow / Attorney Costs</CardTitle></CardHeader>
+              <CardContent className="flex space-x-2">
+                {settlementActions.map(action => <Button variant="disabled" key={action}>{action}</Button>)}
+              </CardContent>
+            </Card>
           </div>
-          {/* Settlement */}
-          <Card>
-            <CardHeader><CardTitle>Settlement / Escrow / Attorney Costs</CardTitle></CardHeader>
-            <CardContent className="flex space-x-2">
-              {settlementActions.map(action => <Button variant="disabled" key={action}>{action}</Button>)}
-            </CardContent>
-          </Card>
         </div>
       </div>
       {/* Structure Your Offer */}

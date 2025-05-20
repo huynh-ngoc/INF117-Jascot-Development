@@ -113,18 +113,7 @@ export default function PropAnalysisDashboard({ address }) {
     "DSCR Bridge Loan + Permanent Loan(Brrr)",
     "Seller Financing"
   ];
-  //const askingPrice = "$149,900";
   const arvDefault = "17500";
-  // const metrics = {
-  //   daysOnMarket: 45,
-  //   units: 4,
-  //   sqft: 2400,
-  //   age: 15,
-  //   beds: 3,
-  //   baths: 2,
-  //   photo: "/api/placeholder/300/200",
-  // };
-
   const incomeData = {
     current: 18600,
     scheduled: 24600,
@@ -186,7 +175,7 @@ export default function PropAnalysisDashboard({ address }) {
     desiredPrice: 122500,
     myOffer: 115000,
     profit: 28720,
-    profitPct: "20.23%",
+    profitPct: 20.23,
   };
 
   const cashConsider = {
@@ -301,7 +290,7 @@ export default function PropAnalysisDashboard({ address }) {
 
   return (
     <div className="flex flex-col min-h-screen p-4 relative">
-      <div className="flex mb-8 h-[700px]">
+        <div className="flex mb-8 h-[700px]">
         {/* Left Column - 1/3 width */}
         <div className="w-1/3 pr-4 flex flex-col justify-between">
           {/* Backdrop when expanded */}
@@ -632,7 +621,7 @@ export default function PropAnalysisDashboard({ address }) {
                   title: "Cash Flow Yr 1",
                   content: "$" + operatingBudget.cashFlow
                 }, {
-                  title: "Operating Budget Choices",
+                  title: "Operating Budget Option",
                   content: (
                     <Select defaultValue={operatingBudgetActions[0]}>
                       <SelectTrigger className="w-full">
@@ -661,7 +650,7 @@ export default function PropAnalysisDashboard({ address }) {
                   title: "Total Amount Borrowed",
                   content: "$" + financingTerms.totalBorrowed
                 },{
-                  title: "Loan Costs",
+                  title: "Loan Costs Option",
                   content: (
                     <Select defaultValue={financingActions[0]}>
                       <SelectTrigger className="w-full">
@@ -748,12 +737,11 @@ export default function PropAnalysisDashboard({ address }) {
           <h2 className="text-2xl font-bold mb-6 text-center text-gray-800 dark:text-white">Structure Your Offer</h2>
           <div className="grid grid-cols-2 gap-8 mb-6">
             <div className="bg-white dark:bg-gray-700 p-4 rounded-lg shadow">
-              <h3 className="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-200 border-b pb-2">Current Property Status</h3>
+            <div className="flex justify-between text-lg font-semibold mb-4 text-gray-700 dark:text-gray-200 border-b pb-2">
+              <h3 >Current List Price:</h3>
+              <span className="font-medium">${offerStructure.listPrice.toLocaleString()}</span>
+            </div>
               <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-300">Current List Price:</span>
-                  <span className="font-medium">${offerStructure.listPrice.toLocaleString()}</span>
-                </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-300">1% Rule Current Rents:</span>
                   <span className="font-medium">${offerStructure.onePctCurrentRents.toLocaleString()}</span>
@@ -777,12 +765,11 @@ export default function PropAnalysisDashboard({ address }) {
               </div>
             </div>
             <div className="bg-white dark:bg-gray-700 p-4 rounded-lg shadow">
-              <h3 className="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-200 border-b pb-2">After Rehab Projections</h3>
+            <div className="flex justify-between text-lg font-semibold mb-4 text-gray-700 dark:text-gray-200 border-b pb-2">
+              <h3 >After Rehab Value:</h3>
+              <span className="font-medium">${offerStructure.arValue.toLocaleString()}</span>
+            </div>
               <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-300">After Rehab Value:</span>
-                  <span className="font-medium">${offerStructure.arValue.toLocaleString()}</span>
-                </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-300">1% Rule AR Rents:</span>
                   <span className="font-medium">${offerStructure.onePctARRents.toLocaleString()}</span>
@@ -806,22 +793,33 @@ export default function PropAnalysisDashboard({ address }) {
               </div>
             </div>
           </div>
-          <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg shadow-inner">
-            <div className="flex justify-between items-center mb-6">
-              <div>
-                <p className="text-gray-600 dark:text-gray-300 mb-2">Desired Acquisition Margin: <span className="font-medium">{offerStructure.desiredMarginPct}</span></p>
-                <p className="text-gray-600 dark:text-gray-300">Profit Margin @ 1 yr: <span className="font-medium">{offerStructure.profitMargin}</span></p>
-              </div>
-              <div className="text-right">
-                <p className="text-gray-600 dark:text-gray-300 mb-2">Desired Price: <span className="font-medium">${offerStructure.desiredPrice.toLocaleString()}</span></p>
-                <p className="text-gray-600 dark:text-gray-300">Profit: <span className="font-medium">${offerStructure.profit.toLocaleString()} ({offerStructure.profitPct})</span></p>
+          <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg shadow-inner mb-4">
+            <div className="flex justify-between items-center mb-2 text-xl border-b">
+              <span className="text-gray-600 dark:text-gray-300 mb-2">Desired Acquisition Margin (% of ARV):</span> 
+              <div className="flex gap-2 items-center">
+                <Input className="font-medium w-12 h-min" defaultValue={70}></Input> %
               </div>
             </div>
-            <div className="flex justify-center items-center">
-              <div className="text-center bg-[#00A3E0] dark:bg-blue-700 text-white px-12 py-4 rounded-lg shadow-lg">
-                <p className="text-lg">My Offer</p>
-                <p className="text-3xl font-bold">${offerStructure.myOffer.toLocaleString()}</p>
+            <div className="flex justify-between items-center mb-2 text-xl border-b">
+              <span className="text-gray-600 dark:text-gray-300 mb-2">Desired Acquisition Price:</span> 
+              <span className="font-medium">${offerStructure.desiredPrice.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between items-center text-xl border-b">
+              <span className="text-gray-600 dark:text-gray-300 mb-2">Profit Margin @ 1 yr: </span> 
+              <div className="flex gap-2 items-center">
+                 <span className="font-medium">${offerStructure.profit.toLocaleString()}</span>
+                 <span className="font-medium text-gray-500 dark:text-gray-300">|</span>
+                 <span className="font-medium">{offerStructure.profitPct}%</span>
               </div>
+            </div>
+            <div className="items-center text-right mt-4">
+            <Button variant="secondary">View Profit Margin Calculation</Button>
+          </div>
+          </div>
+          <div className="flex justify-center items-center">
+            <div className="text-center bg-[#00A3E0] dark:bg-blue-700 text-white px-12 py-4 rounded-lg shadow-lg mt-2">
+              <p className="text-lg">My Offer</p>
+              <p className="text-3xl font-bold">${offerStructure.myOffer.toLocaleString()}</p>
             </div>
           </div>
         </div>

@@ -133,6 +133,35 @@ const data = {
       icon: Ruler,
       items: [],
     },
+    {
+      title: "Detailed lender fees 1st",
+      url: "/detailed-lender-fees-1st",
+      icon: SquareTerminal,
+      items: [],
+    },    {
+      title: "Detailed lender fees 2nd",
+      url: "/detailed-lender-fees-2nd",
+      icon: SquareTerminal,
+      items: [],
+    },
+    {
+      title: "Detailed inspection fees",
+      url: "/detailed-inspection-fees",
+      icon: SquareTerminal,
+      items: [],
+    },
+    {
+      title: "Detailed settlement fees",
+      url: "/detailed-settlement-fees",
+      icon: SquareTerminal,
+      items: [],
+    },
+    {
+      title: "reports page",
+      url: "/reports",
+      icon: SquareTerminal,
+      items: [],
+    },
   ],
 }
 

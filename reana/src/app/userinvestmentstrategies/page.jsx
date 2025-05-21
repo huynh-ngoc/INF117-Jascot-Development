@@ -99,8 +99,12 @@ export default function InvestmentStrategies() {
       ...prev,
       tenantPreferences: {
         ...prev.tenantPreferences,
-        specialtyTenants: prev.tenantPreferences.specialtyTenants.includes(value)
-          ? prev.tenantPreferences.specialtyTenants.filter((item) => item !== value)
+        specialtyTenants: prev.tenantPreferences.specialtyTenants.includes(
+          value
+        )
+          ? prev.tenantPreferences.specialtyTenants.filter(
+              (item) => item !== value
+            )
           : [...prev.tenantPreferences.specialtyTenants, value],
       },
     }));
@@ -132,11 +136,37 @@ export default function InvestmentStrategies() {
     setTargetMetrics((prev) => ({ ...prev, [name]: parseFloat(value) }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Profile:", profile);
-    console.log("Investment Details:", investmentDetails);
-    alert("Profile Saved! (Check Console)");
+
+    try {
+      const profileResponse = await fetch(
+        "/api/user-investment-strategies/investor-profile",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            profileName: profile.name,
+            email: profile.email,
+            phone: profile.phone,
+          }),
+        }
+      );
+
+      if (!profileResponse.ok) {
+        const errorData = await profileResponse.json();
+        throw new Error(errorData.error || "Failed to save profile");
+      }
+
+      console.log("Profile:", profile);
+      console.log("Investment Details:", investmentDetails);
+      alert("Profile Saved! (Check Console)");
+    } catch (error) {
+      console.error("Error saving data:", error);
+      alert(`Error saving data: ${error.message}`);
+    }
   };
 
   const handleCloseNotice = () => {
@@ -156,11 +186,18 @@ export default function InvestmentStrategies() {
           {showNotice && (
             <div className={styles.popupOverlay}>
               <div className={styles.popupBox}>
-                <p style={{ fontSize: "1.2rem", fontWeight: "bold" }}>Welcome! </p>
-                <p>
-                  Taking a few minutes to fill in this page will enable Reana to get you the information you need with the least amount of input per property analyzed.
+                <p style={{ fontSize: "1.2rem", fontWeight: "bold" }}>
+                  Welcome!{" "}
                 </p>
-                <button onClick={handleCloseNotice} className={styles.popupButton}>
+                <p>
+                  Taking a few minutes to fill in this page will enable Reana to
+                  get you the information you need with the least amount of
+                  input per property analyzed.
+                </p>
+                <button
+                  onClick={handleCloseNotice}
+                  className={styles.popupButton}
+                >
                   OK
                 </button>
               </div>
@@ -168,7 +205,10 @@ export default function InvestmentStrategies() {
           )}
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-            <InvestorProfileForm profile={profile} onProfileChange={handleProfileChange} />
+            <InvestorProfileForm
+              profile={profile}
+              onProfileChange={handleProfileChange}
+            />
             <InvestmentPreferencesForm
               investmentDetails={investmentDetails}
               onInvestmentChange={handleInvestmentChange}

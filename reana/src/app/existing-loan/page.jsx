@@ -72,28 +72,13 @@ function TransactionSummary({ fields }) {
   );
 }
 
-export default function AssumeExistingLoanPage({ strategyId }) {
+export default function AssumeExistingLoanPage() {
   const [loans, setLoans] = useState([
     { id: 1, fields: initialFields, saved: false }
   ]);
   const [nextId, setNextId] = useState(2);
   const [showModal, setShowModal] = useState(false);
   const [pendingStrategyId, setPendingStrategyId] = useState(null);
-  const prevStrategyId = useRef(strategyId);
-
-  // Listen for strategy change
-  useEffect(() => {
-    if (prevStrategyId.current !== strategyId) {
-      if (loans.some(loan => !loan.saved)) {
-        setShowModal(true);
-        setPendingStrategyId(strategyId);
-      } else {
-        resetLoans();
-        prevStrategyId.current = strategyId;
-      }
-    }
-    // eslint-disable-next-line
-  }, [strategyId, loans]);
 
   const resetLoans = () => {
     setLoans([{ id: 1, fields: initialFields, saved: false }]);
@@ -147,7 +132,6 @@ export default function AssumeExistingLoanPage({ strategyId }) {
   const handleModalConfirm = () => {
     setShowModal(false);
     resetLoans();
-    prevStrategyId.current = pendingStrategyId;
   };
   const handleModalCancel = () => {
     setShowModal(false);

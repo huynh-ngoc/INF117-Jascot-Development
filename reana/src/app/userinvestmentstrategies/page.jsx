@@ -246,6 +246,8 @@ export default function InvestmentStrategies() {
         );
       }
 
+      // Property Profile Section
+
       const propertyProfileResponse = await fetch(
         "/api/user-investment-strategies/property-profile",
         {
@@ -270,6 +272,32 @@ export default function InvestmentStrategies() {
       if (!propertyProfileResponse.ok) {
         const errorData = await propertyProfileResponse.json();
         throw new Error(errorData.error || "Failed to save property profile");
+      }
+
+      // Property Features Section
+      const propertyFeaturesResponse = await fetch(
+        "/api/user-investment-strategies/property-features",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            minSqft: propertyFeatures.minSqft,
+            maxSqft: propertyFeatures.maxSqft,
+            minLotSize: propertyFeatures.minLotSize,
+            minBedrooms: propertyFeatures.minBedrooms,
+            maxBedrooms: propertyFeatures.maxBedrooms,
+            minBathrooms: propertyFeatures.minBathrooms,
+            maxBathrooms: propertyFeatures.maxBathrooms,
+            condition: propertyFeatures.condition,
+            parking: propertyFeatures.parking,
+          }),
+        }
+      );
+      if (!propertyFeaturesResponse.ok) {
+        const errorData = await propertyFeaturesResponse.json();
+        throw new Error(errorData.error || "Failed to save property features");
       }
     } catch (error) {
       console.error("Error saving data:", error);

@@ -26,7 +26,7 @@ export default function InvestmentStrategies() {
     acquisitionMargin: 0,
     outOfState: "No",
     financingOption: "",
-    operationalPreferences: [],
+    operationalPreferences: [], 
     tenantPreferences: {
       landlordFriendly: "No",
       tenantClass: [],
@@ -162,7 +162,27 @@ export default function InvestmentStrategies() {
 
       console.log("Profile:", profile);
       console.log("Investment Details:", investmentDetails);
+
       alert("Profile Saved! (Check Console)");
+
+      // Investment Preferences Section
+      const investPrefResponse = await fetch(
+        "/api/user-investment-strategies/investment-preferences",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            investmentType: investmentDetails.investmentType,
+            holdingPeriod: investmentDetails.holdingPeriod,
+            acquisitionMargin: investmentDetails.acquisitionMargin,
+            outOfState: investmentDetails.outOfState,
+            acquisitionType: investmentDetails.acquisitionType,
+            operationalPrefs: investmentDetails.operationalPrefs,
+          }),
+        }
+      );
     } catch (error) {
       console.error("Error saving data:", error);
       alert(`Error saving data: ${error.message}`);

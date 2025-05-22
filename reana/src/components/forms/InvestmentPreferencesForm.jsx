@@ -2,14 +2,17 @@ import Section from "@/components/ui/Section";
 import SelectField from "@/components/ui/SelectField";
 import MultiCheckboxGroup from "@/components/ui/MultiCheckboxGroup";
 
-export default function InvestmentPreferencesForm({ investmentDetails, onInvestmentChange, onMultiSelectChange }) {
+export default function InvestmentPreferencesForm({
+  investmentDetails,
+  onInvestmentChange,
+  onMultiSelectChange,
+}) {
   return (
     <Section title="Investment Preferences">
-
       {/* --- Type of Investment --- */}
       <div className="form-group">
         <label htmlFor="investmentType">Type of Investment</label>
-        <SelectField 
+        <SelectField
           name="investmentType"
           value={investmentDetails.investmentType}
           onChange={onInvestmentChange}
@@ -17,16 +20,24 @@ export default function InvestmentPreferencesForm({ investmentDetails, onInvestm
           options={[
             { value: "Fix n Flip", label: "Fix n Flip" },
             { value: "BRRR", label: "BRRR" },
-            { value: "Long Term Rental (LTR)", label: "Long Term Rental (LTR)" },
-            { value: "Short Term Rental (STR)", label: "Short Term Rental (STR)" },
+            {
+              value: "Long Term Rental (LTR)",
+              label: "Long Term Rental (LTR)",
+            },
+            {
+              value: "Short Term Rental (STR)",
+              label: "Short Term Rental (STR)",
+            },
           ]}
         />
       </div>
 
       {/* --- Target Holding Period (Slider) --- */}
       <div className="form-group">
-        <label htmlFor="holdingPeriod">Target Holding Period (Years): {investmentDetails.holdingPeriod}</label>
-        <input 
+        <label htmlFor="holdingPeriod">
+          Target Holding Period (Years): {investmentDetails.holdingPeriod}
+        </label>
+        <input
           type="range"
           id="holdingPeriod"
           name="holdingPeriod"
@@ -39,8 +50,11 @@ export default function InvestmentPreferencesForm({ investmentDetails, onInvestm
 
       {/* --- Desired Acquisition Margin (Slider) --- */}
       <div className="form-group">
-        <label htmlFor="acquisitionMargin">Desired Acquisition Margin (% of ARV): {investmentDetails.acquisitionMargin}%</label>
-        <input 
+        <label htmlFor="acquisitionMargin">
+          Desired Acquisition Margin (% of ARV):{" "}
+          {investmentDetails.acquisitionMargin}%
+        </label>
+        <input
           type="range"
           id="acquisitionMargin"
           name="acquisitionMargin"
@@ -54,7 +68,7 @@ export default function InvestmentPreferencesForm({ investmentDetails, onInvestm
       {/* --- Open to Out-of-State Investing --- */}
       <div className="form-group">
         <label htmlFor="outOfState">Open to Out-of-State Investing</label>
-        <SelectField 
+        <SelectField
           name="outOfState"
           value={investmentDetails.outOfState}
           onChange={onInvestmentChange}
@@ -68,7 +82,7 @@ export default function InvestmentPreferencesForm({ investmentDetails, onInvestm
       {/* --- Acquisition Financing Option --- */}
       <div className="form-group">
         <label htmlFor="financingOption">Acquisition Financing Option</label>
-        <SelectField 
+        <SelectField
           name="financingOption"
           value={investmentDetails.financingOption}
           onChange={onInvestmentChange}
@@ -76,8 +90,14 @@ export default function InvestmentPreferencesForm({ investmentDetails, onInvestm
           options={[
             { value: "Pay Cash", label: "Pay Cash" },
             { value: "Conventional Loan", label: "Conventional Loan" },
-            { value: "DSCR Bridge Loan for Fix n Flip", label: "DSCR Bridge Loan for Fix n Flip" },
-            { value: "DSCR Bridge + Permanent Loan for BRRR", label: "DSCR Bridge + Permanent Loan for BRRR" },
+            {
+              value: "DSCR Bridge Loan for Fix n Flip",
+              label: "DSCR Bridge Loan for Fix n Flip",
+            },
+            {
+              value: "DSCR Bridge + Permanent Loan for BRRR",
+              label: "DSCR Bridge + Permanent Loan for BRRR",
+            },
             { value: "Seller Financing", label: "Seller Financing" },
           ]}
         />
@@ -87,23 +107,33 @@ export default function InvestmentPreferencesForm({ investmentDetails, onInvestm
       <div className="form-group">
         <label>Operational Preferences</label>
         <div className="checkbox-grid">
-          <MultiCheckboxGroup 
+          <MultiCheckboxGroup
             options={[
               { value: "Property Manager", label: "Property Manager" },
               { value: "Self Managed", label: "Self Managed" },
               { value: "Rehab Contractor", label: "Rehab Contractor" },
               { value: "Self Contracted", label: "Self Contracted" },
-              { value: "Maintenance Contractors", label: "Maintenance Contractors" },
+              {
+                value: "Maintenance Contractors",
+                label: "Maintenance Contractors",
+              },
               { value: "Self Maintained", label: "Self Maintained" },
-              { value: "Tenant Screening Outsourced", label: "Tenant Screening Outsourced" },
-              { value: "Self Tenant Acquisition", label: "Self Tenant Acquisition" },
+              {
+                value: "Tenant Screening Outsourced",
+                label: "Tenant Screening Outsourced",
+              },
+              {
+                value: "Self Tenant Acquisition",
+                label: "Self Tenant Acquisition",
+              },
             ]}
             selected={investmentDetails.operationalPreferences}
-            onChange={(value) => onMultiSelectChange("operationalPreferences", value)}
+            onChange={(value) =>
+              onMultiSelectChange("operationalPreferences", value)
+            }
           />
         </div>
       </div>
-
     </Section>
   );
 }

@@ -247,7 +247,6 @@ export default function InvestmentStrategies() {
       }
 
       // Property Profile Section
-
       const propertyProfileResponse = await fetch(
         "/api/user-investment-strategies/property-profile",
         {
@@ -299,6 +298,28 @@ export default function InvestmentStrategies() {
         const errorData = await propertyFeaturesResponse.json();
         throw new Error(errorData.error || "Failed to save property features");
       }
+
+      // Target Metrics Section
+      const targetMetricsResponse = await fetch(
+        "/api/user-investment-strategies/target-metrics",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            capRate: targetMetrics.capRate,
+            cashOnCash: targetMetrics.cashOnCash,
+            dscr: targetMetrics.dscr,
+            grm: targetMetrics.grm,
+          }),
+        }
+      );
+      if (!targetMetricsResponse.ok) {
+        const errorData = await targetMetricsResponse.json();
+        throw new Error(errorData.error || "Failed to save target metrics");
+      }
+      console.log("Target Metrics:", targetMetrics);
     } catch (error) {
       console.error("Error saving data:", error);
       alert(`Error saving data: ${error.message}`);

@@ -34,12 +34,16 @@ export default function InvestmentStrategies() {
   });
 
   const [investmentDetails, setInvestmentDetails] = useState({
+    // Investment Preferences Section
     investmentType: "",
     holdingPeriod: 1,
     acquisitionMargin: 0,
     outOfState: "No",
     financingOption: "",
     operationalPreferences: [],
+    //--------------------------
+
+    // Property Profile Section
     tenantPreferences: {
       landlordFriendly: "No",
       tenantClass: [],
@@ -50,6 +54,7 @@ export default function InvestmentStrategies() {
     areaType: [],
     schoolQuality: "Medium",
     crimeTolerance: "Some",
+    //--------------------------
   });
 
   const [propertyFeatures, setPropertyFeatures] = useState({
@@ -72,15 +77,15 @@ export default function InvestmentStrategies() {
   });
 
   // Show popup after changes
-  useEffect(() => {
-    if (hasChanges) {
-      const timer = setTimeout(() => {
-        setShowDefaultPopup(true);
-        setHasChanges(false);
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [hasChanges]);
+  // useEffect(() => {
+  //   if (hasChanges) {
+  //     const timer = setTimeout(() => {
+  //       setShowDefaultPopup(true);
+  //       setHasChanges(false);
+  //     }, 500);
+  //     return () => clearTimeout(timer);
+  //   }
+  // }, [hasChanges]);
 
   const handleProfileChange = (e) => {
     const { name, value } = e.target;
@@ -167,6 +172,7 @@ export default function InvestmentStrategies() {
       locations: updated,
     }));
     setHasChanges(true);
+    console.log(investmentDetails.locations);
   };
 
   const handlePropertyFeaturesChange = (e) => {
@@ -232,6 +238,39 @@ export default function InvestmentStrategies() {
           }),
         }
       );
+
+      if (!investPrefResponse.ok) {
+        const errorData = await investPrefResponse.json();
+        throw new Error(
+          errorData.error || "Failed to save investment preferences"
+        );
+      }
+
+      const propertyProfileResponse = await fetch(
+        "/api/user-investment-strategies/property-profile",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            landlordFriendly:
+              investmentDetails.tenantPreferences.landlordFriendly,
+            tenantClass: investmentDetails.tenantPreferences.tenantClass,
+            specialtyTenants:
+              investmentDetails.tenantPreferences.specialtyTenants,
+            propertyTypes: investmentDetails.propertyTypes,
+            locations: investmentDetails.locations,
+            areaType: investmentDetails.areaType,
+            schoolQuality: investmentDetails.schoolQuality,
+            crimeTolerance: investmentDetails.crimeTolerance,
+          }),
+        }
+      );
+      if (!propertyProfileResponse.ok) {
+        const errorData = await propertyProfileResponse.json();
+        throw new Error(errorData.error || "Failed to save property profile");
+      }
     } catch (error) {
       console.error("Error saving data:", error);
       alert(`Error saving data: ${error.message}`);

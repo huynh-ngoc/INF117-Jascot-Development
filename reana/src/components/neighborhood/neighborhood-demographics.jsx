@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { useState, useEffect } from "react"
 import {
   Users,
   TrendingUp,
@@ -34,105 +34,158 @@ import {
   PieChart, 
   Pie, 
   Cell, 
-  Legend } from "recharts"
+  Legend,
+  BarChart,
+  Bar,
+  CartesianGrid } from "recharts"
 
 const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"]
 
 export default function NeighborhoodDemographics({ address }) {
+    const [data, setData] = useState(null);
+    const [loadingData, setLoadingData] = useState(false);
+    const [censusData, setCensusData] = useState(null);
+    const [loadingCensus, setLoadingCensus] = useState(false);
+
+    // Fetch data from openAI API
+    useEffect(() => {
+    setLoadingData(true);
+    fetch(`/api/demographics-data?address=${encodeURIComponent(address)}`)
+        .then((res) => res.json())
+        .then(fullData => {   
+            setData(fullData)
+        })
+        .catch((err) => {
+        console.error('Failed to fetch property data:', err);
+        })
+        .finally(() => setLoadingData(false));
+    }, [address]);
+
+    // Fetch data from Census API
+    useEffect(() => {
+        if (!address) return
+        setLoadingCensus(true)  
+        fetch(`/api/demographics-census-data?address=${encodeURIComponent(address)}`)
+          .then(async (res) => {
+            const json = await res.json()
+            if (!res.ok) {
+              throw new Error(json.error || 'Failed to fetch demographics data')
+            }
+            setCensusData(json)
+          })
+          .catch((err) => {console.error('Failed to fetch property data:', err);})
+          .finally(() => setLoadingCensus(false))
+      }, [address])
+    
+    const loading = loadingData || loadingCensus;
+    if (loading) return <p>Loading demographics details…</p>;
+    if (!data || !censusData)   return <p className="text-red">Unable to load demographics details.</p>;
+
+    const { nearestCity, employment, neighborhood } = data.demographics;
+    const { acsResJson, population, addressMatch, employmentTrend, schoolDistricts } = censusData;
+
+    const totalPop = acsResJson.B01003_001E
+    const white = acsResJson.B02001_002E
+    const black = acsResJson.B02001_003E
+    const aian = acsResJson.B02001_004E
+    const asian = acsResJson.B02001_005E
+    const other = acsResJson.B02001_006E
+    const twoOrMore = acsResJson.B02001_008E
+    const medianIncome = acsResJson.B19013_001E
+    const unemployed = acsResJson.B23025_005E
+    const laborForce = acsResJson.B23025_003E
+    const unemploymentRate = laborForce > 0 ? ((unemployed / laborForce) * 100).toFixed(1) : null
+    const popHistory = [
+        { year: 2020, Population: Number(population['2020']) },
+        { year: 2021, Population: Number(population['2021']) },
+        { year: 2022, Population: Number(population['2022']) },
+        { year: 2023, Population: Number(population['2023']) }
+    ]
+    const ethnicityData = [
+        { name: 'White',   value: Number(((white/totalPop)*100).toFixed(1)) },
+        { name: 'Black',   value: Number(((black/totalPop)*100).toFixed(1)) },
+        { name: 'AIAN',    value: Number(((aian/totalPop)*100).toFixed(1)) },
+        { name: 'Asian',   value: Number(((asian/totalPop)*100).toFixed(1)) },
+        { name: 'Other',   value: Number(((other/totalPop)*100).toFixed(1)) },
+        { name: 'Two+',    value: Number(((twoOrMore/totalPop)*100).toFixed(1)) },
+      ]
+    const employHistory =[
+        { year: '2020', Employed: Number(employmentTrend['2020']) },
+        { year: '2021', Employed: Number(employmentTrend['2021']) },
+        { year: '2022', Employed: Number(employmentTrend['2022']) },
+        { year: '2023', Employed: Number(employmentTrend['2023']) },
+      ]
+  
 
 function getCardSizes(section) {
     const collapsedHeight = 210
-    // const collapsedHeight = section.chartData ? baseCollapsed + 60 : baseCollapsed
 
     if (section.chartData?.trend || section.chartData?.ethnicity) {
-        return { collapsedSize: { height: collapsedHeight }, expandedSize: { height: 520 } }
+        return { collapsedSize: { height: collapsedHeight }, expandedSize: { height: 540 } }
     }
     if (section.chartData?.employmentTrend) {
-        return { collapsedSize: { height: collapsedHeight }, expandedSize: { height: 650 } }
+        return { collapsedSize: { height: collapsedHeight }, expandedSize: { height: 600 } }
     }
     // default
     return { collapsedSize: { height: collapsedHeight }, expandedSize: { height: 300 } }
     }
 
-    
-// Example Data
-const data = [
+const demographicCard = [
     {
       id: 1,
       title: "Population Data",
       icon: Users,
       iconColor: "text-blue-600",
-      badge: { label: "Feb 2025", variant: "secondary" },
+      badge: { label: "2023", variant: "secondary" },
       summary: {
-        population: 10326,
-        changePercent: 1.59,
-        text: "10,326 residents, up 1.59%"
+        text: "There are approximately "+totalPop+" residents"
       },
       chartData: {
-        trend: [
-          { year: 2021, population: 11893 },
-          { year: 2022, population: 10326 },
-          { year: 2023, population: 13453 },
-          { year: 2024, population: 17252 }
-        ],
-        ethnicity: [
-          { name: "White", value: 91.3 },
-          { name: "Two+ races", value: 3.1 },
-          { name: "Hispanic", value: 1.31 },
-          { name: "African American", value: 0.95 },
-          { name: "Other", value: 0.91 }
-        ],
+        trend: popHistory,
+        ethnicity: ethnicityData
       },
       details: [
-        { icon: FileUser, iconColor: "text-red-500", label: "County Population:", value: "69,000 (Madison County)" },
-        { icon: MapPin, iconColor: "text-cyan-500", label: "Nearest City:", value: "Syracuse, New York" },
-        { icon: Route, iconColor: "text-amber-500", label: "Distance to Nearest Large City:", value: "30 miles east" },
-        { icon: FileUser, iconColor: "text-lime-600", label: "Population of Nearest Large City:", value: "142,000" }
+        { icon: FileUser, iconColor: "text-red-500", label: "County Population:", value: totalPop },
+        { icon: MapPin, iconColor: "text-cyan-500", label: "Nearest Large City:", value: nearestCity.name },
+        { icon: Route, iconColor: "text-amber-500", label: "Distance to Nearest Large City:", value: nearestCity.distance+" mi" },
+        { icon: FileUser, iconColor: "text-lime-600", label: "Population of Nearest Large City:", value: nearestCity.population }
       ]
     }, {
       id: 2,
       title: "Employment & Income",
       icon: Briefcase,
       iconColor: "text-green-600",
-      badge: { label: "Sep 2024", variant: "secondary" },
+      badge: { label: "2024", variant: "secondary" },
       summary: {
-        unemployment: 3.30,
-        income: 56044,
-        text: "3.30% unemployment, $56k median income"
+        unemployment: unemployed,
+        income: medianIncome,
+        text: unemploymentRate+" unemployment, "+medianIncome+" median income"
       },
       chartData: {
-          employmentTrend: [
-              { period: '2023 Q2', rate: 3.6 },
-              { period: '2023 Q3', rate: 3.2 },
-              { period: '2023 Q4', rate: 3.3 },
-              { period: '2024 Q1', rate: 4.1 },
-              { period: '2024 Q2', rate: 3.3 }
-            ]
+          employmentTrend: employHistory
       },
       details: [
-        { icon: TrendingUp, iconColor: "text-purple-500", label: "Unemployment Rate:", value: "3.30%" },
-        { icon: ChartLine, iconColor: "text-green-500", label: "Unemployment Trend:", value: "Stable, gradual growth" },
-        { icon: Factory, iconColor: "text-blue-500", label: "Largest Employer:", value: "Oneida Healthcare" },
-        { icon: Users, iconColor: "text-pink-500", label: "Job Sectros:", value: "healthcare, manufacturing, retail, education" },
-        { icon: DollarSign, iconColor: "text-yellow-500", label: "Median Income:", value: "$56,044" },
-        { icon: Clock, iconColor: "text-red-500", label: "Avg Commute Time:", value: "20.4 min" },
-        { icon: Route, iconColor: "text-cyan-500", label: "Avg Commute Distance:", value: "N/A" }
+        { icon: TrendingUp, iconColor: "text-purple-500", label: "Unemployment Rate:", value: unemploymentRate+ " %" },
+        { icon: Factory, iconColor: "text-blue-500", label: "Largest Employer:", value: employment.largestEmployer },
+        { icon: Users, iconColor: "text-pink-500", label: "Job Sectros:", value: employment.jobSectors },
+        { icon: DollarSign, iconColor: "text-yellow-500", label: "Median Income:", value: medianIncome },
+        { icon: Clock, iconColor: "text-red-500", label: "Avg Commute Time:", value: employment.averageCommuteTime+" min"  },
+        { icon: Route, iconColor: "text-cyan-500", label: "Avg Commute Distance:", value: employment.averageCommuteDistance+" mi"}
       ]
     }, {
       id: 3,
       title: "Neighborhood Data",
       icon: Home,
       iconColor: "text-purple-600",
-      badge: { label: "Feb 2025", variant: "secondary" },
+      badge: { label: "2025", variant: "secondary" },
       summary: {
-        crime: "Low",
-        text: "Low crime, sufficient education resources"
+        text: "The property at this address is located in  "+neighborhood.name
       },
       chartData: null,
       details: [
-        { icon: MapPin, iconColor: "text-red-500", label: "Neiborhood Name:", value: address },
-        { icon: TrendingUp, iconColor: "text-blue-500", label: "Crime Rating:", value: "Below national average" },
-        { icon: School, iconColor: "text-green-500", label: "School District:", value: "Oneida City School District" }
+        { icon: MapPin, iconColor: "text-red-500", label: "Neiborhood Rating:", value: neighborhood.letterRating },
+        { icon: TrendingUp, iconColor: "text-blue-500", label: "Crime Rating:", value: neighborhood.crimeRate },
+        { icon: School, iconColor: "text-green-500", label: "School District:", value: schoolDistricts }
       ]
     }
   ]
@@ -143,7 +196,7 @@ const data = [
           {address}
         </h2>
       </header>
-      {data.map(section => {
+      {demographicCard.map(section => {
         const Icon = section.icon
         const { collapsedSize, expandedSize } = getCardSizes(section)
         return (
@@ -172,19 +225,17 @@ const data = [
                     <ExpandableContent preset="blur-md">
                       {section.chartData && section.chartData.trend && section.chartData.ethnicity && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <div>
-                            <h4 className="flex items-center text-l font-medium text-gray-700 dark:text-gray-200 mb-2">
-                              <TrendingUp className="w-4 h-4 mr-1 text-green-500" /> Population Trend
-                            </h4>
-                            <ResponsiveContainer width="100%" height={200}>
-                              <LineChart data={section.chartData.trend}>
+                            <div style={{ width: '100%', height: 200 }}>
+                            <h4 className="…">Population Trend</h4>
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={section.chartData.trend}>
                                 <XAxis dataKey="year" />
                                 <YAxis />
                                 <Tooltip />
-                                <Line type="monotone" dataKey="population" stroke="#3b82f6" strokeWidth={2} />
-                              </LineChart>
+                                <Bar dataKey="Population" fill="#3b82f6" />
+                                </BarChart>
                             </ResponsiveContainer>
-                          </div>
+                            </div>
                           <div>
                             <h4 className="flex items-center text-l font-medium text-gray-700 dark:text-gray-200 mb-2">
                               <Users className="w-4 h-4 mr-1 text-yellow-500" /> Ethnicity
@@ -202,23 +253,19 @@ const data = [
                           </div>
                         </div>
                       )}
-
                       {section.chartData && section.chartData.employmentTrend && (
-                        <div className="mb-4">
-                          <h4 className="flex items-center text-sm font-medium text-gray-700 mb-2">
-                            <TrendingUp className="w-4 h-4 mr-1 text-green-500" /> Employment Trend
-                          </h4>
-                          <ResponsiveContainer width="100%" height={200}>
-                            <LineChart data={section.chartData.employmentTrend}>
-                              <XAxis dataKey="period" />
-                              <YAxis domain={["dataMin - 0.5", "dataMax + 0.5"]} />
-                              <Tooltip />
-                              <Line type="monotone" dataKey="rate" stroke="#10b981" strokeWidth={2} dot />
-                            </LineChart>
-                          </ResponsiveContainer>
+                        <div style={{ width: '100%', height: 200 }} className="mb-4">
+                        <h4 className="…">Employment Trend</h4>
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={section.chartData.employmentTrend}>
+                            <XAxis dataKey="year" />
+                            <YAxis />
+                            <Tooltip />
+                            <Bar dataKey="Employed" fill="#10b981" />
+                            </BarChart>
+                        </ResponsiveContainer>
                         </div>
-                      )}        
-
+                      )}
                       <ul className="text-sm text-gray-700 space-y-2 ">
                         {section.details.map((d, i) => {
                           const DetailIcon = d.icon

@@ -15,8 +15,8 @@ export async function POST(request) {
       holdingPeriod,
       acquisitionMargin,
       outOfState,
-      acquisitionType,
-      operationalPrefs,
+      financingOption,
+      operationalPreferences,
     } = body;
 
     // Fallback validation to ensure all required fields are filled
@@ -25,8 +25,8 @@ export async function POST(request) {
       !outOfState ||
       !holdingPeriod ||
       !acquisitionMargin ||
-      !acquisitionType ||
-      !operationalPrefs
+      !financingOption ||
+      !operationalPreferences
     ) {
       return NextResponse.json(
         { error: "All fields are required" },
@@ -44,8 +44,8 @@ export async function POST(request) {
         holdingPeriod,
         acquisitionMargin,
         outOfState,
-        acquisitionType,
-        operationalPrefs,
+        financingOption,
+        operationalPreferences,
       },
       { merge: true }
     );
@@ -83,8 +83,8 @@ export async function GET() {
         holdingPeriod: userData.holdingPeriod || "",
         acquisitionMargin: userData.acquisitionMargin || "",
         outOfState: userData.outOfState || "",
-        acquisitionType: userData.acquisitionType || "",
-        operationalPrefs: userData.operationalPrefs || "",
+        financingOption: userData.financingOption || "",
+        operationalPreferences: userData.operationalPreferences || "",
       },
     });
   } catch (error) {

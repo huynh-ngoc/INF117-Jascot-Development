@@ -1,84 +1,85 @@
 // src/app/realtor-popup/page.jsx
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/sidebar/app-sidebar';
-import { CheckCircle, XCircle } from 'lucide-react';
+import React, { useState } from "react";
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/sidebar/app-sidebar";
+import { CheckCircle, XCircle } from "lucide-react";
 
 export default function RealtorPopup() {
   const [profile, setProfile] = useState({
-    brokerage_name: '',
-    street_address: '',
-    city: '',
-    state: '',
-    zip_code: '',
-    office_number: '',
-    office_number_ext: '',
-    agent_name: '',
-    license_number: '',
-    email: '',
-    cellphone: '',
-    type_of_agent: '',
+    brokerage_name: "",
+    street_address: "",
+    city: "",
+    state: "",
+    zip_code: "",
+    office_number: "",
+    office_number_ext: "",
+    agent_name: "",
+    license_number: "",
+    email: "",
+    cellphone: "",
+    type_of_agent: "",
   });
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [attemptSubmit, setAttemptSubmit] = useState(false);
 
-  const handleChange = e => {
+  const handleChange = (e) => {
     const { name, value } = e.target;
-    setProfile(p => ({ ...p, [name]: value }));
-    setErrors(errs => ({ ...errs, [name]: undefined }));
+    setProfile((p) => ({ ...p, [name]: value }));
+    setErrors((errs) => ({ ...errs, [name]: undefined }));
   };
 
-  const handleBlur = e => {
+  const handleBlur = (e) => {
     const { name } = e.target;
-    setTouched(t => ({ ...t, [name]: true }));
+    setTouched((t) => ({ ...t, [name]: true }));
     // don't trigger summary here
     setErrors(validate());
   };
 
-  const setType = type => {
-    setProfile(p => ({ ...p, type_of_agent: type }));
-    setTouched(t => ({ ...t, type_of_agent: true }));
+  const setType = (type) => {
+    setProfile((p) => ({ ...p, type_of_agent: type }));
+    setTouched((t) => ({ ...t, type_of_agent: true }));
     setErrors(validate());
   };
 
   const validate = () => {
     const errs = {};
     if (profile.state.trim() && !/^[A-Za-z]{2}$/.test(profile.state)) {
-      errs.state = 'State must be 2 letters';
+      errs.state = "State must be 2 letters";
     }
     if (profile.zip_code.trim() && !/^\d{5}$/.test(profile.zip_code)) {
-      errs.zip_code = 'Zip Code must be 5 digits';
+      errs.zip_code = "Zip Code must be 5 digits";
     }
     if (
       profile.office_number.trim() &&
       !/^[\d\-\s()]{7,}$/.test(profile.office_number)
     ) {
-      errs.office_number = 'Invalid phone format';
+      errs.office_number = "Invalid phone format";
     }
     if (
       profile.cellphone.trim() &&
       !/^[\d\-\s()]{7,}$/.test(profile.cellphone)
     ) {
-      errs.cellphone = 'Invalid phone format';
+      errs.cellphone = "Invalid phone format";
     }
     if (
       profile.email.trim() &&
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profile.email)
     ) {
-      errs.email = 'Invalid email address';
+      errs.email = "Invalid email address";
     }
     return errs;
   };
 
-  const handleSubmit = e => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setAttemptSubmit(true);
     const errs = validate();
     setErrors(errs);
+    console.log("Profile submitted:", profile);
     setTouched(
       Object.keys(profile).reduce((acc, k) => {
         acc[k] = true;
@@ -88,27 +89,62 @@ export default function RealtorPopup() {
     if (Object.keys(errs).length === 0) {
       setShowConfirmation(true);
     }
+
+    try {
+      const profileResponse = await fetch("/api/realtor-profile", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          brokerageName: profile.brokerage_name,
+          street: profile.street_address,
+          city: profile.city,
+          state: profile.state,
+          zipcode: profile.zip_code,
+          officeNum: profile.office_number,
+          officeNumExt: profile.office_number_ext,
+          agentName: profile.agent_name,
+          licenseNumber: profile.license_number,
+          email: profile.email,
+          mobileNum: profile.cellphone,
+          agentType: profile.type_of_agent,
+        }),
+      });
+      if (!profileResponse.ok) {
+        const errorData = await profileResponse.json();
+        throw new Error(
+          errorData.error || "Failed to save realtor profile preferences"
+        );
+      }
+    } catch (error) {
+      console.error("Error saving Realtor Profile:", error);
+      return NextResponse.json(
+        { error: "Error saving Realtor Profile" },
+        { status: 500 }
+      );
+    }
   };
 
-  const inputClasses = name => {
-    if (errors[name]) return 'border-red-500';
-    if (touched[name] && !errors[name]) return 'border-green-500';
-    return 'border-gray-300';
+  const inputClasses = (name) => {
+    if (errors[name]) return "border-red-500";
+    if (touched[name] && !errors[name]) return "border-green-500";
+    return "border-gray-300";
   };
 
   const fieldLabels = {
-    brokerage_name: 'Brokerage Name',
-    street_address: 'Street',
-    city: 'City',
-    state: 'State',
-    zip_code: 'Zip Code',
-    office_number: 'Office Phone',
-    office_number_ext: 'Ext',
-    agent_name: 'Agent Name',
-    license_number: 'License #',
-    email: 'Email',
-    cellphone: 'Mobile Phone',
-    type_of_agent: 'Type of Agent',
+    brokerage_name: "Brokerage Name",
+    street_address: "Street",
+    city: "City",
+    state: "State",
+    zip_code: "Zip Code",
+    office_number: "Office Phone",
+    office_number_ext: "Ext",
+    agent_name: "Agent Name",
+    license_number: "License #",
+    email: "Email",
+    cellphone: "Mobile Phone",
+    type_of_agent: "Type of Agent",
   };
 
   return (
@@ -126,18 +162,22 @@ export default function RealtorPopup() {
               </div>
             )}
 
-            {attemptSubmit && !showConfirmation && Object.keys(errors).length > 0 && (
-              <div className="bg-red-100 border border-red-400 text-red-800 px-4 py-2 rounded mb-4">
-                <p className="font-medium">Please fix the following errors:</p>
-                <ul className="list-disc list-inside">
-                  {Object.entries(errors).map(([field, msg]) => (
-                    <li key={field}>
-                      {fieldLabels[field]}: {msg}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+            {attemptSubmit &&
+              !showConfirmation &&
+              Object.keys(errors).length > 0 && (
+                <div className="bg-red-100 border border-red-400 text-red-800 px-4 py-2 rounded mb-4">
+                  <p className="font-medium">
+                    Please fix the following errors:
+                  </p>
+                  <ul className="list-disc list-inside">
+                    {Object.entries(errors).map(([field, msg]) => (
+                      <li key={field}>
+                        {fieldLabels[field]}: {msg}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
             <h2 className="text-2xl font-bold text-center">Realtor Profile</h2>
 
@@ -148,95 +188,121 @@ export default function RealtorPopup() {
                 value={profile.brokerage_name}
                 onChange={handleChange}
                 onBlur={handleBlur}
-                className={`w-full rounded px-3 py-2 border ${inputClasses('brokerage_name')}`} 
+                className={`w-full rounded px-3 py-2 border ${inputClasses(
+                  "brokerage_name"
+                )}`}
               />
-              {touched.brokerage_name && (
-                errors.brokerage_name ? (
-                  <XCircle className="absolute right-3 top-9 text-red-500" size={18}/>
+              {touched.brokerage_name &&
+                (errors.brokerage_name ? (
+                  <XCircle
+                    className="absolute right-3 top-9 text-red-500"
+                    size={18}
+                  />
                 ) : (
-                  <CheckCircle className="absolute right-3 top-9 text-green-500" size={18}/>
-                )
-              )}
+                  <CheckCircle
+                    className="absolute right-3 top-9 text-green-500"
+                    size={18}
+                  />
+                ))}
             </div>
 
             <div className="grid grid-cols-4 gap-4">
-              {[
-                'street_address',
-                'city',
-                'state',
-                'zip_code',
-              ].map(name => (
+              {["street_address", "city", "state", "zip_code"].map((name) => (
                 <div key={name} className="relative">
-                  <label className="block font-medium mb-1">{fieldLabels[name]}</label>
+                  <label className="block font-medium mb-1">
+                    {fieldLabels[name]}
+                  </label>
                   <input
                     name={name}
                     value={profile[name]}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    className={`w-full rounded px-3 py-2 border ${inputClasses(name)}`}
+                    className={`w-full rounded px-3 py-2 border ${inputClasses(
+                      name
+                    )}`}
                     placeholder={fieldLabels[name]}
                   />
-                  {touched[name] && (
-                    errors[name] ? (
-                      <XCircle className="absolute right-3 top-9 text-red-500" size={18}/>
+                  {touched[name] &&
+                    (errors[name] ? (
+                      <XCircle
+                        className="absolute right-3 top-9 text-red-500"
+                        size={18}
+                      />
                     ) : (
-                      <CheckCircle className="absolute right-3 top-9 text-green-500" size={18}/>
-                    )
-                  )}
+                      <CheckCircle
+                        className="absolute right-3 top-9 text-green-500"
+                        size={18}
+                      />
+                    ))}
                 </div>
               ))}
             </div>
 
             <div className="grid grid-cols-4 gap-4">
               {[
-                'office_number',
-                'office_number_ext',
-                'agent_name',
-                'license_number',
-              ].map(name => (
+                "office_number",
+                "office_number_ext",
+                "agent_name",
+                "license_number",
+              ].map((name) => (
                 <div key={name} className="relative">
-                  <label className="block font-medium mb-1">{fieldLabels[name]}</label>
+                  <label className="block font-medium mb-1">
+                    {fieldLabels[name]}
+                  </label>
                   <input
                     name={name}
                     value={profile[name]}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    className={`w-full rounded px-3 py-2 border ${inputClasses(name)}`}
+                    className={`w-full rounded px-3 py-2 border ${inputClasses(
+                      name
+                    )}`}
                     placeholder={fieldLabels[name]}
                   />
-                  {touched[name] && (
-                    errors[name] ? (
-                      <XCircle className="absolute right-3 top-9 text-red-500" size={18}/>
+                  {touched[name] &&
+                    (errors[name] ? (
+                      <XCircle
+                        className="absolute right-3 top-9 text-red-500"
+                        size={18}
+                      />
                     ) : (
-                      <CheckCircle className="absolute right-3 top-9 text-green-500" size={18}/>
-                    )
-                  )}
+                      <CheckCircle
+                        className="absolute right-3 top-9 text-green-500"
+                        size={18}
+                      />
+                    ))}
                 </div>
               ))}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {[
-                'email',
-                'cellphone',
-              ].map(name => (
+              {["email", "cellphone"].map((name) => (
                 <div key={name} className="relative">
-                  <label className="block font-medium mb-1">{fieldLabels[name]}</label>
+                  <label className="block font-medium mb-1">
+                    {fieldLabels[name]}
+                  </label>
                   <input
                     name={name}
                     value={profile[name]}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    className={`w-full rounded px-3 py-2 border ${inputClasses(name)}`}
+                    className={`w-full rounded px-3 py-2 border ${inputClasses(
+                      name
+                    )}`}
                     placeholder={fieldLabels[name]}
                   />
-                  {touched[name] && (
-                    errors[name] ? (
-                      <XCircle className="absolute right-3 top-9 text-red-500" size={18}/>
+                  {touched[name] &&
+                    (errors[name] ? (
+                      <XCircle
+                        className="absolute right-3 top-9 text-red-500"
+                        size={18}
+                      />
                     ) : (
-                      <CheckCircle className="absolute right-3 top-9 text-green-500" size={18}/>
-                    )
-                  )}
+                      <CheckCircle
+                        className="absolute right-3 top-9 text-green-500"
+                        size={18}
+                      />
+                    ))}
                 </div>
               ))}
             </div>
@@ -245,17 +311,20 @@ export default function RealtorPopup() {
               <label className="block font-medium mb-2">Type of Agent</label>
               <div className="flex space-x-4">
                 {[
-                  ['Listing/Selling', 'listing'],
-                  ['Purchase/Buyers', 'purchase'],
-                  ['Both', 'both'],
+                  ["Listing/Selling", "listing"],
+                  ["Purchase/Buyers", "purchase"],
+                  ["Both", "both"],
                 ].map(([label, val]) => (
                   <button
                     key={val}
                     type="button"
                     onClick={() => setType(val)}
                     className={`px-4 py-2 border rounded ${
-                      profile.type_of_agent === val ? 'bg-blue-600 text-white' : 'bg-gray-100'
-                    }`}>
+                      profile.type_of_agent === val
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-100"
+                    }`}
+                  >
                     {label}
                   </button>
                 ))}

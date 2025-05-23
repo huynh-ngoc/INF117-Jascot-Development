@@ -813,7 +813,7 @@ export default function PropAnalysisDashboard({ address }) {
               </div>
             </div>
             <div className="items-center text-right mt-4">
-            <Button variant="secondary">View Profit Margin Calculation</Button>
+            <Button variant="secondary" onClick={() => router.push(`/deal-structure`)}>View Profit Margin Calculation</Button>
           </div>
           </div>
           <div className="flex justify-center items-center">
@@ -832,7 +832,7 @@ export default function PropAnalysisDashboard({ address }) {
               <h3 className="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-200 border-b pb-2">Cash Considerations (My Investment)</h3>
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-300">Cash to Close :</span>
+                  <span className="text-gray-600 dark:text-gray-300">Cash to Close:</span>
                   <span className="font-medium">${cashConsider.close.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">

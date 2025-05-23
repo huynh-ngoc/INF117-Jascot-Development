@@ -103,11 +103,11 @@ export default function NeighborhoodDemographics({ address }) {
     ]
     const ethnicityData = [
         { name: 'White',   value: Number(((white/totalPop)*100).toFixed(1)) },
-        { name: 'Black',   value: Number(((black/totalPop)*100).toFixed(1)) },
-        { name: 'AIAN',    value: Number(((aian/totalPop)*100).toFixed(1)) },
+        { name: 'African American',   value: Number(((black/totalPop)*100).toFixed(1)) },
+        { name: 'Native American',    value: Number(((aian/totalPop)*100).toFixed(1)) },
         { name: 'Asian',   value: Number(((asian/totalPop)*100).toFixed(1)) },
         { name: 'Other',   value: Number(((other/totalPop)*100).toFixed(1)) },
-        { name: 'Two+',    value: Number(((twoOrMore/totalPop)*100).toFixed(1)) },
+        { name: 'Two or More Races',    value: Number(((twoOrMore/totalPop)*100).toFixed(1)) },
       ]
     const employHistory =[
         { year: '2020', Employed: Number(employmentTrend['2020']) },
@@ -159,7 +159,7 @@ const demographicCard = [
       summary: {
         unemployment: unemployed,
         income: medianIncome,
-        text: unemploymentRate+" unemployment, "+medianIncome+" median income"
+        text: unemploymentRate+" % unemployment, "+medianIncome+" median income"
       },
       chartData: {
           employmentTrend: employHistory

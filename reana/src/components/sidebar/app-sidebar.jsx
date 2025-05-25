@@ -8,6 +8,7 @@ import {
   Settings2,
   SquareTerminal,
   Ruler,
+  Receipt
 } from "lucide-react"
 import { NavMain } from "@/components/sidebar/nav-main"
 import { AboutApp } from "./about-app"
@@ -160,6 +161,24 @@ const data = {
       title: "reports page",
       url: "/reports",
       icon: SquareTerminal,
+      items: [],
+    },
+    {
+      title: "Ltr-Brrrr Oper Budget",
+      url: "/ltr-brrrr-operbudget",
+      icon: Receipt,
+      items: [],
+    },
+    {
+      title: "Fix-n-flip Oper Budget",
+      url: "/fix-n-flip-operbudget",
+      icon: Receipt,
+      items: [],
+    },
+    {
+      title: "Total Investment",
+      url: "/total-investment",
+      icon: Receipt,
       items: [],
     },
   ],

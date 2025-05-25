@@ -13,7 +13,11 @@ import DarkLightSwitch from "@/components/mode-toggle/dark-light-switch";
 
 export default function InvestmentStrategies() {
   const [profileName, setProfileName] = useState("");
-  const [existingProfiles, setExistingProfiles] = useState(["JohnDoe", "JaneSmith"]);
+  const [existingProfiles, setExistingProfiles] = useState([
+    "JohnDoe",
+    "JaneSmith",
+  ]);
+
   const [isNewProfile, setIsNewProfile] = useState(false);
   const [userType, setUserType] = useState("User");
 
@@ -31,12 +35,16 @@ export default function InvestmentStrategies() {
   });
 
   const [investmentDetails, setInvestmentDetails] = useState({
+    // Investment Preferences Section
     investmentType: "",
     holdingPeriod: 1,
     acquisitionMargin: 0,
     outOfState: "No",
     financingOption: "",
     operationalPreferences: [],
+    //--------------------------
+
+    // Property Profile Section
     tenantPreferences: {
       landlordFriendly: "No",
       tenantClass: [],
@@ -47,6 +55,7 @@ export default function InvestmentStrategies() {
     areaType: [],
     schoolQuality: "Medium",
     crimeTolerance: "Some",
+    //--------------------------
   });
 
   const [propertyFeatures, setPropertyFeatures] = useState({
@@ -67,18 +76,7 @@ export default function InvestmentStrategies() {
     dscr: 1.3,
     grm: 15,
   });
-
-  // Show popup after changes
-  useEffect(() => {
-    if (hasChanges) {
-      const timer = setTimeout(() => {
-        setShowDefaultPopup(true);
-        setHasChanges(false);
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [hasChanges]);
-
+  
   const handleProfileChange = (e) => {
     const { name, value } = e.target;
     setProfile((prev) => ({ ...prev, [name]: value }));
@@ -135,8 +133,12 @@ export default function InvestmentStrategies() {
       ...prev,
       tenantPreferences: {
         ...prev.tenantPreferences,
-        specialtyTenants: prev.tenantPreferences.specialtyTenants.includes(value)
-          ? prev.tenantPreferences.specialtyTenants.filter((item) => item !== value)
+        specialtyTenants: prev.tenantPreferences.specialtyTenants.includes(
+          value
+        )
+          ? prev.tenantPreferences.specialtyTenants.filter(
+              (item) => item !== value
+            )
           : [...prev.tenantPreferences.specialtyTenants, value],
       },
     }));
@@ -159,6 +161,7 @@ export default function InvestmentStrategies() {
       locations: updated,
     }));
     setHasChanges(true);
+
   };
 
   const handlePropertyFeaturesChange = (e) => {
@@ -173,12 +176,143 @@ export default function InvestmentStrategies() {
     setHasChanges(true);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!profileName) {
       alert("Please enter or select a profile name.");
       return;
     }
+    try {
+      const profileResponse = await fetch(
+        "/api/user-investment-strategies/investor-profile",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            profileName: profile.name,
+            email: profile.email,
+            phone: profile.phone,
+          }),
+        }
+      );
+
+      if (!profileResponse.ok) {
+        const errorData = await profileResponse.json();
+        throw new Error(errorData.error || "Failed to save profile");
+      }
+
+      console.log("Profile:", profile);
+      console.log("Investment Details:", investmentDetails);
+
+      alert("Profile Saved! (Check Console)");
+
+      // Investment Preferences Section
+      const investPrefResponse = await fetch(
+        "/api/user-investment-strategies/investment-preferences",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            investmentType: investmentDetails.investmentType,
+            holdingPeriod: investmentDetails.holdingPeriod,
+            acquisitionMargin: investmentDetails.acquisitionMargin,
+            outOfState: investmentDetails.outOfState,
+            financingOption: investmentDetails.financingOption,
+            operationalPreferences: investmentDetails.operationalPreferences,
+          }),
+        }
+      );
+
+      if (!investPrefResponse.ok) {
+        const errorData = await investPrefResponse.json();
+        throw new Error(
+          errorData.error || "Failed to save investment preferences"
+        );
+      }
+
+      // Property Profile Section
+      const propertyProfileResponse = await fetch(
+        "/api/user-investment-strategies/property-profile",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            landlordFriendly:
+              investmentDetails.tenantPreferences.landlordFriendly,
+            tenantClass: investmentDetails.tenantPreferences.tenantClass,
+            specialtyTenants:
+              investmentDetails.tenantPreferences.specialtyTenants,
+            propertyTypes: investmentDetails.propertyTypes,
+            locations: investmentDetails.locations,
+            areaType: investmentDetails.areaType,
+            schoolQuality: investmentDetails.schoolQuality,
+            crimeTolerance: investmentDetails.crimeTolerance,
+          }),
+        }
+      );
+      if (!propertyProfileResponse.ok) {
+        const errorData = await propertyProfileResponse.json();
+        throw new Error(errorData.error || "Failed to save property profile");
+      }
+
+      // Property Features Section
+      const propertyFeaturesResponse = await fetch(
+        "/api/user-investment-strategies/property-features",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            minSqft: propertyFeatures.minSqft,
+            maxSqft: propertyFeatures.maxSqft,
+            minLotSize: propertyFeatures.minLotSize,
+            minBedrooms: propertyFeatures.minBedrooms,
+            maxBedrooms: propertyFeatures.maxBedrooms,
+            minBathrooms: propertyFeatures.minBathrooms,
+            maxBathrooms: propertyFeatures.maxBathrooms,
+            condition: propertyFeatures.condition,
+            parking: propertyFeatures.parking,
+          }),
+        }
+      );
+      if (!propertyFeaturesResponse.ok) {
+        const errorData = await propertyFeaturesResponse.json();
+        throw new Error(errorData.error || "Failed to save property features");
+      }
+
+      // Target Metrics Section
+      const targetMetricsResponse = await fetch(
+        "/api/user-investment-strategies/target-metrics",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            capRate: targetMetrics.capRate,
+            cashOnCash: targetMetrics.cashOnCash,
+            dscr: targetMetrics.dscr,
+            grm: targetMetrics.grm,
+          }),
+        }
+      );
+      if (!targetMetricsResponse.ok) {
+        const errorData = await targetMetricsResponse.json();
+        throw new Error(errorData.error || "Failed to save target metrics");
+      }
+      console.log("Target Metrics:", targetMetrics);
+    } catch (error) {
+      console.error("Error saving data:", error);
+      alert(`Error saving data: ${error.message}`);
+    }
+
     console.log("Profile Name:", profileName);
     console.log("User Type:", userType);
     console.log("Profile:", profile);
@@ -218,8 +352,9 @@ export default function InvestmentStrategies() {
               <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full text-center">
                 <p className="text-lg font-semibold mb-2">Welcome!</p>
                 <p className="text-sm mb-4">
-                  Taking a few minutes to fill in this page will enable Reana to get you the
-                  information you need with the least amount of input per property analyzed.
+                  Taking a few minutes to fill in this page will enable Reana to
+                  get you the information you need with the least amount of
+                  input per property analyzed.
                 </p>
                 <button
                   onClick={handleCloseNotice}
@@ -236,7 +371,9 @@ export default function InvestmentStrategies() {
               <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full text-center">
                 <p className="text-lg font-semibold mb-2">Set New Default?</p>
                 <p className="text-sm mb-4">
-                  You've updated your strategy. Would you like to set this as your new default?
+                  You've updated your strategy. Would you like to set this as
+                  your new default?
+
                 </p>
                 <div className="flex justify-center gap-4">
                   <button
@@ -261,7 +398,10 @@ export default function InvestmentStrategies() {
 
           {/* Profile Selection + Role */}
           <div>
-            <label className="font-medium block mb-1">Select Profile Name</label>
+            <label className="font-medium block mb-1">
+              Select Profile Name
+            </label>
+
             <select
               className="border p-2 rounded w-full"
               value={isNewProfile ? "new" : profileName}

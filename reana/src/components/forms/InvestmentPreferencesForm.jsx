@@ -21,8 +21,14 @@ export default function InvestmentPreferencesForm({
             { value: "", label: "Select One" },
             { value: "Fix n Flip", label: "Fix n Flip" },
             { value: "BRRR", label: "BRRR" },
-            { value: "Long Term Rental (LTR)", label: "Long Term Rental (LTR)" },
-            { value: "Short Term Rental (STR)", label: "Short Term Rental (STR)" },
+            {
+              value: "Long Term Rental (LTR)",
+              label: "Long Term Rental (LTR)",
+            },
+            {
+              value: "Short Term Rental (STR)",
+              label: "Short Term Rental (STR)",
+            },
           ]}
         />
       </div>
@@ -47,7 +53,9 @@ export default function InvestmentPreferencesForm({
       {/* --- Desired Acquisition Margin (Slider) --- */}
       <div className="form-group">
         <label htmlFor="acquisitionMargin">
-          Desired Acquisition Margin (% of ARV): {investmentDetails.acquisitionMargin}%
+          Desired Acquisition Margin (% of ARV):{" "}
+          {investmentDetails.acquisitionMargin}%
+
         </label>
         <input
           type="range"
@@ -87,7 +95,11 @@ export default function InvestmentPreferencesForm({
             { value: "", label: "Select One" },
             { value: "Pay Cash", label: "Pay Cash" },
             { value: "Conventional Loan", label: "Conventional Loan" },
-            { value: "DSCR Bridge Loan for Fix n Flip", label: "DSCR Bridge Loan for Fix n Flip" },
+            {
+              value: "DSCR Bridge Loan for Fix n Flip",
+              label: "DSCR Bridge Loan for Fix n Flip",
+            },
+
             {
               value: "DSCR Bridge + Permanent Loan for BRRR",
               label: "DSCR Bridge + Permanent Loan for BRRR",
@@ -99,60 +111,34 @@ export default function InvestmentPreferencesForm({
 
       {/* --- Operational Preferences (Grouped) --- */}
       <div className="form-group">
-        <label className="block font-medium mb-2">Operational Preferences <span className="text-sm text-gray-500">(Select all that apply)</span></label>
+        <label>Operational Preferences</label>
+        <div className="checkbox-grid">
+          <MultiCheckboxGroup
+            options={[
+              { value: "Property Manager", label: "Property Manager" },
+              { value: "Self Managed", label: "Self Managed" },
+              { value: "Rehab Contractor", label: "Rehab Contractor" },
+              { value: "Self Contracted", label: "Self Contracted" },
+              {
+                value: "Maintenance Contractors",
+                label: "Maintenance Contractors",
+              },
+              { value: "Self Maintained", label: "Self Maintained" },
+              {
+                value: "Tenant Screening Outsourced",
+                label: "Tenant Screening Outsourced",
+              },
+              {
+                value: "Self Tenant Acquisition",
+                label: "Self Tenant Acquisition",
+              },
+            ]}
+            selected={investmentDetails.operationalPreferences}
+            onChange={(value) =>
+              onMultiSelectChange("operationalPreferences", value)
+            }
+          />
 
-        <div className="space-y-4">
-          {/* Group 1: Management */}
-          <div>
-            <p className="text-sm font-semibold text-gray-700 mb-1">Management</p>
-            <MultiCheckboxGroup
-              options={[
-                { value: "Property Manager", label: "Property Manager" },
-                { value: "Self Managed", label: "Self Managed" },
-              ]}
-              selected={investmentDetails.operationalPreferences}
-              onChange={(value) => onMultiSelectChange("operationalPreferences", value)}
-            />
-          </div>
-
-          {/* Group 2: Rehab */}
-          <div>
-            <p className="text-sm font-semibold text-gray-700 mb-1">Rehab</p>
-            <MultiCheckboxGroup
-              options={[
-                { value: "Rehab Contractor", label: "Rehab Contractor" },
-                { value: "Self Contracted", label: "Self Contracted" },
-              ]}
-              selected={investmentDetails.operationalPreferences}
-              onChange={(value) => onMultiSelectChange("operationalPreferences", value)}
-            />
-          </div>
-
-          {/* Group 3: Maintenance */}
-          <div>
-            <p className="text-sm font-semibold text-gray-700 mb-1">Maintenance</p>
-            <MultiCheckboxGroup
-              options={[
-                { value: "Maintenance Contractors", label: "Maintenance Contractors" },
-                { value: "Self Maintained", label: "Self Maintained" },
-              ]}
-              selected={investmentDetails.operationalPreferences}
-              onChange={(value) => onMultiSelectChange("operationalPreferences", value)}
-            />
-          </div>
-
-          {/* Group 4: Tenant Acquisition */}
-          <div>
-            <p className="text-sm font-semibold text-gray-700 mb-1">Tenant Acquisition</p>
-            <MultiCheckboxGroup
-              options={[
-                { value: "Tenant Screening Outsourced", label: "Tenant Screening Outsourced" },
-                { value: "Self Tenant Acquisition", label: "Self Tenant Acquisition" },
-              ]}
-              selected={investmentDetails.operationalPreferences}
-              onChange={(value) => onMultiSelectChange("operationalPreferences", value)}
-            />
-          </div>
         </div>
       </div>
     </Section>

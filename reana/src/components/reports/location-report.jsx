@@ -217,7 +217,7 @@ export function LocationReport() {
 
                 <section className="space-y-1">
                   <h3 className="text-lg font-semibold">Investor Grade</h3>
-                  <Badge className="h-15 w-15 bg-slate-700 dark:bg-slate-400 text-2xl font-bold p-2">
+                  <Badge className="h-15 w-15 bg-[#1A3D7C] dark:bg-slate-400 text-2xl font-bold p-2">
                     {report.investorGrade}
                   </Badge>
                 </section>

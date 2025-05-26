@@ -1,3 +1,4 @@
+
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -41,6 +42,14 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+}
+
+h1, h2 {
+  font-family: var(--font-montserrat), sans-serif;
+}
+
+p {
+  font-family: var(--font-lato), sans-serif;
 }
 
 :root {

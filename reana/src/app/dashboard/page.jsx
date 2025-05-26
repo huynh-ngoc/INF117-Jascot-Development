@@ -58,36 +58,35 @@ function Dashboard({ userName = 'User' }) {
                     icon: <FilePlus2 className="h-6 w-6 text-blue-500" />,
                     title: "Create New Investor Profile",
                     btn: "Create Now",
-                    // change path to User Investment Strategies page (blank)
-                    path: "/"
+                    path: "/userinvestmentstrategies"
                 }, { 
                     id: 2,
                     icon: <FilePen className="h-6 w-6 text-green-500" />,
                     title: "Edit Existing Investor Profile",
                     btn: "Edit Profile",
-                    // change path to User Investment Strategies page (exist)
-                    path: "/"
+                    // change path to User Investment Strategies page (exist file in database)
+                    path: "/userinvestmentstrategies"
                 }, { 
                     id: 3,
                     icon: <ChartNoAxesCombined className="h-6 w-6 text-red-500" />,
                     title: "Analyze a Property",
                     btn: "Analyze Now",
-                    // change path to Property Analysis Dashboard
-                    path: "/"
+                    path: "/prop-analysis-list"
                 }, { 
                     id: 4,
                     icon: <ScanSearch className="h-6 w-6 text-fuchsia-500" />,
                     title: "Explore Neighborhoods that Match Your Goals",
                     btn: "Explore Now",
                     path: "/location-reports"
-                }, {  
-                    id: 5,
-                    icon: <HousePlus className="h-6 w-6 text-amber-500" />,
-                    title: "Search Properties that Match Your Goals",
-                    btn: "Search Now",
-                    // change path to Search Properties page
-                    path: "/"
                 }
+                // }, {  
+                //     id: 5,
+                //     icon: <HousePlus className="h-6 w-6 text-amber-500" />,
+                //     title: "Search Properties that Match Your Goals",
+                //     btn: "Search Now",
+                //     // change path to Search Properties page
+                //     path: "/"
+                // }
                 ].map(item => (
                     <Card key={item.id} className="hover:shadow-lg transition-shadow w-full h-full flex flex-col">
                     <CardHeader className="flex justify-center p-4">{item.icon}</CardHeader>
@@ -99,6 +98,18 @@ function Dashboard({ userName = 'User' }) {
                     </CardContent>
                     </Card>
                 ))}
+                {/* Search Properties that Match Your Goals  */}
+                <Card key="5" className="hover:shadow-lg transition-shadow w-full h-full flex flex-col">
+                  <CardHeader className="flex justify-center p-4">
+                    <HousePlus className="h-6 w-6 text-amber-500" />
+                  </CardHeader>
+                  <CardContent className="flex-1 flex flex-col items-center justify-center">
+                    <h2 className="text-xl mb-8 text-center">
+                     Search Properties that Match Your Goals
+                    </h2>
+                      <Button as="a" className="mt-auto font-bold" variant="disabled">Search Now</Button>
+                    </CardContent>
+                  </Card>
             </div>
         </div>
       </SidebarInset>

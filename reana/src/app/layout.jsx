@@ -1,17 +1,18 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import { Montserrat, Lato } from "next/font/google";
 import "./globals.css";
 
 import { ThemeProvider } from "@/components/mode-toggle/theme-provider"
 
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+const montserrat = Montserrat({
+  weight: ['400', '600', '700', '900'],
+  subsets: ['latin'],
+  display: 'swap',
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const lato = Lato({
+  weight: ['300', '400', '700'],
+  subsets: ['latin'],
+  display: 'swap',
 });
 
 export const metadata = {
@@ -21,11 +22,8 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        suppressHydrationWarning
-      >
+    <html lang="en" className={`${montserrat.variable} ${lato.variable}`}>
+      <body>
         <ThemeProvider
             attribute="class"
             defaultTheme="system"

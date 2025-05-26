@@ -1,10 +1,14 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Check } from "lucide-react";
 
 export function TierCards() {
+  const [hoveredCard, setHoveredCard] = useState(null);
+
   const pricingPlans = [
     {
       id: 1,
@@ -31,21 +35,21 @@ export function TierCards() {
           title: "Reports",
           features: ["Side by Side Comparisons", "Investor Summary"],
         },
+        uploads: {
+          title: "Data Uploads",
+          features: [],
+        },
       },
       trial: "Try 3 Properties for Free",
       pricing: {
-        regular: {
-          monthly: 14.95,
-          annualEquivalent: 179.4,
-        },
+        regular: 14.95,
         introductory: {
           monthly: 12.95,
-          annualEquivalent: 95.88,
-          savingsPercentage: 36,
-          term: "12 Mo.",
+          annual: 95.88,
+          savings: 36,
         },
       },
-      payPerUse: true,
+      payPerUse: "Don't want a subscription\nUse our Pay-Per-Use Feature",
     },
     {
       id: 2,
@@ -80,18 +84,13 @@ export function TierCards() {
         },
       },
       pricing: {
-        regular: {
-          monthly: 24.95,
-          annualEquivalent: 299.4,
-        },
+        regular: 24.95,
         introductory: {
           monthly: 19.95,
-          annualEquivalent: 177.0,
-          savingsPercentage: 26,
-          term: "12 Mo.",
+          annual: 177.0,
+          savings: 26,
         },
       },
-      payPerUse: false,
     },
     {
       id: 3,
@@ -126,95 +125,132 @@ export function TierCards() {
         },
       },
       pricing: {
-        regular: {
-          monthly: 32.99,
-          annualEquivalent: 395.88,
-        },
+        regular: 32.99,
         introductory: {
           monthly: 24.99,
-          annualEquivalent: 299.88,
-          savingsPercentage: 24,
-          term: "12 Mo.",
+          annual: 299.88,
+          savings: 24,
         },
       },
-      payPerUse: false,
     },
   ];
 
   return (
-    <div className="flex flex-col gap-4">
-      <h1 className="text-5xl font-bold">Plans</h1>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {pricingPlans.map((plan) => (
-          <Card
-            key={plan.id}
-            className="bg-white shadow-lg p-6 flex flex-col justify-between"
-          >
-            <div>
-              <h1 className="flex text-3xl font-semibold mb-4 justify-center">
-                {plan.title}
-              </h1>
-              <div className="space-y-4">
+    <div className="h-screen w-full p-2 sm:p-3 lg:p-4">
+      <div className="max-w-7xl mx-auto h-full flex flex-col">
+        <h1 className="text-lg sm:text-xl lg:text-3xl font-bold text-center mb-2 sm:mb-3 lg:mb-4 flex-shrink-0">
+          Plans
+        </h1>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 lg:gap-4 flex-1 min-h-0">
+          {pricingPlans.map((plan) => (
+            <Card
+              key={plan.id}
+              className={`bg-white shadow-lg p-2 sm:p-3 lg:p-4 flex flex-col h-full transition-all duration-300 ease-in-out cursor-pointer ${
+                hoveredCard === null
+                  ? "hover:shadow-xl hover:scale-105"
+                  : hoveredCard === plan.id
+                  ? "shadow-xl scale-105 z-10"
+                  : "blur-sm opacity-70"
+              }`}
+              onMouseEnter={() => setHoveredCard(plan.id)}
+              onMouseLeave={() => setHoveredCard(null)}
+            >
+              {/* Header */}
+              <div className="text-center mb-2 sm:mb-3 flex-shrink-0">
+                <h2 className="text-sm sm:text-base lg:text-2xl font-semibold mb-1 sm:mb-2">
+                  {plan.title}
+                </h2>
+                {plan.subtitle && (
+                  <p className="text-xs sm:text-sm lg:text-base text-gray-600 mb-2">
+                    {plan.subtitle}
+                  </p>
+                )}
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 min-h-0 space-y-1 sm:space-y-2 overflow-y-auto">
                 {Object.entries(plan.categories).map(([key, category]) => (
-                  <div key={key}>
-                    <h3 className="text-lg font-semibold">{category.title}</h3>
-                    <ul className="space-y-2 mt-2">
-                      {category.features.map((feature, index) => (
-                        <li key={index} className="flex items-center">
-                          <Check className="h-4 w-4 mr-2 text-green-500" />
-                          <span>{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
+                  <div key={key} className="space-y-1">
+                    <h3 className="text-sm sm:text-sm lg:text-base font-semibold text-gray-800">
+                      {category.title}
+                    </h3>
+                    {category.features.length > 0 ? (
+                      <ul className="space-y-0.5">
+                        {category.features.map((feature, index) => (
+                          <li key={index} className="flex items-start">
+                            <Check className="h-2 w-2 sm:h-2.5 sm:w-2.5 lg:h-3 lg:w-3 mr-1 text-green-500 flex-shrink-0 mt-0.5" />
+                            <span className="text-xs sm:text-xs lg:text-sm text-gray-600 leading-tight">
+                              {feature}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <div className="text-xs sm:text-xs lg:text-sm text-gray-500 italic">
+                        {category.title === "Data Uploads?"
+                          ? category.title
+                          : "No additional features"}
+                      </div>
+                    )}
                   </div>
                 ))}
-                {plan.additionalFeatures && (
-                  <div>
-                    <h3 className="text-lg font-semibold">
-                      Additional Features
-                    </h3>
-                    <ul className="space-y-2 mt-2">
-                      {plan.additionalFeatures.map((feature, index) => (
-                        <li key={index} className="flex items-center">
-                          <Check className="h-4 w-4 mr-2 text-green-500" />
-                          <span>{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
+
+                {/* Trial */}
+                {plan.trial && (
+                  <div className="bg-green-50 p-2 rounded text-center">
+                    <p className="text-xs sm:text-sm lg:text-base text-green-600 font-medium rounded-b-2xl">
+                      {plan.trial}
+                    </p>
                   </div>
                 )}
               </div>
-            </div>
 
-            <div className="mt-8 flex flex-col items-center">
-              {plan.pricing.introductory ? (
-                <div className="text-center mb-2">
-                  <div className="text-2xl font-bold">
-                    ${plan.pricing.introductory.monthly}/month
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    Save {plan.pricing.introductory.savingsPercentage}% for{" "}
-                    {plan.pricing.introductory.term}
-                  </div>
+              {/* Pricing and Button Section */}
+              <div className="mt-2 sm:mt-3 pt-2 border-t flex-shrink-0">
+                {/* Regular Price */}
+                <div className="mb-2 text-center">
+                  <p className="text-xs sm:text-sm lg:text-base font-semibold text-gray-700">
+                    Regular Price
+                  </p>
+                  <p className="text-sm sm:text-base lg:text-lg font-bold text-gray-800">
+                    ${plan.pricing.regular} Per Month
+                  </p>
                 </div>
-              ) : (
-                <div className="text-2xl font-bold mb-2">
-                  ${plan.pricing.regular.monthly}/month
-                </div>
-              )}
-              {plan.trial && (
-                <p className="mt-2 text-sm text-gray-600 italic">
-                  {plan.trial}
-                </p>
-              )}
-              <Link href="/dashboard">
-                <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-                  Get {plan.title}
-                </Button>
-              </Link>
-            </div>
-          </Card>
-        ))}
+
+                {/* Introductory Offer */}
+                {plan.pricing.introductory && (
+                  <div className="mb-3 p-2 bg-red-50 rounded text-center">
+                    <p className="text-xs sm:text-sm lg:text-base font-semibold text-red-700">
+                      12 Mo. Introductory Offer
+                    </p>
+                    <p className="text-sm sm:text-base lg:text-lg font-bold text-red-800">
+                      ${plan.pricing.introductory.monthly} Per Month
+                    </p>
+                    <p className="text-xs sm:text-sm lg:text-base text-red-600">
+                      (Paid Annually ${plan.pricing.introductory.annual})
+                    </p>
+                    <p className="text-xs sm:text-sm lg:text-base text-green-600 font-medium">
+                      Save {plan.pricing.introductory.savings}%
+                    </p>
+                  </div>
+                )}
+
+                {/* Pay Per Use Option*/}
+                {plan.payPerUse && (
+                  <div className="text-center text-xs text-gray-500 mb-2 px-1">
+                    <p className="leading-tight">Pay-Per-Use Available</p>
+                  </div>
+                )}
+
+                <Link href="/dashboard" className="w-full">
+                  <Button className="w-full bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm lg:text-base py-1.5 sm:py-2">
+                    Subscribe
+                  </Button>
+                </Link>
+              </div>
+            </Card>
+          ))}
+        </div>
       </div>
     </div>
   );

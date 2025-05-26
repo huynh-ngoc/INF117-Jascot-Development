@@ -77,15 +77,15 @@ export default function InvestmentStrategies() {
   });
 
   // Show popup after changes
-  // useEffect(() => {
-  //   if (hasChanges) {
-  //     const timer = setTimeout(() => {
-  //       setShowDefaultPopup(true);
-  //       setHasChanges(false);
-  //     }, 500);
-  //     return () => clearTimeout(timer);
-  //   }
-  // }, [hasChanges]);
+  useEffect(() => {
+    if (hasChanges) {
+      const timer = setTimeout(() => {
+        setShowDefaultPopup(true);
+        setHasChanges(false);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [hasChanges]);
 
   const handleProfileChange = (e) => {
     const { name, value } = e.target;

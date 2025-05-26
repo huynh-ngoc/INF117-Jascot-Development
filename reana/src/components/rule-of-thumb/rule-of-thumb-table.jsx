@@ -83,18 +83,37 @@ const defaultData = [
 export default function RuleOfThumbTable() {
     const [tableData, setTableData] = useState(defaultData);
 
-  // Load from localStorage when component mounts
+    // Load from localStorage when component mounts
     useEffect(() => {
-    const savedData = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (savedData) {
-        setTableData(JSON.parse(savedData));
-    }
+        const savedData = localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (savedData) {
+            setTableData(JSON.parse(savedData));
+        }
     }, []);
+
+    const formatNumberWithTwoDecimals = (value) => {
+        // Remove any existing % symbol and trim
+        const cleanValue = value.replace('%', '').trim();
+        // Convert to number and format to 2 decimal places
+        const formattedValue = Number(cleanValue).toFixed(2);
+        return formattedValue;
+    };
 
     const handleInputChange = (index, newValue) => {
         const updatedData = [...tableData];
+        // Just update the raw value during typing
+        updatedData[index].value = newValue;
+        setTableData(updatedData);
+    };
 
-        // Check if it's one of the fields that should be a percentage
+    const handleInputBlur = (index) => {
+        const updatedData = [...tableData];
+        const currentValue = updatedData[index].value;
+        
+        // Format the number with two decimal places
+        let formattedValue = formatNumberWithTwoDecimals(currentValue);
+        
+        // Add % symbol if it's a percentage field
         const isPercentageField = updatedData[index].title.toLowerCase().includes('rate')
             || updatedData[index].title.toLowerCase().includes('tax')
             || updatedData[index].title.toLowerCase().includes('expenses')
@@ -105,77 +124,73 @@ export default function RuleOfThumbTable() {
             || updatedData[index].title.toLowerCase().includes('management')
             || updatedData[index].title.toLowerCase().includes('sale');
         
-        // Remove any existing % symbol to avoid duplicates
-        let cleanedValue = newValue.replace('%', '').trim();
-        
-        if (isPercentageField && cleanedValue !== '') {
-            cleanedValue += '%';
+        if (isPercentageField && formattedValue !== '') {
+            formattedValue += '%';
         }
         
-        updatedData[index].value = cleanedValue;
+        updatedData[index].value = formattedValue;
         setTableData(updatedData);
     };
 
     const handleSave = () => {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(tableData));
-    alert('Data saved successfully and will persist next time you visit.');
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(tableData));
+        alert('Data saved successfully and will persist next time you visit.');
     };
 
     return (
-    <Card>
-        <CardHeader>
-        <h2 className="text-xl font-semibold">Rule of Thumb Metrics</h2>
-        <p className="text-sm text-muted-foreground">
-            These numbers are essential for calculations. Defaults are shown below, but once you edit,
-            your inputs will be saved automatically until you change them again.
-        </p>
-        </CardHeader>
-        <CardContent>
-        <div className="overflow-x-auto">
-            <table className="min-w-full text-sm border border-gray-200 rounded-lg">
-            <thead className="bg-gray-100">
-                <tr>
-                <th className="p-3 text-left font-semibold">Item</th>
-                <th className="p-3 text-left font-semibold">Value</th>
-                <th className="p-3 text-left font-semibold">Notes</th>
-                </tr>
-            </thead>
-            <tbody>
-                {tableData.map((row, index) => (
-                <tr key={index} className="border-t">
-                    <td className="p-3">{row.title}</td>
-                    <td className="p-3">
-                        <div className="relative w-32">
-                            {defaultData[index].value.includes('$') && (
-                            <span className="absolute inset-y-0 left-2 flex items-center text-sm text-muted-foreground">
-                                $
-                            </span>
-                            )}
-                            <Input
-                            type="number"
-                            value={row.value.replace(/[^0-9.]/g, '')}
-                            onChange={(e) => handleInputChange(index, e.target.value)}
-                            className={`text-center ${
-                                defaultData[index].value.includes('%') ? 'pr-6' : ''
-                            } ${defaultData[index].value.includes('$') ? 'pl-6' : ''}`}
-                            />
-                            {defaultData[index].value.includes('%') && (
-                            <span className="absolute inset-y-0 right-2 flex items-center text-sm text-muted-foreground">
-                                %
-                            </span>
-                            )}
-                        </div>
-                    </td>
-                    <td className="p-3 text-muted-foreground">{row.notes}</td>
-                </tr>
-                ))}
-            </tbody>
-            </table>
-        </div>
-        <div className="mt-6">
-            <Button onClick={handleSave}>Save</Button>
-        </div>
-        </CardContent>
-    </Card>
+        <Card>
+            <CardHeader>
+                <h2 className="text-xl font-montserrat font-semibold text-[#2D3142]">Local Rule of Thumb</h2>
+                <p className="text-sm font-lato text-[#4F5D75]">
+                    These numbers are essential for calculations. Defaults are shown below, but once you edit,
+                    your inputs will be saved automatically until you change them again.
+                </p>
+            </CardHeader>
+            <CardContent>
+                <div className="overflow-x-auto">
+                    <table className="min-w-full text-sm border border-[#4F5D75] rounded-lg">
+                        <thead className="bg-[#4F5D75] text-white">
+                            <tr>
+                                <th className="p-3 text-left font-montserrat">Item</th>
+                                <th className="p-3 text-left font-montserrat">Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {tableData.map((row, index) => {
+                                const isPercentageField = row.value.includes('%');
+                                const numericValue = row.value.replace(/[^0-9.]/g, '');
+                                return (
+                                    <tr key={index} className="border-t border-[#4F5D75]">
+                                        <td className="p-3 font-lato">{row.title}</td>
+                                        <td className="p-3">
+                                            <div className="relative w-32">
+                                                <Input
+                                                    type="number"
+                                                    value={numericValue}
+                                                    onChange={(e) => handleInputChange(index, e.target.value)}
+                                                    onBlur={() => handleInputBlur(index)}
+                                                    className={`w-32 text-right bg-white border border-[#4F5D75] rounded-lg font-lato text-base focus:ring-[#00A3E0] focus:border-[#00A3E0] ${isPercentageField ? 'pr-8' : ''}`}
+                                                    step="0.01"
+                                                />
+                                                {isPercentageField && (
+                                                    <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#4F5D75] font-lato pointer-events-none">
+                                                        %
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                </div>
+                <div className="mt-6">
+                    <Button onClick={handleSave} className="bg-[#00A3E0] text-white font-montserrat hover:bg-[#0077AC] hover:shadow-md">
+                        Save
+                    </Button>
+                </div>
+            </CardContent>
+        </Card>
     );
 }

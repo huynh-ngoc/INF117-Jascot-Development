@@ -1,4 +1,6 @@
-import React from 'react';
+"use client"
+
+import React, { Suspense }  from 'react';
 import Link from 'next/link';
 import { AppSidebar } from "@/components/sidebar/app-sidebar"
 import {
@@ -11,9 +13,13 @@ import {
 } from "@/components/ui/breadcrumb"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import DarkLightSwitch from "@/components/mode-toggle/dark-light-switch";
-import NeighborhoodMap from '@/components/map/neighborhood-map';
+import NeighborhoodMap from '@/components/maps/neighborhood-map';
+import { useSearchParams, useRouter } from "next/navigation";
 
-function neighborhoodMap() {
+function InnerNeighborhoodMapPage() {
+  const router = useRouter();
+  const params = useSearchParams();
+  const address = params.get("address") ?? "Unknown";
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -23,12 +29,12 @@ function neighborhoodMap() {
               <Breadcrumb>
                 <BreadcrumbList>
                   <BreadcrumbItem className="hidden md:block">
-                    <BreadcrumbLink href="/dashboard">
-                      Dashboard
+                    <BreadcrumbLink onClick={() => router.back()}>
+                      Property Analysis Dashboard
                     </BreadcrumbLink>
                   </BreadcrumbItem>
                   <BreadcrumbSeparator className="hidden md:block" />
-                  <BreadcrumbLink href="#">
+                  <BreadcrumbLink >
                       Neighborhood Map
                   </BreadcrumbLink>
                 </BreadcrumbList>
@@ -46,12 +52,22 @@ function neighborhoodMap() {
           </header>
             <div>
               {/* Example address */}
-              <NeighborhoodMap address={"315 W Broadway, Fulton, NY 13069"} range={10}/>
+              {/* <LoadScript
+            googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}
+            libraries={["places", "geometry"]}
+        >
+          </LoadScript> */}
+              <NeighborhoodMap address={address} range={10}/>
             </div>
         </div>
       </SidebarInset>
     </SidebarProvider>
   );
 }
-
-export default neighborhoodMap;
+export default function NeighborhoodMapPage() {
+  return (
+    <Suspense fallback={<div>Loading…</div>}>
+      <InnerNeighborhoodMapPage />
+    </Suspense>
+  );
+}

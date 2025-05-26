@@ -8,6 +8,8 @@ import {
   Settings2,
   DollarSign,
   SquareTerminal,
+  Ruler,
+  Receipt
 } from "lucide-react";
 import { NavMain } from "@/components/sidebar/nav-main";
 import { AboutApp } from "./about-app";
@@ -101,6 +103,89 @@ const data = {
       title: "DSCR Bridge Rehab",
       url: "/dscr-bridge-rehab",
       icon: Bot,
+      items: [],
+    },
+    {
+      title: "Rule of Thumb Metrics",
+      url: "/rule-of-thumb-metrics",
+      icon: Ruler,
+      items: [],
+    },
+    {
+      title: "Rule of Thumb Operating Budget",
+      url: "/rule-of-thumb-opr-budget",
+      icon: Ruler,
+      items: [],
+    },
+    {
+      title: "Rule of Thumb Loan Cost",
+      url: "/rule-of-thumb-loan-cost",
+      icon: Ruler,
+      items: [],
+    },
+    {
+      title: "Rule of Thumb Loan Terms",
+      url: "/rule-of-thumb-loan-terms",
+      icon: Ruler,
+      items: [],
+    },
+    {
+      title: "Existing Loan",
+      url: "/existing-loan",
+      icon: Ruler,
+      items: [],
+    },
+    {
+      title: "Rehab and Renovation",
+      url: "/rehab-renovation",
+      icon: Ruler,
+      items: [],
+    },
+    {
+      title: "Detailed lender fees 1st",
+      url: "/detailed-lender-fees-1st",
+      icon: SquareTerminal,
+      items: [],
+    },    {
+      title: "Detailed lender fees 2nd",
+      url: "/detailed-lender-fees-2nd",
+      icon: SquareTerminal,
+      items: [],
+    },
+    {
+      title: "Detailed inspection fees",
+      url: "/detailed-inspection-fees",
+      icon: SquareTerminal,
+      items: [],
+    },
+    {
+      title: "Detailed settlement fees",
+      url: "/detailed-settlement-fees",
+      icon: SquareTerminal,
+      items: [],
+    },
+    {
+      title: "reports page",
+      url: "/reports",
+      icon: SquareTerminal,
+      items: [],
+    },
+    {
+      title: "Ltr-Brrrr Oper Budget",
+      url: "/ltr-brrrr-operbudget",
+      icon: Receipt,
+      items: [],
+    },
+    {
+      title: "Fix-n-flip Oper Budget",
+      url: "/fix-n-flip-operbudget",
+      icon: Receipt,
+      items: [],
+    },
+    {
+      title: "Total Investment",
+      url: "/total-investment",
+      icon: Receipt,
       items: [],
     },
   ],

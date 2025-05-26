@@ -15,28 +15,34 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 export default function DSCRBridgeLoanPage() {
-  // Loan terms
+  // ---- Loan Terms ----
   const [maxLTV, setMaxLTV] = useState(90);
   const [isIO, setIsIO] = useState(true);
-  const [rate, setRate] = useState(11);
+  const [rate, setRate] = useState(11.0);
   const [balloon, setBalloon] = useState(5);
   const [firstDraw, setFirstDraw] = useState(50000);
+  const [amortTerm, setAmortTerm] = useState(30); // 1–30 yrs term
 
-  // This Transaction
+  // ---- This Transaction ----
   const [asIs, setAsIs] = useState(135000);
   const [rehab, setRehab] = useState(0);
   const [userLoanAmt, setUserLoanAmt] = useState(0);
 
-  // Fee Option Selection
+  // ---- Fee Option Selection ----
   const feeOptions = [
-    { key: 'rule', label: 'Use "Rule of Thumb" Default' },
-    { key: 'lender', label: 'Use Detailed Lender Fees' },
+    { key: 'rule',       label: 'Use "Rule of Thumb" Default' },
+    { key: 'lender',     label: 'Use Detailed Lender Fees' },
     { key: 'settlement', label: 'Use Detailed Settlement Fees' },
     { key: 'inspection', label: 'Use Detailed Inspection Costs' },
   ];
   const [selectedFee, setSelectedFee] = useState('rule');
 
-  // Calculations
+  // Utility for parsing and formatting
+  const parseNum = str => parseFloat(str.replace(/[^\d.-]/g, '')) || 0;
+  const fmt = (num, dec=0) =>
+    num.toLocaleString(undefined, { minimumFractionDigits: dec, maximumFractionDigits: dec });
+
+  // ---- Derived Calculations ----
   const {
     total,
     maxLoanAmt,
@@ -57,10 +63,9 @@ export default function DSCRBridgeLoanPage() {
     if (isIO) {
       paymentMonthly = loanAmt * monthlyRate;
     } else {
-      const n = balloon * 12;
+      const n = amortTerm * 12;
       paymentMonthly =
-        (loanAmt * monthlyRate) /
-        (1 - Math.pow(1 + monthlyRate, -n));
+        (loanAmt * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -n));
     }
     const annualDebtService = paymentMonthly * 12;
 
@@ -73,7 +78,7 @@ export default function DSCRBridgeLoanPage() {
       paymentMonthly,
       annualDebtService,
     };
-  }, [asIs, rehab, maxLTV, rate, balloon, isIO, userLoanAmt]);
+  }, [asIs, rehab, maxLTV, rate, balloon, isIO, amortTerm, userLoanAmt]);
 
   return (
     <SidebarProvider>
@@ -81,7 +86,7 @@ export default function DSCRBridgeLoanPage() {
       <SidebarInset>
         <main className="p-6 max-w-4xl mx-auto space-y-6">
           <h1 className="text-2xl font-bold">
-            DSCR Purchase with Rehab Bridge Loan
+            DSCR Purchase with Rehab, Fix n Flip Loan
           </h1>
 
           {/* ---- Loan Terms ---- */}
@@ -90,14 +95,19 @@ export default function DSCRBridgeLoanPage() {
               <CardTitle>Loan Terms (Check with your lender)</CardTitle>
             </CardHeader>
             <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div>
-                <Label>Max Loan-to-Value (%)</Label>
+
+              {/* Max LTV % */}
+              <div className="relative">
+                <Label>Max Loan-to-Value</Label>
                 <Input
-                  type="number"
-                  value={maxLTV}
-                  onChange={e => setMaxLTV(+e.target.value)}
+                  type="text"
+                  className="pl-2 pr-7"
+                  value={`${fmt(maxLTV, 3)}%`}
+                  onChange={e => setMaxLTV(parseNum(e.target.value))}
                 />
               </div>
+
+              {/* IO or AM */}
               <div>
                 <Label>Amortization or IO</Label>
                 <select
@@ -109,31 +119,55 @@ export default function DSCRBridgeLoanPage() {
                   <option value="AM">Amortizing</option>
                 </select>
               </div>
-              <div>
-                <Label>Interest Rate (%)</Label>
+
+              {/* Interest Rate % */}
+              <div className="relative">
+                <Label>Interest Rate</Label>
                 <Input
-                  type="number"
-                  step="0.01"
-                  value={rate}
-                  onChange={e => setRate(+e.target.value)}
+                  type="text"
+                  className="pl-2 pr-7"
+                  value={`${fmt(rate, 2)}%`}
+                  onChange={e => setRate(parseNum(e.target.value))}
                 />
               </div>
-              <div>
-                <Label>Balloon Payment Due (yrs)</Label>
+
+              {/* Balloon (yrs) */}
+              <div className="relative">
+                <Label>Balloon Payment Due</Label>
                 <Input
-                  type="number"
-                  value={balloon}
-                  onChange={e => setBalloon(+e.target.value)}
+                  type="text"
+                  className="pl-2 pr-2"
+                  value={`${fmt(balloon, 0)}`}
+                  onChange={e => setBalloon(parseNum(e.target.value))}
                 />
               </div>
-              <div>
-                <Label>First Draw Minimum ($)</Label>
+
+              {/* First Draw $ */}
+              <div className="relative">
+                <Label>First Draw Minimum</Label>
                 <Input
-                  type="number"
-                  value={firstDraw}
-                  onChange={e => setFirstDraw(+e.target.value)}
+                  type="text"
+                  className="pl-7 pr-2"
+                  value={`$${fmt(firstDraw)}`}
+                  onChange={e => setFirstDraw(parseNum(e.target.value))}
                 />
               </div>
+
+              {/* Term 1-30 */}
+              {!isIO && (
+              <div className="relative">
+                <Label>Term (Years)</Label>
+                <input
+                  type="range"
+                  min={1}
+                  max={30}
+                  value={amortTerm}
+                  onChange={e => setAmortTerm(+e.target.value)}
+                  className="w-full"
+                />
+                <div className="mt-1 text-sm">{amortTerm} yrs</div>
+              </div>
+            )}
             </CardContent>
           </Card>
 
@@ -143,35 +177,44 @@ export default function DSCRBridgeLoanPage() {
               <CardTitle>This Transaction</CardTitle>
             </CardHeader>
             <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <Label>Today’s “As-Is” Value ($)</Label>
+              {/* As-Is $ */}
+              <div className="relative">
+                <Label>Asking Price / Your Offer</Label>
                 <Input
-                  type="number"
-                  value={asIs}
-                  onChange={e => setAsIs(+e.target.value)}
+                  type="text"
+                  className="pl-7 pr-2"
+                  value={`$${fmt(asIs)}`}
+                  onChange={e => setAsIs(parseNum(e.target.value))}
                 />
               </div>
-              <div>
-                <Label>Rehab Costs Financed ($)</Label>
+
+              {/* Rehab $ */}
+              <div className="relative">
+                <Label>Rehab Costs Financed</Label>
                 <Input
-                  type="number"
-                  value={rehab}
-                  onChange={e => setRehab(+e.target.value)}
+                  type="text"
+                  className="pl-7 pr-2"
+                  value={`$${fmt(rehab)}`}
+                  onChange={e => setRehab(parseNum(e.target.value))}
                 />
               </div>
             </CardContent>
 
             <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Max Loan Amt */}
               <div>
                 <Label>Max Acquisition + Rehab Loan Amt</Label>
-                <p className="mt-1">${maxLoanAmt.toLocaleString()}</p>
+                <p className="mt-1">${fmt(maxLoanAmt)}</p>
               </div>
-              <div>
-                <Label>Loan Amount (you wish to finance) ($)</Label>
+
+              {/* User Loan Amt $ */}
+              <div className="relative">
+                <Label>Loan Amount (you wish to finance)</Label>
                 <Input
-                  type="number"
-                  value={userLoanAmt}
-                  onChange={e => setUserLoanAmt(+e.target.value)}
+                  type="text"
+                  className="pl-7 pr-2"
+                  value={`$${fmt(userLoanAmt)}`}
+                  onChange={e => setUserLoanAmt(parseNum(e.target.value))}
                 />
               </div>
             </CardContent>
@@ -179,41 +222,29 @@ export default function DSCRBridgeLoanPage() {
             <CardContent className="space-y-2">
               <p>
                 Total Acquisition + Rehab:{' '}
-                <strong>${total.toLocaleString()}</strong>
+                <strong>${fmt(total)}</strong>
               </p>
               <p>
                 Required Down Payment:{' '}
-                <strong>${downPayment.toLocaleString()}</strong>
+                <strong>${fmt(downPayment)}</strong>
               </p>
               <p>
-                Actual LTV: <strong>{actualLTV.toFixed(2)}%</strong>
+                Actual LTV: <strong>{fmt(actualLTV,3)}%</strong>
               </p>
               <p>
                 Max Loan Amount:{' '}
-                <strong>${maxLoanAmt.toLocaleString()}</strong>
+                <strong>${fmt(maxLoanAmt)}</strong>
               </p>
               <p>
-                Loan Amount: <strong>${loanAmt.toLocaleString()}</strong>
+                Loan Amount: <strong>${fmt(loanAmt)}</strong>
               </p>
               <p>
                 Payment Amount (Monthly):{' '}
-                <strong>
-                  $
-                  {paymentMonthly.toLocaleString(undefined, {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}
-                </strong>
+                <strong>${fmt(paymentMonthly,2)}</strong>
               </p>
               <p>
                 Payment Amount (Annual Debt Service):{' '}
-                <strong>
-                  $
-                  {annualDebtService.toLocaleString(undefined, {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}
-                </strong>
+                <strong>${fmt(annualDebtService,2)}</strong>
               </p>
             </CardContent>
 
@@ -228,7 +259,7 @@ export default function DSCRBridgeLoanPage() {
             </CardFooter>
           </Card>
 
-          {/* ---- Loan Fees and Settlement Costs ---- */}
+          {/* ---- Loan Fees & Settlement Costs ---- */}
           <Card className="space-y-4">
             <CardHeader>
               <CardTitle>Loan Fees and Settlement Costs</CardTitle>

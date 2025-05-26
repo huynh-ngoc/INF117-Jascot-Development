@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 
 export default function RuleOfThumbOprBudgetTable() {
   // Mock data for now
@@ -44,36 +45,100 @@ export default function RuleOfThumbOprBudgetTable() {
     },
   ];
 
+  const [incomeType, setIncomeType] = useState('Projected Rent Per Comps');
+  const incomeOptions = [
+    'Projected Rent Per Comps',
+    'Current Rent',
+    'Scheduled Rent',
+  ];
+
   return (
-    <Card>
+    <Card className="border border-[#4F5D75]">
       <CardHeader>
-        <h2 className="text-xl font-semibold">Operating Budget Projections (1 Yr.)</h2>
-        <p className="text-sm text-muted-foreground">
-          This table summarizes your 1-year operating budget based on your current assumptions and inputs.
+        <h2 className="text-xl font-montserrat font-semibold text-[#2D3142]">LTR / BRRR Operating Budget Projections (1 yr.) Using Rule of Thumb</h2>
+        <p className="text-sm font-lato text-[#4F5D75]">
+          This table summarizes your operating budget based on "rule of thumb" operating expenses and your other inputs.
         </p>
       </CardHeader>
       <CardContent>
+        <div className="mb-4">
+          <label className="block mb-1 font-montserrat text-[#2D3142]">Select Income</label>
+          <select
+            value={incomeType}
+            onChange={e => setIncomeType(e.target.value)}
+            className="px-4 py-2 bg-white border border-[#4F5D75] rounded-md font-montserrat text-[#2D3142] focus:ring-[#00A3E0] focus:border-[#00A3E0] shadow"
+          >
+            {incomeOptions.map(option => (
+              <option key={option} value={option}>{option}</option>
+            ))}
+          </select>
+        </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full text-sm border border-gray-200 rounded-lg">
-            <thead className="bg-gray-100">
+          <table className="min-w-full text-sm border border-[#4F5D75] rounded-lg">
+            <thead className="bg-[#4F5D75] text-white">
               <tr>
-                <th className="p-3 text-left font-semibold">Item</th>
-                <th className="p-3 text-left font-semibold">Rule of Thumb</th>
-                <th className="p-3 text-left font-semibold">Monthly</th>
-                <th className="p-3 text-left font-semibold">Annual</th>
+                <th className="p-3 text-left font-montserrat">Item</th>
+                <th className="p-3 text-left font-montserrat">Rule of Thumb</th>
+                <th className="p-3 text-right font-montserrat">Monthly</th>
+                <th className="p-3 text-right font-montserrat">Annual</th>
               </tr>
             </thead>
             <tbody>
-              {budgetData.map((row, index) => (
-                <tr key={index} className="border-t">
-                  <td className={`p-3 ${row.title === 'Cash Flow (Year 1)' ? 'font-semibold' : ''}`}>
-                    {row.title}
-                  </td>
-                  <td className="p-3">{row.ruleOfThumb}</td>
-                  <td className="p-3">{row.monthly}</td>
-                  <td className="p-3">{row.annual}</td>
-                </tr>
-              ))}
+              {budgetData.map((row, index) => {
+                const isNOI = row.title === 'Net Operating Income (NOI)';
+                const isCashFlow = row.title === 'Cash Flow (Year 1)';
+                const isTotalOpEx = row.title === 'Total Operating Expenses';
+                const isNegative = row.monthly.includes('(') || row.annual.includes('(');
+                
+                return (
+                  <tr key={index} className="border-t border-[#4F5D75]">
+                    <td className={`p-3 font-lato ${(isNOI || isCashFlow || isTotalOpEx) ? 'font-semibold' : ''}`}>
+                      {row.title}
+                    </td>
+                    <td className={`p-3 font-lato ${(isNOI || isCashFlow) ? 'font-semibold' : ''} ${row.ruleOfThumb.includes('%') ? 'text-[#00A3E0]' : ''}`}>
+                      {row.ruleOfThumb && (
+                        <div className="relative w-32">
+                          <Input
+                            type="number"
+                            value={row.ruleOfThumb.replace(/[^0-9.]/g, '')}
+                            className="w-32 text-right bg-white border border-[#4F5D75] rounded-lg font-lato text-base focus:ring-[#00A3E0] focus:border-[#00A3E0] pr-8"
+                            readOnly
+                          />
+                          <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#4F5D75] font-lato pointer-events-none">
+                            %
+                          </span>
+                        </div>
+                      )}
+                    </td>
+                    <td className={`p-3 font-lato text-right ${(isNOI || isCashFlow) ? 'font-semibold' : ''} ${isNegative ? 'text-red-500' : ''}`}>
+                      <div className="relative w-32 ml-auto">
+                        <Input
+                          type="text"
+                          value={row.monthly.replace(/[$(),]/g, '')}
+                          className="w-32 text-right bg-white border border-[#4F5D75] rounded-lg font-lato text-base focus:ring-[#00A3E0] focus:border-[#00A3E0] pl-6"
+                          readOnly
+                        />
+                        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#4F5D75] font-lato pointer-events-none">
+                          $
+                        </span>
+                      </div>
+                    </td>
+                    <td className={`p-3 font-lato text-right ${(isNOI || isCashFlow) ? 'font-semibold' : ''} ${isNegative ? 'text-red-500' : ''}`}>
+                      <div className="relative w-32 ml-auto">
+                        <Input
+                          type="text"
+                          value={row.annual.replace(/[$(),]/g, '')}
+                          className="w-32 text-right bg-white border border-[#4F5D75] rounded-lg font-lato text-base focus:ring-[#00A3E0] focus:border-[#00A3E0] pl-6"
+                          readOnly
+                        />
+                        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#4F5D75] font-lato pointer-events-none">
+                          $
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

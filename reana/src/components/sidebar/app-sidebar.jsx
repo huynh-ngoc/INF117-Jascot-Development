@@ -1,18 +1,19 @@
 // src/components/sidebar/app-sidebar.jsx
-'use client'
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 import {
   BookOpen,
   Bot,
   Settings2,
+  DollarSign,
   SquareTerminal,
   Ruler,
   Receipt
-} from "lucide-react"
-import { NavMain } from "@/components/sidebar/nav-main"
-import { AboutApp } from "./about-app"
-import { NavUser } from "./nav-user"
+} from "lucide-react";
+import { NavMain } from "@/components/sidebar/nav-main";
+import { AboutApp } from "./about-app";
+import { NavUser } from "./nav-user";
 import {
   Sidebar,
   SidebarContent,
@@ -20,7 +21,7 @@ import {
   SidebarHeader,
   SidebarRail,
   SidebarTrigger,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 
 const data = {
   app: {
@@ -57,6 +58,12 @@ const data = {
       title: "Property Report",
       url: "/property-report",
       icon: Settings2,
+      items: [],
+    },
+    {
+      title: "Sales",
+      url: "/sales-comps",
+      icon: DollarSign,
       items: [],
     },
   ],
@@ -182,7 +189,7 @@ const data = {
       items: [],
     },
   ],
-}
+};
 
 export function AppSidebar({ ...props }) {
   return (
@@ -198,7 +205,7 @@ export function AppSidebar({ ...props }) {
 
         {/* header for RJ review links */}
         <div className="px-4 pt-6 pb-2 text-xs font-semibold uppercase text-gray-500">
-          Pages below for RJ review 
+          Pages below for RJ review
         </div>
         <NavMain items={data.navRJ} />
       </SidebarContent>
@@ -209,5 +216,5 @@ export function AppSidebar({ ...props }) {
 
       <SidebarRail />
     </Sidebar>
-  )
+  );
 }

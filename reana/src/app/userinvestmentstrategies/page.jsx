@@ -6,12 +6,13 @@ import InvestmentPreferencesForm from "@/components/forms/InvestmentPreferencesF
 import PropertyProfileForm from "@/components/forms/PropertyProfileForm";
 import PropertyFeaturesForm from "@/components/forms/PropertyFeaturesForm";
 import TargetMetricsForm from "@/components/forms/TargetMetricsForm";
-
+import { useRouter } from "next/navigation";
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import DarkLightSwitch from "@/components/mode-toggle/dark-light-switch";
 
 export default function InvestmentStrategies() {
+  const router = useRouter();
   const [profileName, setProfileName] = useState("");
   const [existingProfiles, setExistingProfiles] = useState([
     "JohnDoe",
@@ -76,16 +77,6 @@ export default function InvestmentStrategies() {
     grm: 15,
   });
 
-  // Show popup after changes
-  // useEffect(() => {
-  //   if (hasChanges) {
-  //     const timer = setTimeout(() => {
-  //       setShowDefaultPopup(true);
-  //       setHasChanges(false);
-  //     }, 500);
-  //     return () => clearTimeout(timer);
-  //   }
-  // }, [hasChanges]);
 
   const handleProfileChange = (e) => {
     const { name, value } = e.target;
@@ -172,7 +163,6 @@ export default function InvestmentStrategies() {
       locations: updated,
     }));
     setHasChanges(true);
-    console.log(investmentDetails.locations);
   };
 
   const handlePropertyFeaturesChange = (e) => {
@@ -195,6 +185,7 @@ export default function InvestmentStrategies() {
     }
 
     try {
+      // Profile Section
       const profileResponse = await fetch(
         "/api/user-investment-strategies/investor-profile",
         {
@@ -214,11 +205,6 @@ export default function InvestmentStrategies() {
         const errorData = await profileResponse.json();
         throw new Error(errorData.error || "Failed to save profile");
       }
-
-      console.log("Profile:", profile);
-      console.log("Investment Details:", investmentDetails);
-
-      alert("Profile Saved! (Check Console)");
 
       // Investment Preferences Section
       const investPrefResponse = await fetch(
@@ -268,6 +254,7 @@ export default function InvestmentStrategies() {
           }),
         }
       );
+
       if (!propertyProfileResponse.ok) {
         const errorData = await propertyProfileResponse.json();
         throw new Error(errorData.error || "Failed to save property profile");
@@ -294,6 +281,7 @@ export default function InvestmentStrategies() {
           }),
         }
       );
+
       if (!propertyFeaturesResponse.ok) {
         const errorData = await propertyFeaturesResponse.json();
         throw new Error(errorData.error || "Failed to save property features");
@@ -315,21 +303,26 @@ export default function InvestmentStrategies() {
           }),
         }
       );
+
       if (!targetMetricsResponse.ok) {
         const errorData = await targetMetricsResponse.json();
         throw new Error(errorData.error || "Failed to save target metrics");
       }
+
+      console.log("All sections saved successfully!");
+      console.log("Profile Name:", profileName);
+      console.log("User Type:", userType);
+      console.log("Profile:", profile);
+      console.log("Investment Details:", investmentDetails);
+      console.log("Property Features:", propertyFeatures);
       console.log("Target Metrics:", targetMetrics);
+
+      alert("Profile saved successfully! Redirecting to Cash Budget page...");
+      router.push("/investor-cash");
     } catch (error) {
       console.error("Error saving data:", error);
       alert(`Error saving data: ${error.message}`);
     }
-
-    console.log("Profile Name:", profileName);
-    console.log("User Type:", userType);
-    console.log("Profile:", profile);
-    console.log("Investment Details:", investmentDetails);
-    alert("Profile Saved! (Check Console)");
   };
 
   const handleCloseNotice = () => {

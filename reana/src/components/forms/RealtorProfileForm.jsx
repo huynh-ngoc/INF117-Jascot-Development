@@ -2,17 +2,24 @@ import { Input } from "@/components/ui/input";
 import Section from "@/components/ui/Section";
 
 export default function RealtorProfileForm({ profile, onProfileChange }) {
-  
   // Form Validation Function
   const validateForm = () => {
     // Check if all required fields have been filled out
     const requiredFields = [
-      "brokerage_name", "street_address", "city", "state", "zip_code", 
-      "office_number", "office_number_ext", "agent_name", "license_number", "email"
+      "brokerage_name",
+      "street_address",
+      "city",
+      "state",
+      "zip_code",
+      "office_number",
+      "office_number_ext",
+      "agent_name",
+      "license_number",
+      "email",
     ];
     for (let field of requiredFields) {
       if (!profile[field]) {
-        alert(`Please fill in the ${field.replace(/_/g, ' ')} field.`);
+        alert(`Please fill in the ${field.replace(/_/g, " ")} field.`);
         return false;
       }
     }
@@ -29,6 +36,7 @@ export default function RealtorProfileForm({ profile, onProfileChange }) {
       console.log("Form Data:", profile);
       // Can add further logic here, like sending the data  further
     }
+    console.log("Form Data:", profile);
   };
 
   return (
@@ -157,7 +165,12 @@ export default function RealtorProfileForm({ profile, onProfileChange }) {
 
         <Section title="Type of Agent">
           <div className="form-group">
-            <label htmlFor="type_of_agent" className="block text-lg font-semibold">Type of Agent</label>
+            <label
+              htmlFor="type_of_agent"
+              className="block text-lg font-semibold"
+            >
+              Type of Agent
+            </label>
             <div>
               <label>
                 <input

@@ -1,32 +1,49 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Label } from "@/components/ui/label"
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
-export default function SubscriptionManager() {
-  const [mounted, setMounted] = useState(false)
-  const [selectedPlan, setSelectedPlan] = useState('free') // Initial plan
-  const [previousPlan, setPreviousPlan] = useState('pro')  // Replace with actual user plan from backend if needed
-  const [showWarning, setShowWarning] = useState(false)
+export default function SubscriptionManager({ onDataChange }) {
+  const [mounted, setMounted] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState("free");
+  const [previousPlan, setPreviousPlan] = useState("pro");
+  const [showWarning, setShowWarning] = useState(false);
 
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    setMounted(true);
+  }, []);
+
+  // Send data to parent whenever selectedPlan changes
+  useEffect(() => {
+    if (onDataChange && mounted) {
+      const subscriptionData = {
+        selectedPlan,
+        previousPlan,
+        showWarning,
+        timestamp: new Date().toISOString(),
+      };
+      onDataChange(subscriptionData);
+    }
+  }, [selectedPlan, previousPlan, showWarning, mounted]);
 
   const handlePlanChange = (value) => {
-    if ((previousPlan === "pro" || previousPlan === "enterprise") && value === "free") {
-      setShowWarning(true)
+    if (
+      (previousPlan === "pro" || previousPlan === "enterprise") &&
+      value === "free"
+    ) {
+      setShowWarning(true);
     } else {
-      setShowWarning(false)
+      setShowWarning(false);
     }
-    setSelectedPlan(value)
-  }
+    setSelectedPlan(value);
+    console.log("Selected plan:", value);
+  };
 
   if (!mounted) {
-    return null
+    return null;
   }
 
   return (
@@ -53,11 +70,14 @@ export default function SubscriptionManager() {
 
       {showWarning && (
         <div className="mt-4 p-4 text-sm text-yellow-800 bg-yellow-100 rounded-md border border-yellow-300">
-          ⚠️ If you move from a subscription to the free plan, all of your data beyond the Quick Check information will become unavailable. Your data will be retained in the system in case you upgrade again at a later date.
+          ⚠️ If you move from a subscription to the free plan, all of your data
+          beyond the Quick Check information will become unavailable. Your data
+          will be retained in the system in case you upgrade again at a later
+          date.
         </div>
       )}
 
       <Button className="mt-4">Update Subscription</Button>
     </Card>
-  )
+  );
 }

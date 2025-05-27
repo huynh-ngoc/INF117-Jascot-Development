@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import {
@@ -110,14 +110,58 @@ export default function AssumeExistingLoanPage() {
     });
   };
 
-  const handleSaveLoan = () => {
-    setPrimaryLoan((prev) => ({ ...prev, saved: true }));
-    // Save to localStorage
-    localStorage.setItem(
-      "primaryLoan",
-      JSON.stringify({ ...primaryLoan, saved: true })
-    );
-    console.log("Primary loan saved successfully");
+  const handleSaveLoan = async () => {
+    try {
+      // Extract values from fields
+      const loanData = {
+        existingLoanBalance: parseFloat(
+          primaryLoan.fields
+            .find((f) => f.label === "Existing Loan Balance")
+            ?.value.replace(/[$,]/g, "") || 0
+        ),
+        interestRate: parseFloat(
+          primaryLoan.fields
+            .find((f) => f.label === "Interest Rate")
+            ?.value.replace("%", "") || 0
+        ),
+        balloonPaymentDue: parseFloat(
+          primaryLoan.fields.find((f) => f.label === "Ballon Payment Due (yrs)")
+            ?.value || 0
+        ),
+        refiAfterMonths: parseFloat(
+          primaryLoan.fields.find(
+            (f) => f.label === "Refi to this loan after ___ Months"
+          )?.value || 0
+        ),
+        monthlyPayment: parseFloat(
+          primaryLoan.fields
+            .find((f) => f.label === "Current Payment Schedule (Month)")
+            ?.value.replace(/[$,]/g, "") || 0
+        ),
+      };
+
+      const response = await fetch("/api/existing-loan", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(loanData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to save loan");
+      }
+
+      const result = await response.json();
+      setPrimaryLoan((prev) => ({ ...prev, saved: true }));
+      console.log("Primary loan saved successfully:", result);
+
+      alert("Primary loan saved successfully!");
+    } catch (error) {
+      console.error("Error saving loan:", error);
+      alert(`Error saving loan: ${error.message}`);
+    }
   };
 
   const handleAddSecondaryLoan = () => {
@@ -161,17 +205,45 @@ export default function AssumeExistingLoanPage() {
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [primaryLoan.saved]);
 
-  // Load saved data on mount
-  useEffect(() => {
-    const savedLoan = localStorage.getItem("primaryLoan");
-    if (savedLoan) {
-      try {
-        const parsed = JSON.parse(savedLoan);
-        setPrimaryLoan(parsed);
-      } catch (error) {
-        console.error("Error loading saved loan data:", error);
+  const loadLoanData = async () => {
+    try {
+      const response = await fetch("/api/existing-loan");
+      if (response.ok) {
+        const result = await response.json();
+        const data = result.data;
+
+        if (data.lastUpdated) {
+          const updatedFields = [...initialFields];
+          updatedFields[0].value =
+            data.existingLoanBalance > 0
+              ? `$${data.existingLoanBalance.toLocaleString()}`
+              : "";
+          updatedFields[1].value =
+            data.interestRate > 0 ? `${data.interestRate}%` : "";
+          updatedFields[2].value = data.balloonPaymentDue.toString();
+          updatedFields[3].value = data.refiAfterMonths.toString();
+          updatedFields[4].value =
+            data.monthlyPayment > 0
+              ? `$${data.monthlyPayment.toLocaleString()}`
+              : "";
+          updatedFields[5].value =
+            data.annualPayment > 0
+              ? `$${data.annualPayment.toLocaleString()}`
+              : "";
+
+          setPrimaryLoan({
+            fields: updatedFields,
+            saved: true,
+          });
+        }
       }
+    } catch (error) {
+      console.error("Error loading loan data:", error);
     }
+  };
+
+  useEffect(() => {
+    loadLoanData();
   }, []);
 
   return (

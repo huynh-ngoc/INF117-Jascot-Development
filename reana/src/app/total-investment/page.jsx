@@ -12,7 +12,6 @@ import {
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import DarkLightSwitch from "@/components/mode-toggle/dark-light-switch";
 import { useRouter } from "next/navigation";
-import { Card, CardContent } from "@/components/ui/card";
 
 export default function TotalInvestmentPage() {
   const router = useRouter();
@@ -31,6 +30,10 @@ export default function TotalInvestmentPage() {
     const updatedData = [...investmentData];
     updatedData[index].amount = parseFloat(newAmount);
     setInvestmentData(updatedData);
+  };
+
+  const formatUSD = (val) => {
+    return `$ ${Number(val).toLocaleString(undefined, { minimumFractionDigits: 0 })}`;
   };
 
   return (
@@ -57,40 +60,48 @@ export default function TotalInvestmentPage() {
         </header>
 
         <div className="flex flex-col gap-6 px-8 pt-0 pb-12">
-          <header className="mt-4">
+          <header className="mt-4 flex justify-between items-center">
             <h1 className="text-4xl font-bold">Cash Considerations / My Investment</h1>
             <button
               onClick={() => setIsEditing(!isEditing)}
-              className="mt-2 text-blue-600 hover:underline text-sm"
+              className="text-sm text-blue-600 hover:underline"
             >
               {isEditing ? "Save" : "Edit"}
             </button>
           </header>
 
-          <div className="space-y-4">
-            {investmentData.map(({ item, amount }, index) => (
-              <Card key={index}>
-                <CardContent className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4">
-                  <div className="font-medium text-gray-800">{item}</div>
-                  <div>
-                    {isEditing ? (
-                      <input
-                        type="number"
-                        className="border rounded px-2 py-1 w-32 text-right"
-                        value={amount}
-                        onChange={(e) => handleAmountChange(index, e.target.value)}
-                      />
-                    ) : (
-                      <span
-                        className={`text-lg font-semibold ${amount < 0 ? "text-red-600" : "text-green-700"}`}
-                      >
-                        $ {amount.toLocaleString()}
-                      </span>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+          <div className="overflow-x-auto rounded border border-gray-300 shadow-sm bg-white">
+            <table className="min-w-full text-sm">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="px-4 py-2 text-left">Item</th>
+                  <th className="px-4 py-2 text-right">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                {investmentData.map(({ item, amount }, index) => (
+                  <tr key={index} className="border-t">
+                    <td className="px-4 py-2 text-gray-800">{item}</td>
+                    <td className="px-4 py-2 text-right">
+                      {isEditing ? (
+                        <input
+                          type="number"
+                          className="border rounded px-2 py-1 w-32 text-right"
+                          value={amount}
+                          onChange={(e) => handleAmountChange(index, e.target.value)}
+                        />
+                      ) : (
+                        <span
+                          className={`font-semibold ${amount < 0 ? "text-red-600" : "text-green-700"}`}
+                        >
+                          {formatUSD(amount)}
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </SidebarInset>

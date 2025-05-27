@@ -1,73 +1,184 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/firebase";
-import { doc, setDoc, collection } from "firebase/firestore";
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 
-const auth = getAuth();
+const userId = process.env.DEFAULT_USER_ID;
 
-// Send Account data to backend
+const VALID_ROLES = ["investor", "realtor", "lender", "provider"];
+const VALID_PLANS = ["pro", "free", "enterprise"];
+
+// Create Account
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { email, password, emailPermissions, plan, role } = body;
+    const { accountForm, subscription, selectedRole } = body;
 
-    if (!email || !password) {
+    // Validation
+    if (
+      !accountForm?.email ||
+      !accountForm?.password ||
+      !selectedRole?.id ||
+      !subscription?.selectedPlan
+    ) {
       return NextResponse.json(
-        { error: "Email and password are required" },
+        {
+          error:
+            "Missing required fields: email, password, role, or subscription plan",
+        },
         { status: 400 }
       );
     }
 
-    const userCredential = await createUserWithEmailAndPassword(
-      auth,
-      email,
-      password
-    );
-
-    const userId = userCredential.user.uid;
-
-    const userData = {
-      email,
-      emailPermissions: emailPermissions || [],
-      plan: plan || "free",
-      role: role || "investor",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      status: "active",
+    const roleMapping = {
+      property_investor: "investor",
+      realtor: "realtor",
+      lender: "lender",
+      service_provider: "provider",
     };
 
-    // 4. Store user data in Firestore using the auth UID
-    const userDocRef = doc(db, "users", userId);
-    await setDoc(userDocRef, userData);
+    const userRole = roleMapping[selectedRole.id];
+
+    // Validate role
+    if (!userRole || !VALID_ROLES.includes(userRole)) {
+      return NextResponse.json(
+        {
+          error: "Invalid role. Must be investor, realtor, lender, or provider",
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validate subscription plan
+    if (!VALID_PLANS.includes(subscription.selectedPlan)) {
+      return NextResponse.json(
+        {
+          error: "Invalid subscription plan. Must be pro, free, or enterprise",
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validate email match
+    if (accountForm.email !== accountForm.verifyEmail) {
+      return NextResponse.json(
+        { error: "Email addresses do not match" },
+        { status: 400 }
+      );
+    }
+
+    // Validate password match
+    if (accountForm.password !== accountForm.verifyPassword) {
+      return NextResponse.json(
+        { error: "Passwords do not match" },
+        { status: 400 }
+      );
+    }
+
+    const timestamp = new Date();
+
+    const userData = {
+      email: accountForm.email,
+      password: accountForm.password,
+      emailPermissions: accountForm.emailPermissions || {
+        newFeature: false,
+        newsLetter: false,
+        saleMarketing: false,
+      },
+      subscriptionPlan: subscription.selectedPlan,
+      role: userRole,
+      createdAt: timestamp,
+      lastUpdated: timestamp,
+    };
+
+    await setDoc(doc(db, "users", userId), userData, { merge: true });
 
     return NextResponse.json({
       success: true,
       message: "Account created successfully",
-      userId: userId,
+      userId,
+      data: userData,
     });
   } catch (error) {
     console.error("Error creating account:", error);
-
-    // Handle Firebase Auth specific errors with better messages
-    if (error.code === "auth/email-already-in-use") {
-      return NextResponse.json(
-        { error: "Email address is already in use" },
-        { status: 400 }
-      );
-    }
-
-    if (error.code === "auth/weak-password") {
-      return NextResponse.json(
-        { error: "Password is too weak" },
-        { status: 400 }
-      );
-    }
-
     return NextResponse.json(
-      { error: `Failed to create account: ${error.message}` },
+      { error: "Failed to create account" },
       { status: 500 }
     );
   }
 }
 
-// Retrieve Account data (need to implement sessions/authentication)
+// Get Account data
+export async function GET() {
+  try {
+    const userDoc = await getDoc(doc(db, "users", userId));
+
+    if (!userDoc.exists()) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({
+      success: true,
+      userId,
+      data: userDoc.data(),
+    });
+  } catch (error) {
+    console.error("Error retrieving account data:", error);
+    return NextResponse.json(
+      { error: "Failed to retrieve account data" },
+      { status: 500 }
+    );
+  }
+}
+
+// Update Account data
+export async function PATCH(request) {
+  try {
+    const body = await request.json();
+    const { updates } = body;
+
+    if (!updates) {
+      return NextResponse.json(
+        { error: "Missing updates field" },
+        { status: 400 }
+      );
+    }
+
+    if (updates.role && !VALID_ROLES.includes(updates.role)) {
+      return NextResponse.json(
+        {
+          error: "Invalid role. Must be investor, realtor, lender, or provider",
+        },
+        { status: 400 }
+      );
+    }
+
+    if (
+      updates.subscriptionPlan &&
+      !VALID_PLANS.includes(updates.subscriptionPlan)
+    ) {
+      return NextResponse.json(
+        {
+          error: "Invalid subscription plan. Must be pro, free, or enterprise",
+        },
+        { status: 400 }
+      );
+    }
+
+    const timestamp = new Date();
+    const updateData = { ...updates, lastUpdated: timestamp };
+
+    await setDoc(doc(db, "users", userId), updateData, { merge: true });
+
+    return NextResponse.json({
+      success: true,
+      message: "Account updated successfully",
+      data: updateData,
+    });
+  } catch (error) {
+    console.error("Error updating account:", error);
+    return NextResponse.json(
+      { error: "Failed to update account" },
+      { status: 500 }
+    );
+  }
+}

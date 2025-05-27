@@ -17,6 +17,7 @@ export default function InvestmentStrategies() {
     "JohnDoe",
     "JaneSmith",
   ]);
+
   const [isNewProfile, setIsNewProfile] = useState(false);
   const [userType, setUserType] = useState("User");
 
@@ -75,18 +76,7 @@ export default function InvestmentStrategies() {
     dscr: 1.3,
     grm: 15,
   });
-
-  // Show popup after changes
-  useEffect(() => {
-    if (hasChanges) {
-      const timer = setTimeout(() => {
-        setShowDefaultPopup(true);
-        setHasChanges(false);
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [hasChanges]);
-
+  
   const handleProfileChange = (e) => {
     const { name, value } = e.target;
     setProfile((prev) => ({ ...prev, [name]: value }));
@@ -110,7 +100,6 @@ export default function InvestmentStrategies() {
       };
     });
     setHasChanges(true);
-    console.log("Investment Details:", investmentDetails);
   };
 
   const handlePropertyMultiSelectChange = (field, value) => {
@@ -172,7 +161,7 @@ export default function InvestmentStrategies() {
       locations: updated,
     }));
     setHasChanges(true);
-    console.log(investmentDetails.locations);
+
   };
 
   const handlePropertyFeaturesChange = (e) => {
@@ -193,7 +182,6 @@ export default function InvestmentStrategies() {
       alert("Please enter or select a profile name.");
       return;
     }
-
     try {
       const profileResponse = await fetch(
         "/api/user-investment-strategies/investor-profile",
@@ -385,6 +373,7 @@ export default function InvestmentStrategies() {
                 <p className="text-sm mb-4">
                   You've updated your strategy. Would you like to set this as
                   your new default?
+
                 </p>
                 <div className="flex justify-center gap-4">
                   <button
@@ -412,6 +401,7 @@ export default function InvestmentStrategies() {
             <label className="font-medium block mb-1">
               Select Profile Name
             </label>
+
             <select
               className="border p-2 rounded w-full"
               value={isNewProfile ? "new" : profileName}

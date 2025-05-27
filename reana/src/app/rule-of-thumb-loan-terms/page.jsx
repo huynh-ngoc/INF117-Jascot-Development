@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppSidebar } from '@/components/sidebar/app-sidebar';
 import {
   Breadcrumb,
@@ -14,6 +14,7 @@ import LoanTermsCard from '@/components/loans/LoanTermsCard';
 
 const initialSections = [
   {
+    key: 'conventional',
     title: 'Conventional, Seller or Private Financing',
     fields: [
       { label: 'Max LTV', value: '70%', editable: true },
@@ -23,6 +24,7 @@ const initialSections = [
     ],
   },
   {
+    key: 'dscr',
     title: 'DSCR Puri with Rehab Bridge Loan (Flips)',
     fields: [
       { label: 'Max Loan-to-Value LTV as a % of Purchase Price plus Rehab.', value: '90%', editable: true },
@@ -33,6 +35,7 @@ const initialSections = [
     ],
   },
   {
+    key: 'assume',
     title: 'Assume/Subject to existing loan',
     fields: [
       { label: 'Existing Loan Balance', value: '$94,000', editable: true },
@@ -44,6 +47,7 @@ const initialSections = [
     ],
   },
   {
+    key: 'additional',
     title: 'Additional Financing - 2nd Position',
     fields: [
       { label: 'Combined Max LTV', value: '90%', editable: true },
@@ -55,12 +59,88 @@ const initialSections = [
   },
 ];
 
+// Map financingOption to section key
+const financingOptionToKey = {
+  'Conventional Loan': 'conventional',
+  'Seller Financing': 'conventional',
+  'Private Financing': 'conventional',
+  'DSCR Bridge Loan for Fix n Flip': 'dscr',
+  'DSCR Bridge + Permanent Loan for BRRR': 'dscr',
+  'Assume/Subject to existing loan': 'assume',
+  'Additional Financing': 'additional',
+};
+
 export default function LoanTermsPage() {
   const [sections, setSections] = useState(initialSections);
+  const [expandedIdx, setExpandedIdx] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [savingIdx, setSavingIdx] = useState(null);
+
+  // Fetch financingOption and loanTerms on mount
+  useEffect(() => {
+    async function fetchData() {
+      setLoading(true);
+      // 1. Get financingOption
+      let financingOption = null;
+      try {
+        const res = await fetch('/api/user-investment-strategies/investment-preferences');
+        if (res.ok) {
+          const data = await res.json();
+          financingOption = data.investmentPrefs?.financingOption;
+        }
+      } catch (e) { /* ignore */ }
+      // 2. Get loanTerms
+      let loanTerms = {};
+      try {
+        const res = await fetch('/api/user-loan-terms');
+        if (res.ok) {
+          const data = await res.json();
+          loanTerms = data.loanTerms || {};
+        }
+      } catch (e) { /* ignore */ }
+      // 3. Merge loanTerms into sections
+      setSections(prev => prev.map(section => {
+        const saved = loanTerms[section.key];
+        if (saved && Array.isArray(saved.fields)) {
+          return { ...section, fields: saved.fields };
+        }
+        return section;
+      }));
+      // 4. Auto-expand
+      if (financingOption && financingOptionToKey[financingOption]) {
+        const idx = initialSections.findIndex(s => s.key === financingOptionToKey[financingOption]);
+        setExpandedIdx(idx >= 0 ? idx : 0);
+      } else {
+        setExpandedIdx(0);
+      }
+      setLoading(false);
+    }
+    fetchData();
+  }, []);
 
   const handleFieldChange = (sectionIdx, fieldIdx, newValue) => {
     setSections(prev => {
       const updated = [...prev];
+      if (updated[sectionIdx].key === 'assume') {
+        const monthIdx = updated[sectionIdx].fields.findIndex(f => f.label.includes('Current Payment Schedule (Month)'));
+        const annualIdx = updated[sectionIdx].fields.findIndex(f => f.label.includes('Current Payment Schedule (Annual)'));
+        let newFields = [...updated[sectionIdx].fields];
+        if (fieldIdx === monthIdx) {
+          // Update monthly field
+          newFields[monthIdx] = { ...newFields[monthIdx], value: newValue };
+          // Calculate and update annual field
+          const match = newValue.match(/\$?([\d,\.]+)/);
+          const monthly = match ? parseFloat(match[1].replace(/,/g, '')) : 0;
+          const annual = monthly * 12;
+          newFields[annualIdx] = { ...newFields[annualIdx], value: annual > 0 ? `$${annual.toLocaleString()}` : '' };
+        } else {
+          // Update only the field being edited
+          newFields[fieldIdx] = { ...newFields[fieldIdx], value: newValue };
+        }
+        updated[sectionIdx] = { ...updated[sectionIdx], fields: newFields };
+        return updated;
+      }
+      // Default logic for other sections
       updated[sectionIdx] = {
         ...updated[sectionIdx],
         fields: updated[sectionIdx].fields.map((f, i) =>
@@ -71,9 +151,20 @@ export default function LoanTermsPage() {
     });
   };
 
-  const handleEnterClose = (sectionIdx) => {
-    // Placeholder for save/close logic
-    alert(`Saved section: ${sections[sectionIdx].title}`);
+  const handleEnterClose = async (sectionIdx) => {
+    setSavingIdx(sectionIdx);
+    const section = sections[sectionIdx];
+    try {
+      await fetch('/api/user-loan-terms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ loanType: section.key, terms: { fields: section.fields } }),
+      });
+      alert(`Saved section: ${section.title}`);
+    } catch (e) {
+      alert('Failed to save.');
+    }
+    setSavingIdx(null);
   };
 
   return (
@@ -94,14 +185,23 @@ export default function LoanTermsPage() {
           </Breadcrumb>
         </header>
         <main className="p-8 space-y-6">
-          {sections.map((section, sIdx) => (
-            <LoanTermsCard
-              key={section.title}
-              title={section.title}
-              fields={section.fields}
-              onFieldChange={(fieldIdx, value) => handleFieldChange(sIdx, fieldIdx, value)}
-              onEnterClose={() => handleEnterClose(sIdx)}
-            />
+          {!loading && sections.map((section, sIdx) => (
+            <div key={section.title}>
+              <div
+                className="cursor-pointer mb-2"
+                onClick={() => setExpandedIdx(sIdx)}
+              >
+                <span className={`font-semibold ${expandedIdx === sIdx ? 'text-[#00A3E0]' : ''}`}>{section.title}</span>
+              </div>
+              {expandedIdx === sIdx && (
+                <LoanTermsCard
+                  title={section.title}
+                  fields={section.fields}
+                  onFieldChange={(fieldIdx, value) => handleFieldChange(sIdx, fieldIdx, value)}
+                  onEnterClose={() => handleEnterClose(sIdx)}
+                />
+              )}
+            </div>
           ))}
         </main>
       </SidebarInset>

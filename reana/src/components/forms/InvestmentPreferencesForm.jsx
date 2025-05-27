@@ -18,7 +18,6 @@ export default function InvestmentPreferencesForm({
           onChange={onInvestmentChange}
           required
           options={[
-            { value: "", label: "Select One" },
             { value: "Fix n Flip", label: "Fix n Flip" },
             { value: "BRRR", label: "BRRR" },
             {
@@ -46,7 +45,6 @@ export default function InvestmentPreferencesForm({
           max="10"
           value={investmentDetails.holdingPeriod}
           onChange={onInvestmentChange}
-          className="w-full"
         />
       </div>
 
@@ -55,7 +53,6 @@ export default function InvestmentPreferencesForm({
         <label htmlFor="acquisitionMargin">
           Desired Acquisition Margin (% of ARV):{" "}
           {investmentDetails.acquisitionMargin}%
-
         </label>
         <input
           type="range"
@@ -65,11 +62,10 @@ export default function InvestmentPreferencesForm({
           max="100"
           value={investmentDetails.acquisitionMargin}
           onChange={onInvestmentChange}
-          className="w-full"
         />
       </div>
 
-      {/* --- Out-of-State Investing --- */}
+      {/* --- Open to Out-of-State Investing --- */}
       <div className="form-group">
         <label htmlFor="outOfState">Open to Out-of-State Investing</label>
         <SelectField
@@ -92,14 +88,12 @@ export default function InvestmentPreferencesForm({
           onChange={onInvestmentChange}
           required
           options={[
-            { value: "", label: "Select One" },
             { value: "Pay Cash", label: "Pay Cash" },
             { value: "Conventional Loan", label: "Conventional Loan" },
             {
               value: "DSCR Bridge Loan for Fix n Flip",
               label: "DSCR Bridge Loan for Fix n Flip",
             },
-
             {
               value: "DSCR Bridge + Permanent Loan for BRRR",
               label: "DSCR Bridge + Permanent Loan for BRRR",
@@ -109,7 +103,7 @@ export default function InvestmentPreferencesForm({
         />
       </div>
 
-      {/* --- Operational Preferences (Grouped) --- */}
+      {/* --- Operational Preferences --- */}
       <div className="form-group">
         <label>Operational Preferences</label>
         <div className="checkbox-grid">
@@ -138,7 +132,6 @@ export default function InvestmentPreferencesForm({
               onMultiSelectChange("operationalPreferences", value)
             }
           />
-
         </div>
       </div>
     </Section>

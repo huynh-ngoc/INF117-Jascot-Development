@@ -25,7 +25,7 @@ export default function RuleOfThumbOprBudgetPage() {
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbLink href="#">Rule of Thumb Operating Budget</BreadcrumbLink>
+                <BreadcrumbLink href="#">LTR / BRRR Operating Budget Projections (1 yr.) Using Rule of Thumb</BreadcrumbLink>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>

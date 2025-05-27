@@ -14,23 +14,19 @@ export default function PropertyProfileForm({
 }) {
   return (
     <Section title="Property Profile">
+
       {/* --- Landlord Friendly --- */}
       <div className="form-group">
         <label htmlFor="landlordFriendly">Landlord Friendly Laws Required</label>
-        <SelectField
+        <SelectField 
           name="landlordFriendly"
           value={investmentDetails.tenantPreferences.landlordFriendly}
-          onChange={(e) =>
-            onInvestmentChange({
-              target: {
-                name: "tenantPreferences",
-                value: {
-                  ...investmentDetails.tenantPreferences,
-                  landlordFriendly: e.target.value,
-                },
-              },
-            })
-          }
+          onChange={(e) => onInvestmentChange({
+            target: {
+              name: "tenantPreferences",
+              value: { ...investmentDetails.tenantPreferences, landlordFriendly: e.target.value },
+            }
+          })}
           options={[
             { value: "No", label: "No" },
             { value: "Yes", label: "Yes" },
@@ -40,11 +36,9 @@ export default function PropertyProfileForm({
 
       {/* --- Desired Tenant Class --- */}
       <div className="form-group">
-        <label className="block font-medium mb-2">
-          Desired Tenant Class <span className="text-sm text-gray-500">(Select all that apply)</span>
-        </label>
+        <label>Desired Tenant Class</label>
         <div className="checkbox-grid">
-          <MultiCheckboxGroup
+          <MultiCheckboxGroup 
             options={[
               { value: "Affluent", label: "Affluent" },
               { value: "High-End", label: "High-End" },
@@ -63,11 +57,9 @@ export default function PropertyProfileForm({
 
       {/* --- Specialty Tenants --- */}
       <div className="form-group">
-        <label className="block font-medium mb-2">
-          Specialty Tenants <span className="text-sm text-gray-500">(Select all that apply)</span>
-        </label>
+        <label>Specialty Tenants</label>
         <div className="checkbox-grid">
-          <MultiCheckboxGroup
+          <MultiCheckboxGroup 
             options={[
               { value: "Traveling Nurses", label: "Traveling Nurses" },
               { value: "Student Housing", label: "Student Housing" },
@@ -83,11 +75,9 @@ export default function PropertyProfileForm({
 
       {/* --- Property Types --- */}
       <div className="form-group">
-        <label className="block font-medium mb-2">
-          Property Types <span className="text-sm text-gray-500">(Select all that apply)</span>
-        </label>
+        <label>Property Types</label>
         <div className="checkbox-grid">
-          <MultiCheckboxGroup
+          <MultiCheckboxGroup 
             options={[
               { value: "Single Family", label: "Single Family" },
               { value: "Duplex", label: "Duplex" },
@@ -103,50 +93,45 @@ export default function PropertyProfileForm({
       </div>
 
       {/* --- Property Locations --- */}
-      <div className="form-group">
-        <div className="flex justify-between items-center mb-2">
-          <h3 className="font-semibold text-base">Property Locations</h3>
-          <button
-            type="button"
-            onClick={addLocation}
-            className="text-blue-600 hover:underline text-sm"
-          >
+        <div className="form-group">
+        <div className="location-header">
+            <h3>Property Locations</h3>
+            <button type="button" onClick={addLocation} className="add-location-button">
             + Add Another Location
-          </button>
+            </button>
         </div>
 
         {investmentDetails.locations.map((loc, index) => (
-          <div key={index} className="location-entry mb-4">
-            <label className="block mb-1">The Property is located within:</label>
-            <div className="flex items-center gap-2">
-              <input
+            <div key={index} className="location-entry">
+            <label>The Property is located within:</label>
+            <div className="location-row">
+                <input
                 type="range"
                 min="0"
                 max="100"
                 value={loc.radius}
                 onChange={(e) => onLocationChange(index, "radius", e.target.value)}
-                className="slider w-40"
-              />
-              <span className="text-sm">{loc.radius} Miles of</span>
-              <input
+                className="slider"
+                />
+                <span className="miles-text">{loc.radius} Miles of </span>
+                <input
                 type="text"
-                className="zip-input border rounded px-2 py-1"
+                className="zip-input"
                 placeholder="Zip Code"
                 value={loc.zipCode}
                 onChange={(e) => onLocationChange(index, "zipCode", e.target.value)}
-              />
+                />
             </div>
-          </div>
+            </div>
         ))}
-      </div>
+        </div>
+
 
       {/* --- Area Type --- */}
       <div className="form-group">
-        <label className="block font-medium mb-2">
-          Area Type <span className="text-sm text-gray-500">(Select all that apply)</span>
-        </label>
+        <label>Area Type</label>
         <div className="checkbox-grid">
-          <MultiCheckboxGroup
+          <MultiCheckboxGroup 
             options={[
               { value: "Urban", label: "Urban" },
               { value: "Suburban", label: "Suburban" },
@@ -161,7 +146,7 @@ export default function PropertyProfileForm({
       {/* --- School Quality --- */}
       <div className="form-group">
         <label htmlFor="schoolQuality">School Quality Importance</label>
-        <SelectField
+        <SelectField 
           name="schoolQuality"
           value={investmentDetails.schoolQuality}
           onChange={onInvestmentChange}
@@ -176,7 +161,7 @@ export default function PropertyProfileForm({
       {/* --- Crime Tolerance --- */}
       <div className="form-group">
         <label htmlFor="crimeTolerance">Crime Tolerance</label>
-        <SelectField
+        <SelectField 
           name="crimeTolerance"
           value={investmentDetails.crimeTolerance}
           onChange={onInvestmentChange}
@@ -187,6 +172,7 @@ export default function PropertyProfileForm({
           ]}
         />
       </div>
+
     </Section>
   );
 }

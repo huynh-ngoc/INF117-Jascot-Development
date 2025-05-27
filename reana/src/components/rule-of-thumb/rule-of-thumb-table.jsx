@@ -5,136 +5,181 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
-const LOCAL_STORAGE_KEY = 'ruleOfThumbMetrics';
-
 const defaultData = [
     {
-    title: 'Area Appreciation Rate (5 yr running avg.)',
-    value: '6.00%',
-    notes: 'Pulled from DB, RE Data, or AI API. Know your market.',
+        title: 'Area Appreciation Rate (5 yr running avg.)',
+        value: '6.00%',
+        notes: 'Pulled from DB, RE Data, or AI API. Know your market.',
+        key: 'areaAppreciationRate'
     },
     {
-    title: 'Rent Appreciation Rate (5 yr running avg.)',
-    value: '4.50%',
-    notes: 'Pulled from DB, RE Data, or AI API.',
+        title: 'Rent Appreciation Rate (5 yr running avg.)',
+        value: '4.50%',
+        notes: 'Pulled from DB, RE Data, or AI API.',
+        key: 'rentAppreciationRate'
     },
     {
-    title: 'DSCR Requirement (Check with your Lender)',
-    value: '1.15',
-    notes: 'The default is 1.15; confirm with lender.',
+        title: 'DSCR Requirement (Check with your Lender)',
+        value: '1.15',
+        notes: 'The default is 1.15; confirm with lender.',
+        key: 'dscrRequirement'
     },
     {
-    title: 'Area Property Tax Rate',
-    value: '2.16%',
-    notes: 'User input; local property tax rate.',
+        title: 'Area Property Tax Rate',
+        value: '2.16%',
+        notes: 'User input; local property tax rate.',
+        key: 'propertyTaxRate'
     },
     {
-    title: 'Area Vacancy Rate (Current)',
-    value: '9.90%',
-    notes: 'Pulled from DB, RE Data, or AI API.',
+        title: 'Area Vacancy Rate (Current)',
+        value: '9.90%',
+        notes: 'Pulled from DB, RE Data, or AI API.',
+        key: 'vacancyRate'
     },
     {
-    title: 'Operating Expenses',
-    value: '50%',
-    notes: 'Rule of thumb default: 50%.',
+        title: 'Operating Expenses',
+        value: '50%',
+        notes: 'Rule of thumb default: 50%.',
+        key: 'operatingExpenses'
     },
     {
-    title: 'Annual change in Operating Costs',
-    value: '3.00%',
-    notes: 'Default is 3%.',
+        title: 'Annual change in Operating Costs',
+        value: '3.00%',
+        notes: 'Default is 3%.',
+        key: 'operatingCostsChange'
     },
     {
-    title: 'Less Contingency for unexpected Costs (10-15%)',
-    value: '12.50%',
-    notes: 'Default is 12.5%.',
+        title: 'Less Contingency for unexpected Costs (10-15%)',
+        value: '12.50%',
+        notes: 'Default is 12.5%.',
+        key: 'contingency'
     },
     {
-    title: 'Property Manager (Pro) (10 - 15% all inclusive)',
-    value: '12.50%',
-    notes: 'Default is 12.5%.',
+        title: 'Property Manager (Pro) (10 - 15% all inclusive)',
+        value: '12.50%',
+        notes: 'Default is 12.5%.',
+        key: 'propertyManagerPro'
     },
     {
-    title: 'Property Management (Self) (Software, Equip, Etc.)',
-    value: '5.00%',
-    notes: 'Default is 5%.',
+        title: 'Property Management (Self) (Software, Equip, Etc.)',
+        value: '5.00%',
+        notes: 'Default is 5%.',
+        key: 'propertyManagerSelf'
     },
     {
-    title: 'Repairs and Maintenance',
-    value: '7.00%',
-    notes: 'Default is 7%.',
+        title: 'Repairs and Maintenance',
+        value: '7.00%',
+        notes: 'Default is 7%.',
+        key: 'repairsAndMaintenance'
     },
     {
-    title: 'Tenant Turnover Costs',
-    value: '5.00%',
-    notes: 'Default is 5%.',
+        title: 'Tenant Turnover Costs',
+        value: '5.00%',
+        notes: 'Default is 5%.',
+        key: 'tenantTurnoverCosts'
     },
     {
-    title: 'Administrative Costs',
-    value: '2.00%',
-    notes: 'Default is 2%.',
+        title: 'Administrative Costs',
+        value: '2.00%',
+        notes: 'Default is 2%.',
+        key: 'administrativeCosts'
     },
     {
-    title: 'Cost of Sale of Property',
-    value: '8.00%',
-    notes: 'Default is 8%.',
+        title: 'Cost of Sale of Property',
+        value: '8.00%',
+        notes: 'Default is 8%.',
+        key: 'costOfSale'
     },
 ];
 
 export default function RuleOfThumbTable() {
     const [tableData, setTableData] = useState(defaultData);
+    const [hasChanges, setHasChanges] = useState(false);
 
-    // Load from localStorage when component mounts
+    // Load data from Firebase when component mounts
     useEffect(() => {
-        const savedData = localStorage.getItem(LOCAL_STORAGE_KEY);
-        if (savedData) {
-            setTableData(JSON.parse(savedData));
-        }
+        const fetchData = async () => {
+            try {
+                const response = await fetch('/api/rule-of-thumb-metrics');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch data');
+                }
+                const data = await response.json();
+                if (data.success && data.ruleOfThumbMetrics) {
+                    const updatedData = tableData.map(item => ({
+                        ...item,
+                        value: data.ruleOfThumbMetrics[item.key] || item.value
+                    }));
+                    setTableData(updatedData);
+                }
+            } catch (error) {
+                console.error('Error fetching rule of thumb metrics:', error);
+            }
+        };
+        fetchData();
     }, []);
 
     const formatNumberWithTwoDecimals = (value) => {
-        // Remove any existing % symbol and trim
         const cleanValue = value.replace('%', '').trim();
-        // Convert to number and format to 2 decimal places
         const formattedValue = Number(cleanValue).toFixed(2);
         return formattedValue;
     };
 
     const handleInputChange = (index, newValue) => {
         const updatedData = [...tableData];
-        // Just update the raw value during typing
         updatedData[index].value = newValue;
         setTableData(updatedData);
+        setHasChanges(true);
+    };
+
+    const isPercentageField = (row) => {
+        // DSCR should NOT be treated as a percentage
+        return row.key !== 'dscrRequirement' && row.value.includes('%');
     };
 
     const handleInputBlur = (index) => {
         const updatedData = [...tableData];
         const currentValue = updatedData[index].value;
-        
-        // Format the number with two decimal places
+        const row = updatedData[index];
         let formattedValue = formatNumberWithTwoDecimals(currentValue);
-        
-        // Add % symbol if it's a percentage field
-        const isPercentageField = updatedData[index].title.toLowerCase().includes('rate')
-            || updatedData[index].title.toLowerCase().includes('tax')
-            || updatedData[index].title.toLowerCase().includes('expenses')
-            || updatedData[index].title.toLowerCase().includes('cost')
-            || updatedData[index].title.toLowerCase().includes('vacancy')
-            || updatedData[index].title.toLowerCase().includes('maintenance')
-            || updatedData[index].title.toLowerCase().includes('turnover')
-            || updatedData[index].title.toLowerCase().includes('management')
-            || updatedData[index].title.toLowerCase().includes('sale');
-        
-        if (isPercentageField && formattedValue !== '') {
+
+        // Only append % if it's a percentage field (not DSCR)
+        if (row.key !== 'dscrRequirement' && formattedValue !== '') {
             formattedValue += '%';
         }
-        
+
         updatedData[index].value = formattedValue;
         setTableData(updatedData);
     };
 
-    const handleSave = () => {
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(tableData));
-        alert('Data saved successfully and will persist next time you visit.');
+    const handleSave = async () => {
+        try {
+            const metricsData = tableData.reduce((acc, item) => {
+                acc[item.key] = item.value;
+                return acc;
+            }, {});
+
+            const response = await fetch('/api/rule-of-thumb-metrics', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(metricsData),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to save data');
+            }
+
+            const data = await response.json();
+            if (data.success) {
+                setHasChanges(false);
+                alert('Data saved successfully!');
+            }
+        } catch (error) {
+            console.error('Error saving rule of thumb metrics:', error);
+            alert('Failed to save data. Please try again.');
+        }
     };
 
     return (
@@ -157,7 +202,7 @@ export default function RuleOfThumbTable() {
                         </thead>
                         <tbody>
                             {tableData.map((row, index) => {
-                                const isPercentageField = row.value.includes('%');
+                                const isPercent = isPercentageField(row);
                                 const numericValue = row.value.replace(/[^0-9.]/g, '');
                                 return (
                                     <tr key={index} className="border-t border-[#4F5D75]">
@@ -169,10 +214,10 @@ export default function RuleOfThumbTable() {
                                                     value={numericValue}
                                                     onChange={(e) => handleInputChange(index, e.target.value)}
                                                     onBlur={() => handleInputBlur(index)}
-                                                    className={`w-32 text-right bg-white border border-[#4F5D75] rounded-lg font-lato text-base focus:ring-[#00A3E0] focus:border-[#00A3E0] ${isPercentageField ? 'pr-8' : ''}`}
+                                                    className={`w-32 text-right bg-white border border-[#4F5D75] rounded-lg font-lato text-base focus:ring-[#00A3E0] focus:border-[#00A3E0] ${isPercent ? 'pr-8' : ''}`}
                                                     step="0.01"
                                                 />
-                                                {isPercentageField && (
+                                                {isPercent && (
                                                     <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#4F5D75] font-lato pointer-events-none">
                                                         %
                                                     </span>
@@ -185,11 +230,16 @@ export default function RuleOfThumbTable() {
                         </tbody>
                     </table>
                 </div>
-                <div className="mt-6">
-                    <Button onClick={handleSave} className="bg-[#00A3E0] text-white font-montserrat hover:bg-[#0077AC] hover:shadow-md">
-                        Save
-                    </Button>
-                </div>
+                {hasChanges && (
+                    <div className="mt-4 flex justify-start">
+                        <Button
+                            onClick={handleSave}
+                            className="bg-[#00A3E0] hover:bg-[#0077AC] text-white px-4 py-2 rounded"
+                        >
+                            Save Changes
+                        </Button>
+                    </div>
+                )}
             </CardContent>
         </Card>
     );

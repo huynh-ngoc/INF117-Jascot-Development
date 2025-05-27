@@ -242,7 +242,7 @@ export function TierCards() {
                   </div>
                 )}
 
-                <Link href="/dashboard" className="w-full">
+                <Link href="/account" className="w-full">
                   <Button className="w-full bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm lg:text-base py-1.5 sm:py-2">
                     Subscribe
                   </Button>

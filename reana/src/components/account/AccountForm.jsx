@@ -10,7 +10,8 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { cn } from "@/lib/utils"
 
-export default function AccountForm({ onValidityChange }) {
+// Create Account Form Component
+export default function AccountForm({ onValidityChange, onDataChange }) {
   const [mounted, setMounted] = useState(false)
   const form = useForm({
     defaultValues: {
@@ -31,6 +32,12 @@ export default function AccountForm({ onValidityChange }) {
   useEffect(() => {
     setMounted(true)
     const subscription = watch((value) => {
+      // Send form data to parent
+      if (onDataChange) {
+        onDataChange(value)
+      }
+      
+      // Send validation status to parent
       const isValid = !errors.email && !errors.verifyEmail && 
                      !errors.password && !errors.verifyPassword &&
                      value.email && value.verifyEmail &&
@@ -40,7 +47,7 @@ export default function AccountForm({ onValidityChange }) {
       onValidityChange(isValid)
     })
     return () => subscription.unsubscribe()
-  }, [watch, errors, onValidityChange])
+  }, [watch, errors, onValidityChange, onDataChange])
 
   if (!mounted) {
     return null

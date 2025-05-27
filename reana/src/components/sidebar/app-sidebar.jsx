@@ -98,7 +98,7 @@ const data = {
       items: [],
     },
     {
-      title: "Rule of Thumb Metrics",
+      title: "Local Rule of Thumb",
       url: "/rule-of-thumb-metrics",
       icon: Ruler,
       items: [],
@@ -110,7 +110,7 @@ const data = {
       items: [],
     },
     {
-      title: "Rule of Thumb Loan Cost",
+      title: "Loan Costs by Rule of Thumb",
       url: "/rule-of-thumb-loan-cost",
       icon: Ruler,
       items: [],

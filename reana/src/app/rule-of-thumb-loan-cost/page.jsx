@@ -26,7 +26,7 @@ export default function RuleOfThumbLoanCostPage() {
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbLink href="#">Rule of Thumb Loan Cost</BreadcrumbLink>
+                <BreadcrumbLink href="#">Loan Costs by Rule of Thumb</BreadcrumbLink>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>

@@ -1,6 +1,6 @@
-import { Card, CardHeader, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import React from 'react';
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import React from "react";
 
 export default function SettlementCostsActions() {
   return (
@@ -10,11 +10,17 @@ export default function SettlementCostsActions() {
       </CardHeader>
       <CardContent>
         <div className="flex flex-col gap-3 py-2">
-          <Button variant="outline" className="w-full font-bold">Use "Rule of Thumb" Default</Button>
-          <Button variant="outline" className="w-full font-bold">Use Detailed Settlement Fees</Button>
-          <Button variant="outline" className="w-full font-bold">Use Detailed Inspection Costs</Button>
+          <Button variant="secondary" className="w-full font-bold">
+            Use "Rule of Thumb" Default
+          </Button>
+          <Button variant="secondary" className="w-full font-bold">
+            Use Detailed Settlement Fees
+          </Button>
+          <Button variant="secondary" className="w-full font-bold">
+            Use Detailed Inspection Costs
+          </Button>
         </div>
       </CardContent>
     </Card>
   );
-} 
+}

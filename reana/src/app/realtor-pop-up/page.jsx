@@ -1,12 +1,16 @@
 // src/app/realtor-popup/page.jsx
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { CheckCircle, XCircle } from "lucide-react";
 
 export default function RealtorPopup() {
+  const router = useRouter();
+  const [userRole, setUserRole] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [profile, setProfile] = useState({
     brokerage_name: "",
     street_address: "",
@@ -25,6 +29,38 @@ export default function RealtorPopup() {
   const [touched, setTouched] = useState({});
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [attemptSubmit, setAttemptSubmit] = useState(false);
+
+  useEffect(() => {
+    const checkUserRole = async () => {
+      try {
+        const response = await fetch("/api/account");
+        const userData = await response.json();
+
+        if (response.ok) {
+          const role = userData.data.role;
+          setUserRole(role);
+
+          if (role !== "realtor") {
+            alert(
+              `Access denied. This page is only for realtors. Your current role is: ${role}`
+            );
+            router.push("/dashboard");
+            return;
+          }
+        } else {
+          throw new Error("Failed to get user data");
+        }
+      } catch (error) {
+        console.error("Error checking user role:", error);
+        alert("Error verifying user permissions");
+        router.push("/dashboard");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkUserRole();
+  }, [router]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -146,6 +182,20 @@ export default function RealtorPopup() {
     cellphone: "Mobile Phone",
     type_of_agent: "Type of Agent",
   };
+
+  // Show loading while checking role
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div>Loading...</div>
+      </div>
+    );
+  }
+
+  // Don't render form if not a realtor
+  if (userRole !== "realtor") {
+    return null;
+  }
 
   return (
     <SidebarProvider>

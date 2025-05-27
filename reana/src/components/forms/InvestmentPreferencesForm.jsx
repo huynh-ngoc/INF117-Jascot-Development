@@ -18,7 +18,6 @@ export default function InvestmentPreferencesForm({
           onChange={onInvestmentChange}
           required
           options={[
-            { value: "", label: "Select One" },
             { value: "Fix n Flip", label: "Fix n Flip" },
             { value: "BRRR", label: "BRRR" },
             {
@@ -55,7 +54,6 @@ export default function InvestmentPreferencesForm({
         <label htmlFor="acquisitionMargin">
           Desired Acquisition Margin (% of ARV):{" "}
           {investmentDetails.acquisitionMargin}%
-
         </label>
         <input
           type="range"
@@ -92,7 +90,6 @@ export default function InvestmentPreferencesForm({
           onChange={onInvestmentChange}
           required
           options={[
-            { value: "", label: "Select One" },
             { value: "Pay Cash", label: "Pay Cash" },
             { value: "Conventional Loan", label: "Conventional Loan" },
             {
@@ -138,7 +135,6 @@ export default function InvestmentPreferencesForm({
               onMultiSelectChange("operationalPreferences", value)
             }
           />
-
         </div>
       </div>
     </Section>

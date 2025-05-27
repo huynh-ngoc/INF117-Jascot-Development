@@ -25,7 +25,7 @@ export default function RuleOfThumbPage() {
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                <BreadcrumbLink href="#">Rule of Thumb</BreadcrumbLink>
+                <BreadcrumbLink href="#">Local Rule of Thumb</BreadcrumbLink>
                 </BreadcrumbItem>
             </BreadcrumbList>
             </Breadcrumb>

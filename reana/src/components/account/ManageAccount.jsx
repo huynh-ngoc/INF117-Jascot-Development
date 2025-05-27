@@ -52,7 +52,14 @@ export default function ManageAccount() {
 
         if (response.ok) {
           console.log("Account created successfully:", result);
-          router.push("/dashboard");
+          const userRole = result.data.role;
+          if (userRole === "realtor") {
+            router.push("/realtor-pop-up");
+          } else if (userRole === "investor") {
+            router.push("/userinvestmentstrategies");
+          } else {
+            router.push("/dashboard");
+          }
         } else {
           console.error("Failed to create account:", result.error);
           alert(result.error);

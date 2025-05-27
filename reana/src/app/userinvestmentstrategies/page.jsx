@@ -6,12 +6,13 @@ import InvestmentPreferencesForm from "@/components/forms/InvestmentPreferencesF
 import PropertyProfileForm from "@/components/forms/PropertyProfileForm";
 import PropertyFeaturesForm from "@/components/forms/PropertyFeaturesForm";
 import TargetMetricsForm from "@/components/forms/TargetMetricsForm";
-
+import { useRouter } from "next/navigation";
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import DarkLightSwitch from "@/components/mode-toggle/dark-light-switch";
 
 export default function InvestmentStrategies() {
+  const router = useRouter();
   const [profileName, setProfileName] = useState("");
   const [existingProfiles, setExistingProfiles] = useState([
     "JohnDoe",
@@ -76,7 +77,7 @@ export default function InvestmentStrategies() {
     dscr: 1.3,
     grm: 15,
   });
-  
+
   const handleProfileChange = (e) => {
     const { name, value } = e.target;
     setProfile((prev) => ({ ...prev, [name]: value }));
@@ -161,7 +162,6 @@ export default function InvestmentStrategies() {
       locations: updated,
     }));
     setHasChanges(true);
-
   };
 
   const handlePropertyFeaturesChange = (e) => {
@@ -182,7 +182,9 @@ export default function InvestmentStrategies() {
       alert("Please enter or select a profile name.");
       return;
     }
+
     try {
+      // Profile Section
       const profileResponse = await fetch(
         "/api/user-investment-strategies/investor-profile",
         {
@@ -202,11 +204,6 @@ export default function InvestmentStrategies() {
         const errorData = await profileResponse.json();
         throw new Error(errorData.error || "Failed to save profile");
       }
-
-      console.log("Profile:", profile);
-      console.log("Investment Details:", investmentDetails);
-
-      alert("Profile Saved! (Check Console)");
 
       // Investment Preferences Section
       const investPrefResponse = await fetch(
@@ -256,6 +253,7 @@ export default function InvestmentStrategies() {
           }),
         }
       );
+
       if (!propertyProfileResponse.ok) {
         const errorData = await propertyProfileResponse.json();
         throw new Error(errorData.error || "Failed to save property profile");
@@ -282,6 +280,7 @@ export default function InvestmentStrategies() {
           }),
         }
       );
+
       if (!propertyFeaturesResponse.ok) {
         const errorData = await propertyFeaturesResponse.json();
         throw new Error(errorData.error || "Failed to save property features");
@@ -303,21 +302,26 @@ export default function InvestmentStrategies() {
           }),
         }
       );
+
       if (!targetMetricsResponse.ok) {
         const errorData = await targetMetricsResponse.json();
         throw new Error(errorData.error || "Failed to save target metrics");
       }
+
+      console.log("All sections saved successfully!");
+      console.log("Profile Name:", profileName);
+      console.log("User Type:", userType);
+      console.log("Profile:", profile);
+      console.log("Investment Details:", investmentDetails);
+      console.log("Property Features:", propertyFeatures);
       console.log("Target Metrics:", targetMetrics);
+
+      alert("Profile saved successfully! Redirecting to Cash Budget page...");
+      router.push("/investor-cash");
     } catch (error) {
       console.error("Error saving data:", error);
       alert(`Error saving data: ${error.message}`);
     }
-
-    console.log("Profile Name:", profileName);
-    console.log("User Type:", userType);
-    console.log("Profile:", profile);
-    console.log("Investment Details:", investmentDetails);
-    alert("Profile Saved! (Check Console)");
   };
 
   const handleCloseNotice = () => {
@@ -373,7 +377,6 @@ export default function InvestmentStrategies() {
                 <p className="text-sm mb-4">
                   You've updated your strategy. Would you like to set this as
                   your new default?
-
                 </p>
                 <div className="flex justify-center gap-4">
                   <button

@@ -26,7 +26,7 @@ export default function Dashboard() {
       setError('');
       
       try {
-        const response = await fetch('/api/firebase/user-profile', {
+        const response = await fetch('/api/user-profile', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

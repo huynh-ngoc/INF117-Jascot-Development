@@ -80,9 +80,14 @@ export default function PropAnalysisDashboard({ address }) {
   const streetViewUrl = getStreetViewUrl(address);
   const [isExpanded, setIsExpanded] = useState(false);
   const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loadingAI, setLoadingAI] = useState(false);
+  const [loadingDatabase, setLoadingDatabase] = useState(false);
+  const [error, setError] = useState(false);
   const [selectedInvestmentType, setSelectedInvestmentType] = useState("Long Term Rental(LTR)");
   const [selectedFinancingType, setSelectedFinancingType] = useState("Pay Cash(No Financing)");
+  const [ruleOfThumb, setRuleOfThumb] = useState({});
+  const [rehabData, setRehabData] = useState({});
+
   const [open, setOpen] = useState(false);
   const [gsi, setGsi] = useState(null);
   const [optExpense, setoptExpense] = useState(null);
@@ -115,22 +120,22 @@ export default function PropAnalysisDashboard({ address }) {
     "DSCR Bridge Loan + Permanent Loan(Brrr)",
     "Seller Financing"
   ];
-  const arv = 17500;
+  const arv = 175000;
   const incomeData = {
     current: 18600,
     scheduled: 24600,
     projected: 33000,
   };
 
-  const ruleOfThumb = {
-    appreciation: "6.00%",
-    rentAppreciation: "4.50%",
-    dscr: 1.15,
-    taxRate: "2.16%",
-    vacancy: "9.90%",
-    operatingExpenses: "50%",
-    opCostChange: "3%",
-    contingency: "12.50%",
+  const ruleOfThumbVars = {
+    appreciation: "",
+    rentAppreciation: "",
+    dscr: "",
+    taxRate: "",
+    vacancy: "",
+    operatingExpenses: "",
+    opCostChange: "",
+    contingency: "",
   };
 
   const operatingBudgetActions = ["Use \"Rule of Thumb\"", "Detail Your Projections"];
@@ -149,11 +154,10 @@ export default function PropAnalysisDashboard({ address }) {
 
   const rehabActions = ["Light-Rehab", "Medium Rehab", "Heavy Rehab"];
 
-  const rehabData = {
+  const rehabDataVars = {
     condition: "Light-Rehab",
-    totalBudget: 18315,
-    cashPaid: 18315,
-    financed: 0,
+    totalBudget: "",
+    cashPaid: "",
   };
 
   const settlementActions = ["Edit Rule of Thumb", "Use Detailed Costs"];
@@ -289,10 +293,7 @@ export default function PropAnalysisDashboard({ address }) {
   const MotionCardDescription = motion.create(CardDescription);
   const MotionCardFooter = motion.create(CardFooter);
 
-    
-
   // Structure Your Offer Calculations
-   
   const calculations = useMemo(() => {
     if (!data || !offerPrice) {
       return {
@@ -308,7 +309,8 @@ export default function PropAnalysisDashboard({ address }) {
         capRateArv: 0,
         desiredPrice: 0,
         dscrRatio: 0,
-        cashReturn: 0
+        cashReturn: 0,
+        rehabFinanced: 0
       };
     }
     const onePctCurrentRents = Math.round(incomeData.current / 12 / 0.01).toLocaleString();
@@ -319,11 +321,12 @@ export default function PropAnalysisDashboard({ address }) {
     const pricePerUnitArv = Math.round(arv / metrics.numberOfUnits).toLocaleString();
     const pricePerSqFtAsIs = (offerPrice / metrics.propertySize).toFixed(2);
     const pricePerSqFtArv = (arv / metrics.propertySize).toFixed(2);
-    const capRateAsIs = (incomeData.current / 2 / offerPrice).toFixed(2);
-    const capRateArv = (incomeData.projected / 2 / arv).toFixed(2);
+    const capRateAsIs = ((incomeData.current / 2 / offerPrice).toFixed(2)) * 100;
+    const capRateArv = ((incomeData.projected / 2 / arv).toFixed(2)) * 100;
     const desiredPrice = Math.round(offerStructure.desiredMarginPct * offerPrice).toLocaleString();
     const dscrRatio = Math.round(operatingBudget.noi / financingTerms.annualDebtService).toLocaleString();
     const cashReturn = (operatingBudget.cashFlow / cashConsider.investment).toFixed(2);
+    const rehabFinanced = (parseInt(rehabData.totalBudget) - parseInt(rehabData.cashPaid)).toLocaleString();
     return {
       onePctCurrentRents,
       onePctARRents,
@@ -337,24 +340,72 @@ export default function PropAnalysisDashboard({ address }) {
       capRateArv,
       desiredPrice,
       dscrRatio,
-      cashReturn
+      cashReturn,
+      rehabFinanced
     };
-  }, [data, offerPrice, metrics, incomeData, arv, offerStructure, operatingBudget, financingTerms, cashConsider]);
+  }, [data, offerPrice, metrics, incomeData, arv, offerStructure, operatingBudget, financingTerms, cashConsider, rehabData]);
 
-  //Fetch data from database
+  // Fetch data from database
   useEffect(() => {
-    setLoading(true);
+    fetchProperty();
+  }, []);
+
+  // Fetch data from openAI AIP
+  useEffect(() => {
+    setLoadingAI(true);
     fetch(`/api/property-data?address=${encodeURIComponent(address)}`)
       .then((res) => res.json())
       .then((d) => setData(d))
       .catch((err) => {
         console.error('Failed to fetch property data:', err);
       })
-      .finally(() => setLoading(false));
+      .finally(() => setLoadingAI(false));
   }, [address]);
 
+
+  const fetchProperty = async () => {
+    setLoadingDatabase(true);
+    setError('');
+    
+    try {
+      const response = await fetch('/api/property-analysis', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        // Local Rule of Thumb
+        ruleOfThumbVars.appreciation = (data.property?.localRuleOfThumb?.areaAppreciationRate)*100;
+        ruleOfThumbVars.rentAppreciation = data.property?.localRuleOfThumb?.rentAppreciationRate*100;
+        ruleOfThumbVars.dscr = data.property?.localRuleOfThumb?.dscrRequirement;
+        ruleOfThumbVars.taxRate = data.property?.localRuleOfThumb?.propertyTaxRate*100;
+        ruleOfThumbVars.vacancy = data.property?.localRuleOfThumb?.vacancyRate*100;
+        ruleOfThumbVars.operatingExpenses = data.property?.localRuleOfThumb?.operatingExpenses*100;
+        ruleOfThumbVars.opCostChange = data.property?.localRuleOfThumb?.operatingCostsChange*100;
+        ruleOfThumbVars.contingency = data.property?.localRuleOfThumb?.contingency*100;
+        setRuleOfThumb(ruleOfThumbVars);
+        // Rehab/Renovate
+        rehabDataVars.totalBudget = (data.property?.rehab?.totalRehabBudget).toLocaleString();
+        rehabDataVars.cashPaid = (data.property?.rehab?.amountPaid).toLocaleString();
+        setRehabData(rehabDataVars);
+      } else {
+        setError(data.error || 'Failed to fetch user profile');
+      }
+    } catch (err) {
+      setError('Network error occurred');
+      console.error('Error fetching profile:', err);
+    } finally {
+      setLoadingDatabase(false);
+    }
+  };
+
+  const loading = loadingAI || loadingDatabase;
   if (loading) return <p>Loading property details…</p>;
-  if (!data)    return <p>Unable to load property details.</p>;
+  if (!data || error)    return <p>Unable to load property details</p>;
 
   const {
     onePctCurrentRents,
@@ -369,7 +420,8 @@ export default function PropAnalysisDashboard({ address }) {
     capRateArv,
     desiredPrice,
     dscrRatio,
-    cashReturn
+    cashReturn,
+    rehabFinanced
   } = calculations;
 
   const handleToggle = () => {
@@ -498,19 +550,18 @@ export default function PropAnalysisDashboard({ address }) {
                 <motion.div layout="position">
                   <Button
                     size="icon"
-                    variant="secondary"
                     onClick={handleToggle}
-                    className="rounded-full"
+                    className="rounded-full text-black dark:text-black"
                     asChild
                   >
                     <motion.button
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
-                      className="bg-[#E5E5E5] text-secondary-foreground"
+                      className="bg-[#E5E5E5]"
                     >
                       {isExpanded ? 
-                        <Minimize2 className="text-secondary-foreground" size={18} /> 
-                        : <Maximize2 className="text-secondary-foreground" size={18} />}
+                        <Minimize2 size={18} /> 
+                        : <Maximize2 size={18} />}
                     </motion.button>
                   </Button>
                 </motion.div>
@@ -572,7 +623,7 @@ export default function PropAnalysisDashboard({ address }) {
                           <label className="block text-sm font-medium mb-1">After Rehab Value (ARV)</label>
                           <Input defaultValue={arv} />
                         </div>
-                        <Button variant="secondary">
+                        <Button variant="secondary" onClick={() => router.push(`/sales-comps`)} >
                           Sale Comps
                         </Button>
                       </div>
@@ -622,7 +673,7 @@ export default function PropAnalysisDashboard({ address }) {
                     >
                       <PopoverRoot>
                         <PopoverTrigger>
-                          <div className="flex justify-between items-center gap-2">
+                          <div className="flex justify-between items-center gap-2 font-montserrat font-bold">
                             <Plus /> More Actions
                           </div>
                         </PopoverTrigger>
@@ -663,6 +714,7 @@ export default function PropAnalysisDashboard({ address }) {
                       key={index}
                       onClick={action.action}
                       variant={`${action.variant|| 'disabled' }`}
+                      className="text-xs"
                     >
                       {action.icon}
                       <span>{action.label}</span>
@@ -684,13 +736,13 @@ export default function PropAnalysisDashboard({ address }) {
               icon={<HandCoins className="text-blue-500" />}
               items={[{
                 title: "Total Current Revenue (Annual)",
-                content: "$" + incomeData.current
+                content: "$ " + incomeData.current
               }, {
                 title: "Total Scheduled Revenue (Annual)",
-                content: "$" + incomeData.scheduled
+                content: "$ " + incomeData.scheduled
               }, {
                 title: "Total Projected Revenue (Annual)",
-                content: "$" + incomeData.projected
+                content: "$ " + incomeData.projected
               }
               ]}
               buttons={[
@@ -718,28 +770,28 @@ export default function PropAnalysisDashboard({ address }) {
               icon={<PencilRuler className="text-slate-500 dark:text-neutral-400" />}
               items={[{
                 title: "Area Appreciation Rate (5 yr running avg.)",
-                content: ruleOfThumb.appreciation
+                content: ruleOfThumb.appreciation+"%"
               }, {
                 title: "Rent Appreciation Rate (5 yr running avg.)",
-                content: ruleOfThumb.rentAppreciation
+                content: ruleOfThumb.rentAppreciation+"%"
               }, {
                 title: "DSCR Requirement (Check with your Lender)",
                 content: ruleOfThumb.dscr
               }, {
                 title: "Area Property Tax Rate",
-                content: ruleOfThumb.taxRate
+                content: ruleOfThumb.taxRate+"%"
               }, {
                 title: "Area Vacancy Rate (Current)",
-                content: ruleOfThumb.vacancy
+                content: ruleOfThumb.vacancy+"%"
               }, {
                 title: "Operating Expenses",
-                content: ruleOfThumb.operatingExpenses
+                content: ruleOfThumb.operatingExpenses+"%"
               }, {
                 title: "Annual change in Operating Costs",
-                content: ruleOfThumb.opCostChange
+                content: ruleOfThumb.opCostChange+"%"
               }, {
                 title: "Less Contingency for unexpected Costs (10-15%)",
-                content: ruleOfThumb.contingency
+                content: ruleOfThumb.contingency+"%"
               },
               ]}
               buttons={[]}
@@ -775,7 +827,13 @@ export default function PropAnalysisDashboard({ address }) {
                   )
                 }
               ]}
-              buttons={[]}
+              buttons={[
+              {
+                label: "Detail Your Projections",
+                icon: <ClipboardPlus className="w-4 h-4" />,
+                onClick: handleOptBudgetRouting,
+              }
+              ]}
             />
             {/* Financing */}
             <SectionCard
@@ -784,10 +842,10 @@ export default function PropAnalysisDashboard({ address }) {
               items={[
                 {
                   title: "Payment Amount (Annual Debt Service)",
-                  content: "$" + financingTerms.annualDebtService
+                  content: "$ " + financingTerms.annualDebtService
                 }, {
                   title: "Total Amount Borrowed",
-                  content: "$" + financingTerms.totalBorrowed
+                  content: "$ " + financingTerms.totalBorrowed
                 },{
                   title: "Loan Costs Option",
                   content: (
@@ -831,13 +889,13 @@ export default function PropAnalysisDashboard({ address }) {
                   )
                 }, {
                   title: "Total Rehab Budget",
-                  content: "$" + rehabData.totalBudget
+                  content: "$ " + rehabData.totalBudget
                 }, {
                   title: "Amount of Rehab to be Paid with Cash",
-                  content: "$" + rehabData.cashPaid
+                  content: "$ " + rehabData.cashPaid
                 }, {
                   title: "Amount of Rehab Financed",
-                  content: "$" + rehabData.financed
+                  content: "$ " + rehabFinanced
                 }
               ]}
               buttons={[
@@ -897,7 +955,7 @@ export default function PropAnalysisDashboard({ address }) {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-300">Cap Rate (As-Is):</span>
-                  <span className="font-medium">{capRateAsIs}</span>
+                  <span className="font-medium">{capRateAsIs}%</span>
                 </div>
               </div>
             </div>
@@ -925,7 +983,7 @@ export default function PropAnalysisDashboard({ address }) {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-300">Cap Rate (ARV):</span>
-                  <span className="font-medium">{capRateArv}</span>
+                  <span className="font-medium">{capRateArv}%</span>
                 </div>
               </div>
             </div>

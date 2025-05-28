@@ -57,11 +57,9 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Toaster } from '@/components/ui/sonner';
-import { toast } from "sonner"
 import { Input } from '@/components/ui/input';
 import { useRouter } from 'next/navigation'
-
+import RehabRenovateForm, { RehabRenovateData } from '../forms/rehab-renovate-form';
 import { auth, db } from '@/lib/firebase';
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { collection, getDocs } from "firebase/firestore";
@@ -86,7 +84,7 @@ export default function PropAnalysisDashboard({ address }) {
   const [selectedInvestmentType, setSelectedInvestmentType] = useState("Long Term Rental(LTR)");
   const [selectedFinancingType, setSelectedFinancingType] = useState("Pay Cash(No Financing)");
   const [ruleOfThumb, setRuleOfThumb] = useState({});
-  const [rehabData, setRehabData] = useState({});
+  const [rehabData, setRehabData] = useState({ totalBudget: 0, cashPaid: 0 });
 
   const [open, setOpen] = useState(false);
   const [gsi, setGsi] = useState(null);
@@ -128,14 +126,14 @@ export default function PropAnalysisDashboard({ address }) {
   };
 
   const ruleOfThumbVars = {
-    appreciation: "",
-    rentAppreciation: "",
-    dscr: "",
-    taxRate: "",
-    vacancy: "",
-    operatingExpenses: "",
-    opCostChange: "",
-    contingency: "",
+    appreciation: 0,
+    rentAppreciation: 0,
+    dscr: 0,
+    taxRate: 0,
+    vacancy: 0,
+    operatingExpenses: 0,
+    opCostChange: 0,
+    contingency: 0,
   };
 
   const operatingBudgetActions = ["Use \"Rule of Thumb\"", "Detail Your Projections"];
@@ -156,25 +154,13 @@ export default function PropAnalysisDashboard({ address }) {
 
   const rehabDataVars = {
     condition: "Light-Rehab",
-    totalBudget: "",
-    cashPaid: "",
+    totalBudget: 0,
+    cashPaid: 0,
   };
 
   const settlementActions = ["Edit Rule of Thumb", "Use Detailed Costs"];
 
   const offerStructure = {
-    listPrice: 149900,
-    arValue: 175000,
-    onePctCurrentRents: 155000,
-    onePctARRents: 275000,
-    grmOffer: 6.18,
-    grmArv: 5.30,
-    pricePerUnitAsIs: 38333,
-    pricePerUnitArv: 58333,
-    pricePerSqFtAsIs: 53.24,
-    pricePerSqFtArv: 81.02,
-    capRateAsIs: "3.22%",
-    capRateArv: "7.01%",
     desiredMarginPct: 0.7,
     profitMargin: "65.71%",
     desiredPrice: 122500,
@@ -465,16 +451,10 @@ export default function PropAnalysisDashboard({ address }) {
   };
 
   const handleDone = () => {
-    // setOpen(false);
-    // const gsi = budgetData.find(r => r.title === 'Gross Scheduled Income (GSI)').annual;
-    // setGsi(gsi || null);
-    // const optExp = budgetData.find(r => r.title === 'Total Operating Expenses').annual;
-    // setoptExpense(optExp || null);
-    // const netOpt = budgetData.find(r => r.title === 'Net Operating Income (NOI)').annual;
-    // setNetOpt(netOpt || null);
-    // const cashFlow = budgetData.find(r => r.title === 'Cash Flow (Year 1)').annual;
-    // setCashFlowYr1(cashFlow || null);
-    
+    setOpen(false);
+    const amountPaid = RehabRenovateData[0].amountPaid;
+    const total = RehabRenovateData[0].totalBudget;
+    setRehabData({ totalBudget: total, cashPaid: amountPaid });
   };
 
 
@@ -896,14 +876,38 @@ export default function PropAnalysisDashboard({ address }) {
                 }, {
                   title: "Amount of Rehab Financed",
                   content: "$ " + rehabFinanced
+                }, {
+                  title : "",
+                  content: 
+                    <Dialog open={open} onOpenChange={setOpen}>
+                      <DialogTrigger asChild>
+                        <Button variant="secondary"><Wallet className="w-4 h-4" />Quick Calculate</Button>
+                      </DialogTrigger>
+                      <DialogContent
+                        className="
+
+                          sm:max-w-lg md:max-w-2xl lg:max-w-3xl 
+                          max-h-[90vh] overflow-y-auto 
+                          p-4 sm:p-6
+                        "
+                      >
+                        <DialogHeader>
+                          <DialogTitle>Rehab & Renovation Quick Calculation</DialogTitle>
+                        </DialogHeader>
+                        <RehabRenovateForm amountFinanced={financingTerms.annualDebtService} arv={arv}/>
+
+                        <DialogFooter>
+                          <Button  variant="outline" className="bg-gray-300" onClick={() => setOpen(false)}>
+                            Cancel
+                          </Button>
+                          <Button onClick={handleDone}>Done</Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
                 }
               ]}
               buttons={[
                 {
-                  label: "Quick Calculate",
-                  icon: <Wallet className="w-4 h-4" />,
-                  onClick: () => router.push(`/rehab-renovation`)
-                }, {
                   label: "DSCR Loan Rehab Calculator",
                   icon: <Calculator className="w-4 h-4" />,
                   variant: "disabled",

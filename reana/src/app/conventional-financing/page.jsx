@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/sidebar/app-sidebar';
 import {
@@ -35,18 +35,20 @@ function pmt(rate, nper, pv, fv = 0, type = 0) {
   
 export default function ConventionalFinancingPage() {
   const router = useRouter();
+  const [hasChanges, setHasChanges] = useState(false);
+  const [hasAdditionalFinancing, setHasAdditionalFinancing] = useState(false);
 
-  // Loan terms
-  const [maxLTV, setMaxLTV] = useState(70);
+  // Loan terms (percent fields as whole numbers for UI)
+  const [maxLTV, setMaxLTV] = useState(70); // e.g., 70 for 70%
   const [isIO, setIsIO] = useState(true);
-  const [rate, setRate] = useState(7);
+  const [rate, setRate] = useState(7); // e.g., 7 for 7%
   const [balloon, setBalloon] = useState(5);
 
   // This Transaction
   const [asIs, setAsIs] = useState(115000);
   const [reqDownPay, setReqDownPay] = useState(0);
   const [optDownPay, setOptDownPay] = useState(11500);
-  const [actualLTV, setActualLTV] = useState(70);
+  const [actualLTV, setActualLTV] = useState(70); // e.g., 70 for 70%
   const [maxLoan, setMaxLoan] = useState(80500)
   const [userLoanAmt, setUserLoanAmt] = useState(0);
   const[monthlyPayment, setMonthlyPayment] = useState(0);
@@ -60,6 +62,108 @@ export default function ConventionalFinancingPage() {
     { key: 'inspection', label: 'Use Detailed Inspection Costs' },
   ];
   const [selectedFee, setSelectedFee] = useState('rule');
+
+  // Load data from Firebase when component mounts
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch conventional financing data
+        const conventionalResponse = await fetch('/api/conventional-financing');
+        if (!conventionalResponse.ok) {
+          throw new Error('Failed to fetch conventional financing data');
+        }
+        const conventionalData = await conventionalResponse.json();
+        
+        // Fetch additional financing data
+        const additionalResponse = await fetch('/api/additional-financing');
+        if (!additionalResponse.ok) {
+          throw new Error('Failed to fetch additional financing data');
+        }
+        const additionalData = await additionalResponse.json();
+
+        if (conventionalData.success && conventionalData.conventionalFinancing) {
+          const {
+            maxLTV: savedMaxLTV,
+            isIO: savedIsIO,
+            rate: savedRate,
+            balloon: savedBalloon,
+            asIs: savedAsIs,
+            reqDownPay: savedReqDownPay,
+            optDownPay: savedOptDownPay,
+            actualLTV: savedActualLTV,
+            maxLoan: savedMaxLoan,
+            userLoanAmt: savedUserLoanAmt,
+            monthlyPayment: savedMonthlyPayment,
+            annualPayment: savedAnnualPayment,
+          } = conventionalData.conventionalFinancing;
+
+          if (savedMaxLTV !== undefined) setMaxLTV(savedMaxLTV * 100); // decimal to whole
+          if (savedIsIO !== undefined) setIsIO(savedIsIO);
+          if (savedRate !== undefined) setRate(savedRate * 100); // decimal to whole
+          if (savedBalloon !== undefined) setBalloon(savedBalloon);
+          if (savedAsIs !== undefined) setAsIs(savedAsIs);
+          if (savedReqDownPay !== undefined) setReqDownPay(savedReqDownPay);
+          if (savedOptDownPay !== undefined) setOptDownPay(savedOptDownPay);
+          if (savedActualLTV !== undefined) setActualLTV(savedActualLTV * 100); // decimal to whole
+          if (savedMaxLoan !== undefined) setMaxLoan(savedMaxLoan);
+          if (savedUserLoanAmt !== undefined) setUserLoanAmt(savedUserLoanAmt);
+          if (savedMonthlyPayment !== undefined) setMonthlyPayment(savedMonthlyPayment);
+          if (savedAnnualPayment !== undefined) setAnnualPayment(savedAnnualPayment);
+        }
+
+        // Set additional financing status
+        setHasAdditionalFinancing(additionalData.success && Object.keys(additionalData.additionalFinancing || {}).length > 0);
+      } catch (error) {
+        console.error('Error fetching financing data:', error);
+      }
+    };
+    fetchData();
+  }, []);
+
+  // Handle input changes
+  const handleInputChange = (setter) => (e) => {
+    setter(+e.target.value);
+    setHasChanges(true);
+  };
+
+  // Save data to Firebase
+  const handleSave = async () => {
+    try {
+      const response = await fetch('/api/conventional-financing', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          maxLTV,
+          isIO,
+          rate,
+          balloon,
+          asIs,
+          reqDownPay,
+          optDownPay,
+          actualLTV,
+          maxLoan,
+          userLoanAmt,
+          monthlyPayment,
+          annualPayment
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save data');
+      }
+
+      const data = await response.json();
+      if (data.success) {
+        setHasChanges(false);
+        alert('Data saved successfully!');
+      }
+    } catch (error) {
+      console.error('Error saving conventional financing data:', error);
+      alert('Failed to save data. Please try again.');
+    }
+  };
 
   // Calculations
   const {
@@ -120,7 +224,7 @@ export default function ConventionalFinancingPage() {
 
         <div className="flex flex-1 flex-col gap-4 px-8 p-4 pt-0">
             
-          <header >
+          <header>
             <h1 className="text-5xl font-bold">Conventional Financing</h1>
           </header>
 
@@ -135,7 +239,7 @@ export default function ConventionalFinancingPage() {
                 <Input
                   type="number"
                   value={maxLTV}
-                  onChange={e => setMaxLTV(+e.target.value)}
+                  onChange={handleInputChange(setMaxLTV)}
                 />
               </div>
               <div>
@@ -143,7 +247,10 @@ export default function ConventionalFinancingPage() {
                 <select
                   className="mt-1 block w-full rounded border-gray-300"
                   value={isIO ? 'IO' : 'AM'}
-                  onChange={e => setIsIO(e.target.value === 'IO')}
+                  onChange={(e) => {
+                    setIsIO(e.target.value === 'IO');
+                    setHasChanges(true);
+                  }}
                 >
                   <option value="IO">Interest Only</option>
                   <option value="AM">Amortizing</option>
@@ -155,7 +262,7 @@ export default function ConventionalFinancingPage() {
                   type="number"
                   step="0.01"
                   value={rate}
-                  onChange={e => setRate(+e.target.value)}
+                  onChange={handleInputChange(setRate)}
                 />
               </div>
               <div>
@@ -163,7 +270,7 @@ export default function ConventionalFinancingPage() {
                 <Input
                   type="number"
                   value={balloon}
-                  onChange={e => setBalloon(+e.target.value)}
+                  onChange={handleInputChange(setBalloon)}
                 />
               </div>
             </CardContent>
@@ -176,7 +283,7 @@ export default function ConventionalFinancingPage() {
             </CardHeader>
             <CardContent className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <div>
-                <Label>Today’s “As-Is” Value</Label>
+                <Label>Today's "As-Is" Value</Label>
                 <p className="mt-1">${asIs.toLocaleString()}</p>
               </div>
               <div>
@@ -188,7 +295,7 @@ export default function ConventionalFinancingPage() {
                 <Input
                   type="number"
                   value={optDownPay}
-                  onChange={e => setOptDownPay(+e.target.value)}
+                  onChange={handleInputChange(setOptDownPay)}
                 />
               </div>
               <div>
@@ -204,7 +311,7 @@ export default function ConventionalFinancingPage() {
                 <Input
                   type="number"
                   value={loanAmt}
-                  onChange={e => setUserLoanAmt(+e.target.value)}
+                  onChange={handleInputChange(setUserLoanAmt)}
                 />
               </div>
               <div>
@@ -225,7 +332,7 @@ export default function ConventionalFinancingPage() {
                 variant="secondary"
                 onClick={() => router.push(`/additional-financing`)}
               >
-                Add Another Loan (Secondary Financing)
+                {hasAdditionalFinancing ? 'Edit Additional Financing' : 'Add Another Loan (Secondary Financing)'}
               </Button>
             </CardFooter>
           </Card>
@@ -239,7 +346,10 @@ export default function ConventionalFinancingPage() {
               {feeOptions.map(({ key, label }) => (
                 <Button
                   key={key}
-                  onClick={() => setSelectedFee(key)}
+                  onClick={() => {
+                    setSelectedFee(key);
+                    setHasChanges(true);
+                  }}
                   className={`w-full py-2 px-4 rounded-md font-medium transition`}
                   variant={selectedFee === key ? "default" : "disabled"}
                 >
@@ -248,6 +358,18 @@ export default function ConventionalFinancingPage() {
               ))}
             </CardContent>
           </Card>
+
+          {/* Save Changes Button */}
+          {hasChanges && (
+            <div className="flex justify-end">
+              <Button
+                onClick={handleSave}
+                className="bg-[#00A3E0] hover:bg-[#0077AC] text-white px-4 py-2 rounded"
+              >
+                Save Changes
+              </Button>
+            </div>
+          )}
         </div>
       </SidebarInset>
     </SidebarProvider>

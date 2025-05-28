@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   Maximize2,
   Minimize2,
@@ -49,8 +49,22 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Toaster } from '@/components/ui/sonner';
+import { toast } from "sonner"
 import { Input } from '@/components/ui/input';
 import { useRouter } from 'next/navigation'
+
+import { auth, db } from '@/lib/firebase';
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { collection, getDocs } from "firebase/firestore";
 
 // Get address image from Google Street View  
 const getStreetViewUrl = (address) => {
@@ -65,33 +79,23 @@ export default function PropAnalysisDashboard({ address }) {
   const backdropVariants = { hidden: { opacity: 0 }, visible: { opacity: 1 } };
   const streetViewUrl = getStreetViewUrl(address);
   const [isExpanded, setIsExpanded] = useState(false);
-
   const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loadingAI, setLoadingAI] = useState(false);
+  const [loadingDatabase, setLoadingDatabase] = useState(false);
+  const [error, setError] = useState(false);
+  const [selectedInvestmentType, setSelectedInvestmentType] = useState("Long Term Rental(LTR)");
+  const [selectedFinancingType, setSelectedFinancingType] = useState("Pay Cash(No Financing)");
+  const [ruleOfThumb, setRuleOfThumb] = useState({});
+  const [rehabData, setRehabData] = useState({});
 
-  useEffect(() => {
-    setLoading(true);
-    fetch(`/api/property-data?address=${encodeURIComponent(address)}`)
-      .then((res) => res.json())
-      .then((d) => setData(d))
-      .catch((err) => {
-        console.error('Failed to fetch property data:', err);
-      })
-      .finally(() => setLoading(false));
-  }, [address]);
+  const [open, setOpen] = useState(false);
+  const [gsi, setGsi] = useState(null);
+  const [optExpense, setoptExpense] = useState(null);
+  const [netOpt, setNetOpt] = useState(null);
+  const [cashFlowYr1, setCashFlowYr1] = useState(null);
 
-  if (loading) return <p>Loading property details…</p>;
-  if (!data)    return <p>Unable to load property details.</p>;
-
-  const { askingPrice, metrics } = data;
-
-  const handleToggle = () => {
-    if (!isExpanded) {
-      setIsExpanded(true);
-    } else {
-      setTimeout(() => setIsExpanded(false), 200);
-    }
-  };
+  const offerPrice = data?.askingPrice || 0;
+  const metrics = data?.propertyMetrics || {};
 
   // Sample card data
   const cardData = {
@@ -99,6 +103,9 @@ export default function PropAnalysisDashboard({ address }) {
     description: "A brief overview of the property.",
     image: "/api/placeholder/600/400"
   };
+
+  const investmentTypeDefault = "Long Term Rental(LTR)";
+  const financingTypesDefault = "Pay Cash(No Financing)";
 
   const investmentTypes = [
     "Long Term Rental(LTR)", 
@@ -113,34 +120,33 @@ export default function PropAnalysisDashboard({ address }) {
     "DSCR Bridge Loan + Permanent Loan(Brrr)",
     "Seller Financing"
   ];
-  const arvDefault = "17500";
+  const arv = 175000;
   const incomeData = {
     current: 18600,
     scheduled: 24600,
     projected: 33000,
   };
 
-  const ruleOfThumb = {
-    appreciation: "6.00%",
-    rentAppreciation: "4.50%",
-    dscr: 1.15,
-    taxRate: "2.16%",
-    vacancy: "9.90%",
-    operatingExpenses: "50%",
-    opCostChange: "3%",
-    contingency: "12.50%",
+  const ruleOfThumbVars = {
+    appreciation: "",
+    rentAppreciation: "",
+    dscr: "",
+    taxRate: "",
+    vacancy: "",
+    operatingExpenses: "",
+    opCostChange: "",
+    contingency: "",
   };
 
   const operatingBudgetActions = ["Use \"Rule of Thumb\"", "Detail Your Projections"];
 
   const operatingBudget = {
-    gsi: 32400,
+    gsi: 32440,
     expenses: 12960,
     noi: 19440,
-    cashFlow: -3120,
+    cashFlow: 3120
   };
 
-  const financingActions = ["Use \"Rule of Thumb\"", "Use \"Detailed\""]
   const financingTerms = {
     annualDebtService: 9055,
     totalBorrowed: 103500,
@@ -148,11 +154,10 @@ export default function PropAnalysisDashboard({ address }) {
 
   const rehabActions = ["Light-Rehab", "Medium Rehab", "Heavy Rehab"];
 
-  const rehabData = {
+  const rehabDataVars = {
     condition: "Light-Rehab",
-    totalBudget: 18315,
-    cashPaid: 18315,
-    financed: 0,
+    totalBudget: "",
+    cashPaid: "",
   };
 
   const settlementActions = ["Edit Rule of Thumb", "Use Detailed Costs"];
@@ -170,7 +175,7 @@ export default function PropAnalysisDashboard({ address }) {
     pricePerSqFtArv: 81.02,
     capRateAsIs: "3.22%",
     capRateArv: "7.01%",
-    desiredMarginPct: "70%",
+    desiredMarginPct: 0.7,
     profitMargin: "65.71%",
     desiredPrice: 122500,
     myOffer: 115000,
@@ -184,7 +189,7 @@ export default function PropAnalysisDashboard({ address }) {
   };
 
   const cashFlow = {
-    netOp: 19440,
+    netOp: operatingBudget.noi,
     dscr: 1.73,
     cashReturn: "100.85%"
   }
@@ -288,6 +293,194 @@ export default function PropAnalysisDashboard({ address }) {
   const MotionCardDescription = motion.create(CardDescription);
   const MotionCardFooter = motion.create(CardFooter);
 
+  // Structure Your Offer Calculations
+  const calculations = useMemo(() => {
+    if (!data || !offerPrice) {
+      return {
+        onePctCurrentRents: 0,
+        onePctARRents: 0,
+        grmOffer: 0,
+        grmArv: 0,
+        pricePerUnitAsIs: 0,
+        pricePerUnitArv: 0,
+        pricePerSqFtAsIs: 0,
+        pricePerSqFtArv: 0,
+        capRateAsIs: 0,
+        capRateArv: 0,
+        desiredPrice: 0,
+        dscrRatio: 0,
+        cashReturn: 0,
+        rehabFinanced: 0
+      };
+    }
+    const onePctCurrentRents = Math.round(incomeData.current / 12 / 0.01).toLocaleString();
+    const onePctARRents = Math.round(incomeData.projected / 12 / 0.01).toLocaleString();
+    const grmOffer = (offerPrice / incomeData.current).toFixed(2);
+    const grmArv = (arv / incomeData.projected).toFixed(2);
+    const pricePerUnitAsIs = Math.round(offerPrice / metrics.numberOfUnits).toLocaleString();
+    const pricePerUnitArv = Math.round(arv / metrics.numberOfUnits).toLocaleString();
+    const pricePerSqFtAsIs = (offerPrice / metrics.propertySize).toFixed(2);
+    const pricePerSqFtArv = (arv / metrics.propertySize).toFixed(2);
+    const capRateAsIs = ((incomeData.current / 2 / offerPrice).toFixed(2)) * 100;
+    const capRateArv = ((incomeData.projected / 2 / arv).toFixed(2)) * 100;
+    const desiredPrice = Math.round(offerStructure.desiredMarginPct * offerPrice).toLocaleString();
+    const dscrRatio = Math.round(operatingBudget.noi / financingTerms.annualDebtService).toLocaleString();
+    const cashReturn = (operatingBudget.cashFlow / cashConsider.investment).toFixed(2);
+    const rehabFinanced = (parseInt(rehabData.totalBudget) - parseInt(rehabData.cashPaid)).toLocaleString();
+    return {
+      onePctCurrentRents,
+      onePctARRents,
+      grmOffer,
+      grmArv,
+      pricePerUnitAsIs,
+      pricePerUnitArv,
+      pricePerSqFtAsIs,
+      pricePerSqFtArv,
+      capRateAsIs,
+      capRateArv,
+      desiredPrice,
+      dscrRatio,
+      cashReturn,
+      rehabFinanced
+    };
+  }, [data, offerPrice, metrics, incomeData, arv, offerStructure, operatingBudget, financingTerms, cashConsider, rehabData]);
+
+  // Fetch data from database
+  useEffect(() => {
+    fetchProperty();
+  }, []);
+
+  // Fetch data from openAI AIP
+  useEffect(() => {
+    setLoadingAI(true);
+    fetch(`/api/property-data?address=${encodeURIComponent(address)}`)
+      .then((res) => res.json())
+      .then((d) => setData(d))
+      .catch((err) => {
+        console.error('Failed to fetch property data:', err);
+      })
+      .finally(() => setLoadingAI(false));
+  }, [address]);
+
+
+  const fetchProperty = async () => {
+    setLoadingDatabase(true);
+    setError('');
+    
+    try {
+      const response = await fetch('/api/property-analysis', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        // Local Rule of Thumb
+        ruleOfThumbVars.appreciation = (data.property?.localRuleOfThumb?.areaAppreciationRate)*100;
+        ruleOfThumbVars.rentAppreciation = data.property?.localRuleOfThumb?.rentAppreciationRate*100;
+        ruleOfThumbVars.dscr = data.property?.localRuleOfThumb?.dscrRequirement;
+        ruleOfThumbVars.taxRate = data.property?.localRuleOfThumb?.propertyTaxRate*100;
+        ruleOfThumbVars.vacancy = data.property?.localRuleOfThumb?.vacancyRate*100;
+        ruleOfThumbVars.operatingExpenses = data.property?.localRuleOfThumb?.operatingExpenses*100;
+        ruleOfThumbVars.opCostChange = data.property?.localRuleOfThumb?.operatingCostsChange*100;
+        ruleOfThumbVars.contingency = data.property?.localRuleOfThumb?.contingency*100;
+        setRuleOfThumb(ruleOfThumbVars);
+        // Rehab/Renovate
+        rehabDataVars.totalBudget = (data.property?.rehab?.totalRehabBudget).toLocaleString();
+        rehabDataVars.cashPaid = (data.property?.rehab?.amountPaid).toLocaleString();
+        setRehabData(rehabDataVars);
+      } else {
+        setError(data.error || 'Failed to fetch user profile');
+      }
+    } catch (err) {
+      setError('Network error occurred');
+      console.error('Error fetching profile:', err);
+    } finally {
+      setLoadingDatabase(false);
+    }
+  };
+
+  const loading = loadingAI || loadingDatabase;
+  if (loading) return <p>Loading property details…</p>;
+  if (!data || error)    return <p>Unable to load property details</p>;
+
+  const {
+    onePctCurrentRents,
+    onePctARRents,
+    grmOffer,
+    grmArv,
+    pricePerUnitAsIs,
+    pricePerUnitArv,
+    pricePerSqFtAsIs,
+    pricePerSqFtArv,
+    capRateAsIs,
+    capRateArv,
+    desiredPrice,
+    dscrRatio,
+    cashReturn,
+    rehabFinanced
+  } = calculations;
+
+  const handleToggle = () => {
+    if (!isExpanded) {
+      setIsExpanded(true);
+    } else {
+      setTimeout(() => setIsExpanded(false), 200);
+    }
+  };
+
+  const handleInvestmentSelect = (value) => {
+    setSelectedInvestmentType(value);
+  };
+
+  const handleFinancingSelect = (value) => {
+    setSelectedFinancingType(value);   
+  };
+
+  const loadOptBudgetDataROT = () => {
+
+  };
+
+  const loadOptBudgetDataDetailed = () => {
+
+  };
+
+  const handleOptBudgetRouting= () => {
+
+  };
+
+  const loadFinancingDataROT = () => {
+
+  };
+
+  const loadFinancingDetailed = () => {
+
+  };
+
+  const handleFinancingRouting= () => {
+
+  };
+
+  const handleDone = () => {
+    // setOpen(false);
+    // const gsi = budgetData.find(r => r.title === 'Gross Scheduled Income (GSI)').annual;
+    // setGsi(gsi || null);
+    // const optExp = budgetData.find(r => r.title === 'Total Operating Expenses').annual;
+    // setoptExpense(optExp || null);
+    // const netOpt = budgetData.find(r => r.title === 'Net Operating Income (NOI)').annual;
+    // setNetOpt(netOpt || null);
+    // const cashFlow = budgetData.find(r => r.title === 'Cash Flow (Year 1)').annual;
+    // setCashFlowYr1(cashFlow || null);
+    
+  };
+
+
+  
+
+  
   return (
     <div className="flex flex-col min-h-screen p-4 relative">
         <div className="flex mb-8 h-[700px]">
@@ -357,19 +550,18 @@ export default function PropAnalysisDashboard({ address }) {
                 <motion.div layout="position">
                   <Button
                     size="icon"
-                    variant="secondary"
                     onClick={handleToggle}
-                    className="rounded-full"
+                    className="rounded-full text-black dark:text-black"
                     asChild
                   >
                     <motion.button
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
-                      className="bg-[#E5E5E5] text-secondary-foreground"
+                      className="bg-[#E5E5E5]"
                     >
                       {isExpanded ? 
-                        <Minimize2 className="text-secondary-foreground" size={18} /> 
-                        : <Maximize2 className="text-secondary-foreground" size={18} />}
+                        <Minimize2 size={18} /> 
+                        : <Maximize2 size={18} />}
                     </motion.button>
                   </Button>
                 </motion.div>
@@ -393,7 +585,7 @@ export default function PropAnalysisDashboard({ address }) {
                       <div className="grid grid-cols-3 gap-4">
                         <div>
                           <label className="block text-sm font-medium mb-1">Type of Investment</label>
-                          <Select defaultValue={investmentTypes[0]}>
+                          <Select value={selectedInvestmentType || ""} onValueChange={handleInvestmentSelect}>
                             <SelectTrigger className="w-full">
                               <SelectValue placeholder="Select Type" />
                             </SelectTrigger>
@@ -407,7 +599,7 @@ export default function PropAnalysisDashboard({ address }) {
 
                         <div>
                           <label className="block text-sm font-medium mb-1">Select Financing Type</label>
-                          <Select defaultValue={financingTypes[0]}>
+                          <Select value={selectedFinancingType || ""} onValueChange={handleFinancingSelect}>
                             <SelectTrigger className="w-full">
                               <SelectValue placeholder="Select Financing" />
                             </SelectTrigger>
@@ -421,7 +613,7 @@ export default function PropAnalysisDashboard({ address }) {
 
                         <div>
                           <label className="block text-sm font-medium mb-1">Asking / List Price</label>
-                          <div className="text-lg font-semibold">{askingPrice}</div>
+                          <div className="text-lg font-semibold">{offerPrice}</div>
                         </div>
                       </div>
 
@@ -429,9 +621,9 @@ export default function PropAnalysisDashboard({ address }) {
                       <div className="flex items-end space-x-4">
                         <div className="flex-1">
                           <label className="block text-sm font-medium mb-1">After Rehab Value (ARV)</label>
-                          <Input defaultValue={arvDefault} />
+                          <Input defaultValue={arv} />
                         </div>
-                        <Button variant="secondary">
+                        <Button variant="secondary" onClick={() => router.push(`/sales-comps`)} >
                           Sale Comps
                         </Button>
                       </div>
@@ -481,7 +673,7 @@ export default function PropAnalysisDashboard({ address }) {
                     >
                       <PopoverRoot>
                         <PopoverTrigger>
-                          <div className="flex justify-between items-center gap-2">
+                          <div className="flex justify-between items-center gap-2 font-montserrat font-bold">
                             <Plus /> More Actions
                           </div>
                         </PopoverTrigger>
@@ -522,6 +714,7 @@ export default function PropAnalysisDashboard({ address }) {
                       key={index}
                       onClick={action.action}
                       variant={`${action.variant|| 'disabled' }`}
+                      className="text-xs"
                     >
                       {action.icon}
                       <span>{action.label}</span>
@@ -543,13 +736,13 @@ export default function PropAnalysisDashboard({ address }) {
               icon={<HandCoins className="text-blue-500" />}
               items={[{
                 title: "Total Current Revenue (Annual)",
-                content: "$" + incomeData.current
+                content: "$ " + incomeData.current
               }, {
                 title: "Total Scheduled Revenue (Annual)",
-                content: "$" + incomeData.scheduled
+                content: "$ " + incomeData.scheduled
               }, {
                 title: "Total Projected Revenue (Annual)",
-                content: "$" + incomeData.projected
+                content: "$ " + incomeData.projected
               }
               ]}
               buttons={[
@@ -577,28 +770,28 @@ export default function PropAnalysisDashboard({ address }) {
               icon={<PencilRuler className="text-slate-500 dark:text-neutral-400" />}
               items={[{
                 title: "Area Appreciation Rate (5 yr running avg.)",
-                content: ruleOfThumb.appreciation
+                content: ruleOfThumb.appreciation+"%"
               }, {
                 title: "Rent Appreciation Rate (5 yr running avg.)",
-                content: ruleOfThumb.rentAppreciation
+                content: ruleOfThumb.rentAppreciation+"%"
               }, {
                 title: "DSCR Requirement (Check with your Lender)",
                 content: ruleOfThumb.dscr
               }, {
                 title: "Area Property Tax Rate",
-                content: ruleOfThumb.taxRate
+                content: ruleOfThumb.taxRate+"%"
               }, {
                 title: "Area Vacancy Rate (Current)",
-                content: ruleOfThumb.vacancy
+                content: ruleOfThumb.vacancy+"%"
               }, {
                 title: "Operating Expenses",
-                content: ruleOfThumb.operatingExpenses
+                content: ruleOfThumb.operatingExpenses+"%"
               }, {
                 title: "Annual change in Operating Costs",
-                content: ruleOfThumb.opCostChange
+                content: ruleOfThumb.opCostChange+"%"
               }, {
                 title: "Less Contingency for unexpected Costs (10-15%)",
-                content: ruleOfThumb.contingency
+                content: ruleOfThumb.contingency+"%"
               },
               ]}
               buttons={[]}
@@ -610,33 +803,37 @@ export default function PropAnalysisDashboard({ address }) {
               items={[
                 {
                   title: "Gross Scheduled Inc. (GSI)",
-                  content: "$" + operatingBudget.gsi
+                  content: operatingBudget.gsi
                 }, {
                   title: "Operating Expenses",
-                  content: "$" + operatingBudget.expenses
+                  content: operatingBudget.expenses
                 }, {
                   title: "Net Operating Inc. (NOI)",
-                  content: "$" + operatingBudget.noi
+                  content: operatingBudget.noi
                 }, {
                   title: "Cash Flow Yr 1",
-                  content: "$" + operatingBudget.cashFlow
+                  content: operatingBudget.cashFlow
                 }, {
                   title: "Operating Budget Option",
                   content: (
-                    <Select defaultValue={operatingBudgetActions[0]}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select Financing" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {operatingBudgetActions.map((f) => (
-                          <SelectItem key={f} value={f}>{f}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <span className="flex space-x-2">
+                      <Button variant="secondary" onClick={loadOptBudgetDataROT}>
+                        Use "Rule of Thumb"
+                      </Button>
+                      <Button variant="secondary" onClick={loadOptBudgetDataDetailed}>
+                        Use "Detailed"
+                      </Button>
+                    </span>
                   )
                 }
               ]}
-              buttons={[]}
+              buttons={[
+              {
+                label: "Detail Your Projections",
+                icon: <ClipboardPlus className="w-4 h-4" />,
+                onClick: handleOptBudgetRouting,
+              }
+              ]}
             />
             {/* Financing */}
             <SectionCard
@@ -645,32 +842,30 @@ export default function PropAnalysisDashboard({ address }) {
               items={[
                 {
                   title: "Payment Amount (Annual Debt Service)",
-                  content: "$" + financingTerms.annualDebtService
+                  content: "$ " + financingTerms.annualDebtService
                 }, {
                   title: "Total Amount Borrowed",
-                  content: "$" + financingTerms.totalBorrowed
+                  content: "$ " + financingTerms.totalBorrowed
                 },{
                   title: "Loan Costs Option",
                   content: (
-                    <Select defaultValue={financingActions[0]}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select Financing" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {financingActions.map((f) => (
-                          <SelectItem key={f} value={f}>{f}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <span className="flex space-x-2">
+                      <Button variant="secondary" onClick={loadFinancingDataROT}>
+                        Use "Rule of Thumb"
+                      </Button>
+                      <Button variant="secondary" onClick={loadFinancingDetailed}>
+                        Use "Detailed"
+                      </Button>
+                    </span>
                   )
                 }
               ]}
               buttons={[
-                {
-                  label: "Detail Loan Terms",
-                  icon: <ClipboardPlus className="w-4 h-4" />,
-                  onClick: () => router.push(`/conventional-financing`),
-                }
+              {
+                label: "Detail Loan Terms",
+                icon: <ClipboardPlus className="w-4 h-4" />,
+                onClick: handleFinancingRouting,
+              }
               ]}
             />
             {/* Rehab/Renovate */}
@@ -694,13 +889,13 @@ export default function PropAnalysisDashboard({ address }) {
                   )
                 }, {
                   title: "Total Rehab Budget",
-                  content: "$" + rehabData.totalBudget
+                  content: "$ " + rehabData.totalBudget
                 }, {
                   title: "Amount of Rehab to be Paid with Cash",
-                  content: "$" + rehabData.cashPaid
+                  content: "$ " + rehabData.cashPaid
                 }, {
                   title: "Amount of Rehab Financed",
-                  content: "$" + rehabData.financed
+                  content: "$ " + rehabFinanced
                 }
               ]}
               buttons={[
@@ -739,56 +934,56 @@ export default function PropAnalysisDashboard({ address }) {
             <div className="bg-white dark:bg-gray-700 p-4 rounded-lg shadow">
             <div className="flex justify-between text-lg font-semibold mb-4 text-gray-700 dark:text-gray-200 border-b pb-2">
               <h3 >Current List Price:</h3>
-              <span className="font-medium">${offerStructure.listPrice.toLocaleString()}</span>
+              <span className="font-medium">${offerPrice.toLocaleString()}</span>
             </div>
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-300">1% Rule Current Rents:</span>
-                  <span className="font-medium">${offerStructure.onePctCurrentRents.toLocaleString()}</span>
+                  <span className="font-medium">${onePctCurrentRents.toLocaleString('en')}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-300">GRM @ Offer Price:</span>
-                  <span className="font-medium">{offerStructure.grmOffer}</span>
+                  <span className="font-medium">{grmOffer}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-300">Price per Unit (As-Is):</span>
-                  <span className="font-medium">${offerStructure.pricePerUnitAsIs.toLocaleString()}</span>
+                  <span className="font-medium">${pricePerUnitAsIs.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-300">Price per Sq Ft (As-Is):</span>
-                  <span className="font-medium">${offerStructure.pricePerSqFtAsIs}</span>
+                  <span className="font-medium">${pricePerSqFtAsIs}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-300">As-Is Cap Rate:</span>
-                  <span className="font-medium">{offerStructure.capRateAsIs}</span>
+                  <span className="text-gray-600 dark:text-gray-300">Cap Rate (As-Is):</span>
+                  <span className="font-medium">{capRateAsIs}%</span>
                 </div>
               </div>
             </div>
             <div className="bg-white dark:bg-gray-700 p-4 rounded-lg shadow">
             <div className="flex justify-between text-lg font-semibold mb-4 text-gray-700 dark:text-gray-200 border-b pb-2">
               <h3 >After Rehab Value:</h3>
-              <span className="font-medium">${offerStructure.arValue.toLocaleString()}</span>
+              <span className="font-medium">${arv.toLocaleString()}</span>
             </div>
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-300">1% Rule AR Rents:</span>
-                  <span className="font-medium">${offerStructure.onePctARRents.toLocaleString()}</span>
+                  <span className="font-medium">${onePctARRents.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-300">GRM ARV:</span>
-                  <span className="font-medium">{offerStructure.grmArv}</span>
+                  <span className="font-medium">{grmArv}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-300">Price per Unit (ARV):</span>
-                  <span className="font-medium">${offerStructure.pricePerUnitArv.toLocaleString()}</span>
+                  <span className="font-medium">${pricePerUnitArv.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-300">Price per Sq Ft (ARV):</span>
-                  <span className="font-medium">${offerStructure.pricePerSqFtArv}</span>
+                  <span className="font-medium">${pricePerSqFtArv}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-300">Cap Rate (ARV):</span>
-                  <span className="font-medium">{offerStructure.capRateArv}</span>
+                  <span className="font-medium">{capRateArv}%</span>
                 </div>
               </div>
             </div>
@@ -802,7 +997,7 @@ export default function PropAnalysisDashboard({ address }) {
             </div>
             <div className="flex justify-between items-center mb-2 text-xl border-b">
               <span className="text-gray-600 dark:text-gray-300 mb-2">Desired Acquisition Price:</span> 
-              <span className="font-medium">${offerStructure.desiredPrice.toLocaleString()}</span>
+              <span className="font-medium">${desiredPrice.toLocaleString()}</span>
             </div>
             <div className="flex justify-between items-center text-xl border-b">
               <span className="text-gray-600 dark:text-gray-300 mb-2">Profit Margin @ 1 yr: </span> 
@@ -846,15 +1041,15 @@ export default function PropAnalysisDashboard({ address }) {
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-300">Net Operating Inc. (NOI)</span>
-                  <span className="font-medium">${cashFlow.netOp.toLocaleString()}</span>
+                  <span className="font-medium">${operatingBudget.noi.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-300">DSCR Ratio </span>
-                  <span className="font-medium">{cashFlow.dscr.toLocaleString()}</span>
+                  <span className="font-medium">{dscrRatio.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-300">Cash on Cash Return w/One Yr. hold </span>
-                  <span className="font-medium">{cashFlow.cashReturn}</span>
+                  <span className="font-medium">{cashReturn}</span>
                 </div>
               </div>
             </div>

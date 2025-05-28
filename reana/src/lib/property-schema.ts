@@ -1,8 +1,8 @@
 export const PropertySchema = {
     type: 'object',
     properties: {
-      askingPrice: { type: 'string' },
-      metrics: {
+      askingPrice: { type: 'integer' },
+      propertyMetrics: {
         type: 'object',
         properties: {
             daysOnMarket:      { type: 'integer' },
@@ -22,6 +22,6 @@ export const PropertySchema = {
         ]
       }
     },
-    required: ['askingPrice','metrics']
+    required: ['askingPrice','propertyMetrics']
   } as const;
   

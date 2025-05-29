@@ -14,7 +14,13 @@ import DarkLightSwitch from "@/components/mode-toggle/dark-light-switch";
 import { useRouter } from "next/navigation";
 
 export default function RehabRenovation() {
+export default function RehabRenovation() {
   const router = useRouter();
+  const [materialLaborCost, setMaterialLaborCost] = useState(15150);
+  const [holdingCost, setHoldingCost] = useState(1500);
+  const [bufferPercent, setBufferPercent] = useState(10);
+  const [amountFinanced, setAmountFinanced] = useState(0);
+  const [arv, setARV] = useState(175000);
   const [materialLaborCost, setMaterialLaborCost] = useState(15150);
   const [holdingCost, setHoldingCost] = useState(1500);
   const [bufferPercent, setBufferPercent] = useState(10);
@@ -47,6 +53,7 @@ export default function RehabRenovation() {
                   </BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />
+                <BreadcrumbLink>Rehab & Renovation</BreadcrumbLink>
                 <BreadcrumbLink>Rehab & Renovation</BreadcrumbLink>
               </BreadcrumbList>
             </Breadcrumb>

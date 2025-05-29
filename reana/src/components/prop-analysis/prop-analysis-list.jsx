@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,7 +8,7 @@ import { useJsApiLoader, Autocomplete } from "@react-google-maps/api";
 import { Plus, Trash2, FileChartColumn } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-const LIBRARIES = ['places', 'geometry'];
+const LIBRARIES = ["places", "geometry"];
 
 export default function PropAnalysisList() {
   const [addressList, setAddressList] = useState([]);
@@ -18,9 +18,9 @@ export default function PropAnalysisList() {
   const router = useRouter();
 
   const { isLoaded } = useJsApiLoader({
-    id: 'google-map-script',
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
-    libraries: LIBRARIES
+    id: "google-map-script",
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
+    libraries: LIBRARIES,
   });
 
   const onLoadAutocomplete = useCallback((autocompleteInstance) => {
@@ -55,7 +55,7 @@ export default function PropAnalysisList() {
   };
 
   const handleRemove = (id) => {
-    setAddressList(addressList.filter(addr => addr.id !== id));
+    setAddressList(addressList.filter((addr) => addr.id !== id));
   };
 
   if (!isLoaded) {
@@ -66,7 +66,11 @@ export default function PropAnalysisList() {
     <div className="max-w-4xl mx-auto p-4 space-y-10">
       <Card className="flex justify-between">
         <CardContent className="flex-grow flex justify-between space-x-2">
-          <Autocomplete onLoad={onLoadAutocomplete} onPlaceChanged={onPlaceChanged} className="flex-grow">
+          <Autocomplete
+            onLoad={onLoadAutocomplete}
+            onPlaceChanged={onPlaceChanged}
+            className="flex-grow"
+          >
             <Input
               placeholder="Enter the property's address to start analysis"
               value={address}
@@ -75,7 +79,8 @@ export default function PropAnalysisList() {
             />
           </Autocomplete>
           <Button onClick={handleAddAddress}>
-            <Plus />Add
+            <Plus />
+            Add
           </Button>
         </CardContent>
         {error && <p className="text-red-500 text-sm p-4">Error: {error}</p>}
@@ -87,10 +92,18 @@ export default function PropAnalysisList() {
             <CardContent className="flex-grow flex justify-between">
               <div>{addr.text}</div>
               <div className="flex justify-center gap-2">
-                <Button size="sm" variant="outline" onClick={() => handleAnalysis(addr)}>
+                <Button
+                  size="sm"
+                  variant="primary"
+                  onClick={() => handleAnalysis(addr)}
+                >
                   <FileChartColumn /> Analysis
                 </Button>
-                <Button size="sm" variant="destructive" onClick={() => handleRemove(addr.id)}>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => handleRemove(addr.id)}
+                >
                   <Trash2 /> Remove
                 </Button>
               </div>

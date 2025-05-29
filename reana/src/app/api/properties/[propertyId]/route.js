@@ -2,56 +2,7 @@ import crypto from "crypto";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/firebase.js";
 import { doc, getDoc, setDoc, updateDoc, collection } from "firebase/firestore";
-
-function normalizeAddress(address) {
-  return {
-    street: address.street
-      .toLowerCase()
-      .trim()
-      .replace(
-        /\b(street|st|avenue|ave|road|rd|boulevard|blvd|drive|dr|lane|ln|court|ct|place|pl)\b/g,
-        (match) => {
-          const abbrev = {
-            street: "st",
-            avenue: "ave",
-            road: "rd",
-            boulevard: "blvd",
-            drive: "dr",
-            lane: "ln",
-            court: "ct",
-            place: "pl",
-          };
-          return abbrev[match] || match;
-        }
-      )
-      .replace(/\s+/g, " "),
-    city: address.city.toLowerCase().trim().replace(/\s+/g, " "),
-    state: address.state.toLowerCase().trim(),
-    zip: address.zip.replace(/[^0-9]/g, "").substring(0, 5),
-  };
-}
-
-function generatePropertyId(address, mlsNumber = null) {
-  if (mlsNumber) {
-    return `mls_${mlsNumber.toLowerCase().replace(/[^a-z0-9]/g, "")}`;
-  }
-
-  const normalized = normalizeAddress(address);
-  const addressString = [
-    normalized.street,
-    normalized.city,
-    normalized.state,
-    normalized.zip,
-  ].join("|");
-
-  const hash = crypto
-    .createHash("sha256")
-    .update(addressString)
-    .digest("hex")
-    .substring(0, 16);
-
-  return `addr_${hash}`;
-}
+import { generatePropertyId, normalizeAddress } from "@/lib/propertyUtils";
 
 async function checkPropertyIdCollision(propertyId, expectedAddress) {
   try {
@@ -151,7 +102,7 @@ export async function POST(request, { params }) {
 
     const generatedId = generatePropertyId(address, mlsNumber);
     const { propertyId } = resolvedParams;
-    
+
     if (propertyId !== generatedId) {
       return NextResponse.json(
         {
@@ -192,7 +143,7 @@ export async function POST(request, { params }) {
           success: true,
           propertyId,
           property: collisionCheck.existingProperty,
-          message: "Property already exists"
+          message: "Property already exists",
         },
         { status: 200 }
       );
@@ -202,7 +153,10 @@ export async function POST(request, { params }) {
       id: propertyId,
       mlsNumber: mlsNumber || null,
       address: normalizeAddress(address),
-      originalAddress: typeof address === 'string' ? address : `${address.street}, ${address.city}, ${address.state} ${address.zip}`,
+      originalAddress:
+        typeof address === "string"
+          ? address
+          : `${address.street}, ${address.city}, ${address.state} ${address.zip}`,
       basicInfo: basicInfo || {},
       marketData: marketData || {},
       standardUnitMix: standardUnitMix || [],
@@ -299,5 +253,3 @@ export async function PUT(request, { params }) {
     );
   }
 }
-
-export { generatePropertyId };

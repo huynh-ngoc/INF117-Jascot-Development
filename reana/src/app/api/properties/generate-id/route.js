@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { generatePropertyId } from "../[propertyId]/route.js";
+import { generatePropertyId } from "@/lib/propertyUtils";
 
 function parseAddressString(addressString) {
   try {

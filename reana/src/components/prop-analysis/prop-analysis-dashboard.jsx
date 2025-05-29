@@ -966,7 +966,7 @@ export default function PropAnalysisDashboard({ address: propAddress }) {
       {analysisState.hasUnsavedChanges && (
         <div className="mb-4 bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded-lg flex items-center">
           <Save className="w-5 h-5 mr-2" />
-          💾 You have unsaved changes
+          You have unsaved changes
         </div>
       )}
 

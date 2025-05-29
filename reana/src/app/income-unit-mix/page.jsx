@@ -48,16 +48,21 @@ export default function IncomeUnitMixPage() {
           setPropertyData(propertyResult.property);
           setIsTemporaryProperty(false);
 
+          // Try to get existing analysis data (including user-saved unit mix)
           const analysisResponse = await fetch(
             `/api/properties/${propertyId}/analysis`
           );
+
           let analysisResult = { analysis: { unitMix: [] } };
+          let existingUnitMix = [];
+
           if (analysisResponse.ok) {
             analysisResult = await analysisResponse.json();
+            // Check for user-saved unit mix data first
+            existingUnitMix = analysisResult.analysis?.unitMix || [];
           }
-          setAnalysisData(analysisResult.analysis);
 
-          const existingUnitMix = analysisResult.analysis.unitMix || [];
+          setAnalysisData(analysisResult.analysis);
 
           const numberOfUnits =
             propertyResult.property.basicInfo?.numberOfUnits ||
@@ -67,38 +72,24 @@ export default function IncomeUnitMixPage() {
 
           setUnitCount(numberOfUnits);
           setTempUnitCount(numberOfUnits);
-          setUnitData(existingUnitMix);
-        } else if (propertyResponse.status === 404) {
-          const tempPropertyData = localStorage.getItem(
-            `temp_property_${propertyId}`
-          );
 
-          if (tempPropertyData) {
-            const tempData = JSON.parse(tempPropertyData);
-
-            setPropertyData(tempData);
-            setIsTemporaryProperty(true);
-
-            const numberOfUnits =
-              tempData.basicInfo?.numberOfUnits ||
-              tempData.propertyMetrics?.numberOfUnits ||
-              1;
-
-            setUnitCount(numberOfUnits);
-            setTempUnitCount(numberOfUnits);
-
-            // Generate unit data with proper bedroom/bathroom distribution
+          // Use existing unit mix if available, otherwise generate defaults
+          if (existingUnitMix.length > 0) {
+            // User has saved unit mix data - use it
+            setUnitData(existingUnitMix);
+          } else {
+            // No saved unit mix - generate defaults from property data
             const totalBedrooms =
-              tempData.basicInfo?.numberOfbedrooms ||
-              tempData.propertyMetrics?.numberOfbedrooms ||
+              propertyResult.property.basicInfo?.numberOfbedrooms ||
+              propertyResult.property.propertyMetrics?.numberOfbedrooms ||
               0;
             const totalBathrooms =
-              tempData.basicInfo?.numberOfbathrooms ||
-              tempData.propertyMetrics?.numberOfbathrooms ||
+              propertyResult.property.basicInfo?.numberOfbathrooms ||
+              propertyResult.property.propertyMetrics?.numberOfbathrooms ||
               0;
             const totalSqFt =
-              tempData.basicInfo?.propertySize ||
-              tempData.propertyMetrics?.propertySize ||
+              propertyResult.property.basicInfo?.propertySize ||
+              propertyResult.property.propertyMetrics?.propertySize ||
               0;
 
             const defaultUnitData = Array.from(
@@ -116,7 +107,65 @@ export default function IncomeUnitMixPage() {
             );
 
             setUnitData(defaultUnitData);
-            setAnalysisData({ unitMix: defaultUnitData });
+          }
+        } else if (propertyResponse.status === 404) {
+          // Handle temporary property data (unchanged)
+          const tempPropertyData = localStorage.getItem(
+            `temp_property_${propertyId}`
+          );
+
+          if (tempPropertyData) {
+            const tempData = JSON.parse(tempPropertyData);
+            setPropertyData(tempData);
+            setIsTemporaryProperty(true);
+
+            const numberOfUnits =
+              tempData.basicInfo?.numberOfUnits ||
+              tempData.propertyMetrics?.numberOfUnits ||
+              1;
+
+            setUnitCount(numberOfUnits);
+            setTempUnitCount(numberOfUnits);
+
+            // Check if there's saved unit mix data in localStorage
+            const savedUnitMix = tempData.unitMix;
+
+            if (savedUnitMix && savedUnitMix.length > 0) {
+              // User has saved unit mix data in localStorage
+              setUnitData(savedUnitMix);
+            } else {
+              // Generate defaults
+              const totalBedrooms =
+                tempData.basicInfo?.numberOfbedrooms ||
+                tempData.propertyMetrics?.numberOfbedrooms ||
+                0;
+              const totalBathrooms =
+                tempData.basicInfo?.numberOfbathrooms ||
+                tempData.propertyMetrics?.numberOfbathrooms ||
+                0;
+              const totalSqFt =
+                tempData.basicInfo?.propertySize ||
+                tempData.propertyMetrics?.propertySize ||
+                0;
+
+              const defaultUnitData = Array.from(
+                { length: numberOfUnits },
+                (_, i) => ({
+                  id: i + 1,
+                  furnished: false,
+                  sqft: Math.floor(totalSqFt / numberOfUnits) || 0,
+                  bedrooms: Math.floor(totalBedrooms / numberOfUnits) || 0,
+                  bathrooms: Math.floor(totalBathrooms / numberOfUnits) || 0,
+                  perComps: 0,
+                  scheduledRent: 0,
+                  currentRent: 0,
+                })
+              );
+
+              setUnitData(defaultUnitData);
+            }
+
+            setAnalysisData({ unitMix: savedUnitMix || [] });
           } else {
             throw new Error(
               "Property not found and no temporary data available"
@@ -166,8 +215,7 @@ export default function IncomeUnitMixPage() {
       if (!response.ok) {
         throw new Error("Failed to save unit mix data");
       }
-    } catch (error) {
-    }
+    } catch (error) {}
   };
 
   const handleEditClick = () => {
@@ -223,6 +271,7 @@ export default function IncomeUnitMixPage() {
     if (!isTemporaryProperty) return;
 
     try {
+      // First save the property
       const propertyResponse = await fetch(`/api/properties/${propertyId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -230,10 +279,13 @@ export default function IncomeUnitMixPage() {
           address: propertyData.address,
           basicInfo: propertyData.basicInfo || {},
           marketData: propertyData.marketData || {},
+          // Include other property data from localStorage
+          ...propertyData,
         }),
       });
 
       if (propertyResponse.ok) {
+        // Then save the analysis data including current unit mix
         const analysisResponse = await fetch(
           `/api/properties/${propertyId}/analysis`,
           {
@@ -241,7 +293,9 @@ export default function IncomeUnitMixPage() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               analysisData: {
-                unitMix: unitData,
+                unitMix: unitData, // Save current unit data
+                // Include any other analysis data
+                ...analysisData,
               },
             }),
           }

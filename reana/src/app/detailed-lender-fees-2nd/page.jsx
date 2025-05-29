@@ -1,8 +1,7 @@
-// src/app/detailed-lender-fees-2nd/page.jsx
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/sidebar/app-sidebar';
 import {
@@ -16,6 +15,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 export default function DetailedLenderFees2ndPage() {
+  const router = useRouter();
+
   const [origPoints, setOrigPoints] = useState(1.5);
   const [origFee, setOrigFee] = useState(345);
   const [underwriting, setUnderwriting] = useState(595);
@@ -137,22 +138,24 @@ export default function DetailedLenderFees2ndPage() {
             </CardContent>
 
             <CardFooter className="flex flex-col space-y-3">
-              <Link href="/detailed-settlement-fees">
-                <button
-                  type="button"
-                  className="w-full py-2 px-4 bg-gray-100 rounded-md hover:bg-gray-200"
-                >
-                  Go to Detailed Settlement Fees
-                </button>
-              </Link>
-              <Link href="/detailed-inspection-costs">
-                <button
-                  type="button"
-                  className="w-full py-2 px-4 bg-gray-100 rounded-md hover:bg-gray-200"
-                >
-                  Go to Detailed Inspection Costs
-                </button>
-              </Link>
+              <button
+                type="button"
+                className="w-full py-2 px-4 bg-gray-100 rounded-md hover:bg-gray-200"
+                onClick={() => {
+                  router.push('/detailed-settlement-fees');
+                }}
+              >
+                Go to Detailed Settlement Fees
+              </button>
+              <button
+                type="button"
+                className="w-full py-2 px-4 bg-gray-100 rounded-md hover:bg-gray-200"
+                onClick={() => {
+                  router.push('/detailed-inspection-fees');
+                }}
+              >
+                Go to Detailed Inspection Costs
+              </button>
             </CardFooter>
           </Card>
         </main>

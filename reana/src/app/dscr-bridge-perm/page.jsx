@@ -1,7 +1,8 @@
-// src/app/dscr-bridge-perm/page.jsx
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
+
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/sidebar/app-sidebar';
 import {
@@ -15,6 +16,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 export default function DSCRAfterRehabPermPage() {
+  const router = useRouter();
+
   // ---- Loan Terms ----
   const [maxLTV, setMaxLTV] = useState(75);
   const [isIO, setIsIO] = useState(false);
@@ -29,9 +32,21 @@ export default function DSCRAfterRehabPermPage() {
 
   // ---- Fee Option Selection ----
   const feeOptions = [
-    { key: 'rule',       label: 'Use "Rule of Thumb" Default' },
-    { key: 'lender',     label: 'Use Detailed Lender Fees' },
-    { key: 'settlement', label: 'Use Detailed Settlement Fees' },
+    {
+      key: 'rule',
+      label: 'Use "Rule of Thumb" Default',
+      route: '/rule-of-thumb-metrics',       
+    },
+    {
+      key: 'lender',
+      label: 'Use Detailed Lender Fees',
+      route: '/detailed-lender-fees-1st',      
+    },
+    {
+      key: 'settlement',
+      label: 'Use Detailed Settlement Fees',
+      route: '/detailed-settlement-fees',   
+    },
   ];
   const [selectedFee, setSelectedFee] = useState('rule');
 
@@ -120,9 +135,6 @@ export default function DSCRAfterRehabPermPage() {
                   value={`${fmt(refiMonths, 0)}`}
                   onChange={e => setRefiMonths(parseNum(e.target.value))}
                 />
-                <span className="absolute right-2 top-2 text-gray-500">
-         
-                </span>
               </div>
 
               {/* Total Fees % */}
@@ -139,17 +151,17 @@ export default function DSCRAfterRehabPermPage() {
               {/* Term input when amortizing */}
               {!isIO && (
                 <div className="relative">
-                <Label>Term (Years)</Label>
-                <input
-                  type="range"
-                  min={1}
-                  max={30}
-                  value={amortYears}
-                  onChange={e => setAmortYears(+e.target.value)}
-                  className="w-full"
-                />
-                <div className="mt-1 text-sm">{amortYears}</div>
-              </div>
+                  <Label>Term (Years)</Label>
+                  <input
+                    type="range"
+                    min={1}
+                    max={30}
+                    value={amortYears}
+                    onChange={e => setAmortYears(+e.target.value)}
+                    className="w-full"
+                  />
+                  <div className="mt-1 text-sm">{amortYears}</div>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -181,35 +193,32 @@ export default function DSCRAfterRehabPermPage() {
                   ${fmt(maxPermLoanAmt)}
                 </p>
               </div>
-
-
             </CardContent>
 
             <CardContent className="space-y-2">
               <p>
-                Payment Amount (Monthly):{' '}
-                <strong>${fmt(paymentMonthly, 2)}</strong>
+                Payment Amount (Monthly): <strong>${fmt(paymentMonthly, 2)}</strong>
               </p>
               <p>
-                Payment Amount (Annual Debt Service):{' '}
-                <strong>${fmt(annualDebtService, 2)}</strong>
+                Payment Amount (Annual Debt Service): <strong>${fmt(annualDebtService, 2)}</strong>
               </p>
             </CardContent>
 
             {/* ---- Styled Fee Buttons ---- */}
             <CardFooter className="flex flex-col space-y-3">
-              {feeOptions.map(({ key, label }) => (
+              {feeOptions.map(({ key, label, route }) => (
                 <button
                   key={key}
                   type="button"
-                  onClick={() => setSelectedFee(key)}
+                  onClick={() => {
+                    setSelectedFee(key);
+                    router.push(route);
+                  }}
                   className={`
                     w-full py-2 px-4 rounded-md font-medium transition
-                    ${
-                      selectedFee === key
-                        ? 'bg-blue-600 text-white hover:bg-blue-700'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }
+                    ${selectedFee === key
+                      ? 'bg-blue-600 text-white hover:bg-blue-700'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}
                   `}
                 >
                   {label}

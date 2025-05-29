@@ -252,12 +252,12 @@ export default function DetailedSettlementFeesPage() {
               </div>
             </CardContent>
             <CardFooter className="flex flex-col space-y-3">
-              <Link href="/detailed-lender-fees-2nd">
+              <Link href="/detailed-lender-fees-1st">
                 <button className="w-full py-2 px-4 bg-gray-100 rounded-md hover:bg-gray-200">
                   Go to Detailed Lender Fees
                 </button>
               </Link>
-              <Link href="/detailed-inspection-costs">
+              <Link href="/detailed-inspection-fees">
                 <button className="w-full py-2 px-4 bg-gray-100 rounded-md hover:bg-gray-200">
                   Go to Detailed Inspection Costs
                 </button>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import UnitRentTable from "./UnitRentTable";
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
@@ -15,7 +15,7 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import DarkLightSwitch from "@/components/mode-toggle/dark-light-switch";
 import { Button } from "@/components/ui/button";
 
-export default function IncomeUnitMixPage() {
+function IncomeUnitMixContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const propertyId = searchParams.get("propertyId");
@@ -294,7 +294,6 @@ export default function IncomeUnitMixPage() {
             body: JSON.stringify({
               analysisData: {
                 unitMix: unitData, // Save current unit data
-                // Include any other analysis data
                 ...analysisData,
               },
             }),
@@ -306,9 +305,7 @@ export default function IncomeUnitMixPage() {
           setIsTemporaryProperty(false);
         }
       }
-    } catch (error) {
-      // Silent error handling for production
-    }
+    } catch (error) {}
   };
 
   if (loading) {
@@ -459,5 +456,26 @@ export default function IncomeUnitMixPage() {
         </div>
       </SidebarInset>
     </SidebarProvider>
+  );
+}
+
+function LoadingFallback() {
+  return (
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-lg">Loading...</div>
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
+  );
+}
+
+export default function IncomeUnitMixPage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <IncomeUnitMixContent />
+    </Suspense>
   );
 }

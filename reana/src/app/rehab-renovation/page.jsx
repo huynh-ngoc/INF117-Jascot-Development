@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React, { useState } from "react";
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
@@ -14,13 +14,7 @@ import DarkLightSwitch from "@/components/mode-toggle/dark-light-switch";
 import { useRouter } from "next/navigation";
 
 export default function RehabRenovation() {
-export default function RehabRenovation() {
   const router = useRouter();
-  const [materialLaborCost, setMaterialLaborCost] = useState(15150);
-  const [holdingCost, setHoldingCost] = useState(1500);
-  const [bufferPercent, setBufferPercent] = useState(10);
-  const [amountFinanced, setAmountFinanced] = useState(0);
-  const [arv, setARV] = useState(175000);
   const [materialLaborCost, setMaterialLaborCost] = useState(15150);
   const [holdingCost, setHoldingCost] = useState(1500);
   const [bufferPercent, setBufferPercent] = useState(10);
@@ -36,7 +30,7 @@ export default function RehabRenovation() {
   const handleSave = () => {
     setIsEditing(false);
     // TODO: replace '/dashboard' with the actual dashboard route
-    router.push('/dashboard');
+    router.push("/dashboard");
   };
 
   return (
@@ -72,29 +66,36 @@ export default function RehabRenovation() {
             <table className="min-w-full text-sm">
               <thead>
                 <tr className="bg-gray-100 border-b">
-                  <th className="px-4 py-3 text-left text-xl font-bold" colSpan={2}>
+                  <th
+                    className="px-4 py-3 text-left text-xl font-bold"
+                    colSpan={2}
+                  >
                     Rehab / Renovate
                   </th>
                   <th className="px-4 py-3 text-right">
                     <button
-                      onClick={() => (isEditing ? handleSave() : setIsEditing(true))}
+                      onClick={() =>
+                        isEditing ? handleSave() : setIsEditing(true)
+                      }
                       className="text-blue-600 hover:underline text-sm"
                     >
-                      {isEditing ? 'Save' : 'Edit'}
+                      {isEditing ? "Save" : "Edit"}
                     </button>
                   </th>
                 </tr>
               </thead>
               <tbody>
                 <tr className="border-t">
-                  <td className="px-4 py-2">Cost of Materials and Labor for Rehab</td>
+                  <td className="px-4 py-2">
+                    Cost of Materials and Labor for Rehab
+                  </td>
                   <td className="px-4 py-2 text-right" colSpan={2}>
                     {isEditing ? (
                       <input
                         type="number"
                         className="border rounded p-1 w-32 text-right"
                         value={materialLaborCost}
-                        onChange={e => setMaterialLaborCost(e.target.value)}
+                        onChange={(e) => setMaterialLaborCost(e.target.value)}
                       />
                     ) : (
                       `$${Number(materialLaborCost).toLocaleString()}`
@@ -109,7 +110,7 @@ export default function RehabRenovation() {
                         type="number"
                         className="border rounded p-1 w-32 text-right"
                         value={holdingCost}
-                        onChange={e => setHoldingCost(e.target.value)}
+                        onChange={(e) => setHoldingCost(e.target.value)}
                       />
                     ) : (
                       `$${Number(holdingCost).toLocaleString()}`
@@ -123,14 +124,16 @@ export default function RehabRenovation() {
                   </td>
                 </tr>
                 <tr>
-                  <td className="px-4 py-2">Min 10% - 15% of above for the unknown/over runs</td>
+                  <td className="px-4 py-2">
+                    Min 10% - 15% of above for the unknown/over runs
+                  </td>
                   <td className="px-4 py-2 text-right">
                     {isEditing ? (
                       <input
                         type="number"
                         className="border rounded p-1 w-16 text-right"
                         value={bufferPercent}
-                        onChange={e => setBufferPercent(e.target.value)}
+                        onChange={(e) => setBufferPercent(e.target.value)}
                         min={10}
                         max={15}
                       />
@@ -159,12 +162,12 @@ export default function RehabRenovation() {
                         type="number"
                         className="border rounded p-1 w-32 text-right"
                         value={amountFinanced}
-                        onChange={e => setAmountFinanced(e.target.value)}
+                        onChange={(e) => setAmountFinanced(e.target.value)}
                       />
                     ) : amountFinanced > 0 ? (
                       `$${amountFinanced.toLocaleString()}`
                     ) : (
-                      '-'    
+                      "-"
                     )}
                   </td>
                 </tr>

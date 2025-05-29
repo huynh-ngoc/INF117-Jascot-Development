@@ -65,6 +65,7 @@ import RehabRenovateForm, {
   RehabRenovateData,
 } from "../forms/rehab-renovate-form";
 import { auth, db } from "@/lib/firebase";
+import { generatePropertyId } from "@/lib/propertyUtils";
 
 // Get address image from Google Street View
 const getStreetViewUrl = (address) => {
@@ -99,7 +100,6 @@ async function checkPropertyExists(propertyId) {
 }
 
 async function fetchAIPropertyData(address) {
-  // Integrate with your existing AI/data sources
   try {
     const response = await fetch(
       `/api/property-data?address=${encodeURIComponent(
@@ -114,26 +114,44 @@ async function fetchAIPropertyData(address) {
     );
     const data = await response.json();
 
+    console.log("Raw AI property data:", data);
+
     return {
-      basicInfo: data.propertyMetrics || {},
-      marketData: {
-        listPrice: data.askingPrice || 0,
+      askingPrice: data.askingPrice || 0,
+      propertyMetrics: {
         daysOnMarket: data.propertyMetrics?.daysOnMarket || 0,
+        numberOfUnits: data.propertyMetrics?.numberOfUnits || 1,
+        propertySize: data.propertyMetrics?.propertySize || 0,
+        propertyAge: data.propertyMetrics?.propertyAge || 0,
+        numberOfbedrooms: data.propertyMetrics?.numberOfbedrooms || 0,
+        numberOfbathrooms: data.propertyMetrics?.numberOfbathrooms || 0,
+        lotSize: data.propertyMetrics?.lotSize || 0,
+        yearBuilt:
+          data.propertyMetrics?.yearBuilt ||
+          new Date().getFullYear() - (data.propertyMetrics?.propertyAge || 10),
+        parking: data.propertyMetrics?.parking || "Unknown",
+        propertyType: data.propertyMetrics?.propertyType || "Residential",
+        // Add any other fields from your AI response
       },
-      unitMix: [], // Will be populated by AI
       mlsNumber: data.mlsNumber || null,
+      // Include any other data fields your AI provides
     };
   } catch (error) {
     console.error("Error fetching AI data:", error);
     return {
-      basicInfo: {},
-      marketData: {},
-      unitMix: [],
+      askingPrice: 0,
+      propertyMetrics: {
+        daysOnMarket: 0,
+        numberOfUnits: 1,
+        propertySize: 0,
+        propertyAge: 0,
+        numberOfbedrooms: 0,
+        numberOfbathrooms: 0,
+      },
       mlsNumber: null,
     };
   }
 }
-
 export default function PropAnalysisDashboard({ address: propAddress }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -173,6 +191,7 @@ export default function PropAnalysisDashboard({ address: propAddress }) {
   const [ruleOfThumb, setRuleOfThumb] = useState({});
   const [rehabData, setRehabData] = useState({ totalBudget: 0, cashPaid: 0 });
   const [open, setOpen] = useState(false);
+  const [hasInitialDataLoaded, setHasInitialDataLoaded] = useState(false);
 
   // Property management integration
   useEffect(() => {
@@ -193,80 +212,141 @@ export default function PropAnalysisDashboard({ address: propAddress }) {
 
   const handleNewAddressFlow = async (addressString) => {
     try {
-      setIsLoading(true);
-      setAddress(addressString);
-
-      // Parse the address string
+      setLoadingAI(true);
       const parsedAddress = parseAddressString(addressString);
+      const propertyId = generatePropertyId(parsedAddress);
 
-      // Generate propertyId for this address
-      const response = await fetch("/api/properties/generate-id", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ address: parsedAddress }),
-      });
+      // Fetch AI data first
+      const aiData = await fetchAIPropertyData(parsedAddress);
+      console.log("AI Data received:", aiData);
 
-      const { data: propertyIdData } = await response.json();
-      const generatedPropertyId = propertyIdData.propertyId;
+      // Create comprehensive temporary property data
+      const tempPropertyData = {
+        id: propertyId,
+        address: parsedAddress,
+        originalAddress: addressString,
+        isTemporary: true,
+        createdAt: new Date().toISOString(),
 
-      // Check if property exists in database
-      const existingProperty = await checkPropertyExists(generatedPropertyId);
+        // Basic Info from AI
+        basicInfo: {
+          numberOfUnits: aiData.propertyMetrics?.numberOfUnits || 1,
+          propertySize: aiData.propertyMetrics?.propertySize || 0,
+          propertyAge: aiData.propertyMetrics?.propertyAge || 0,
+          numberOfbedrooms: aiData.propertyMetrics?.numberOfbedrooms || 0,
+          numberOfbathrooms: aiData.propertyMetrics?.numberOfbathrooms || 0,
+          lotSize: aiData.propertyMetrics?.lotSize || 0,
+          yearBuilt:
+            aiData.propertyMetrics?.yearBuilt ||
+            new Date().getFullYear() -
+              (aiData.propertyMetrics?.propertyAge || 10),
+          parking: aiData.propertyMetrics?.parking || "Unknown",
+          propertyType: aiData.propertyMetrics?.propertyType || "Residential",
+        },
 
-      if (existingProperty) {
-        // Property exists - load it
-        setPropertyData(existingProperty);
-        setPropertyId(generatedPropertyId);
-        setData(existingProperty); // For backward compatibility
+        // Keep original property metrics for backward compatibility
+        propertyMetrics: aiData.propertyMetrics || {},
 
-        // Load user's analysis
-        await loadUserAnalysis(generatedPropertyId);
+        // Market Data
+        marketData: {
+          listPrice: aiData.askingPrice || 0,
+          daysOnMarket: aiData.propertyMetrics?.daysOnMarket || 0,
+          pricePerSqFt:
+            aiData.askingPrice && aiData.propertyMetrics?.propertySize
+              ? Math.round(
+                  aiData.askingPrice / aiData.propertyMetrics.propertySize
+                )
+              : 0,
+          mlsNumber: aiData.mlsNumber || null,
+        },
 
-        // Update URL to use propertyId instead of address
-        router.replace(
-          `/prop-analysis-dashboard?propertyId=${generatedPropertyId}`,
-          { scroll: false }
-        );
-      } else {
-        // New property - store temporarily in localStorage
-        const tempProperty = {
-          id: generatedPropertyId,
-          address: parsedAddress,
-          originalAddress: addressString,
-          isTemporary: true,
-          createdAt: new Date().toISOString(),
-        };
+        // Financial defaults for analysis pages
+        financialData: {
+          offerPrice: aiData.askingPrice || 0,
+          arv: Math.round((aiData.askingPrice || 0) * 1.1), // Estimate 10% above asking
+          downPaymentPercent: 25,
+          interestRate: 6.5,
+          loanTerm: 30,
+          rehabBudget: 0,
+          closingCosts: Math.round((aiData.askingPrice || 0) * 0.03), // 3% estimate
+        },
 
-        // Store in localStorage for persistence
-        localStorage.setItem(
-          `temp_property_${generatedPropertyId}`,
-          JSON.stringify(tempProperty)
-        );
-        localStorage.setItem(
-          "current_property_analysis",
-          JSON.stringify({
-            propertyId: generatedPropertyId,
-            analysisState: analysisState,
-            lastUpdated: new Date().toISOString(),
-          })
-        );
+        // Operating data for operating budget pages
+        operatingData: {
+          grossScheduledIncome: 0,
+          vacancy: 5, // 5% default
+          operatingExpenseRatio: 35, // 35% default
+          propertyTaxRate: 1.2, // 1.2% default
+          insurance: Math.round((aiData.askingPrice || 0) * 0.005), // 0.5% of value
+          maintenance: Math.round((aiData.askingPrice || 0) * 0.01), // 1% of value
+          capEx: Math.round((aiData.askingPrice || 0) * 0.005), // 0.5% of value
+        },
 
-        setPropertyData(tempProperty);
-        setPropertyId(generatedPropertyId);
+        // Local market rules of thumb
+        localRuleOfThumb: {
+          areaAppreciationRate: 0.04, // 4% default
+          rentAppreciationRate: 0.03, // 3% default
+          dscrRequirement: 1.25,
+          propertyTaxRate: 0.012,
+          vacancyRate: 0.05,
+          operatingExpenses: 0.35,
+          operatingCostsChange: 0.03,
+          contingency: 0.1,
+        },
 
-        // Also fetch AI data for immediate display
-        await fetchInitialPropertyData(addressString);
+        // Standard unit mix (initialized but empty)
+        standardUnitMix: [],
 
-        // Update URL
-        router.replace(
-          `/prop-analysis-dashboard?propertyId=${generatedPropertyId}`,
-          { scroll: false }
-        );
-      }
+        // Rehab data
+        rehab: {
+          totalRehabBudget: 0,
+          amountPaid: 0,
+          condition: "Good",
+          rehabItemized: {
+            kitchen: 0,
+            bathrooms: 0,
+            flooring: 0,
+            paint: 0,
+            hvac: 0,
+            plumbing: 0,
+            electrical: 0,
+            roofing: 0,
+            other: 0,
+          },
+        },
+
+        // Data source tracking
+        dataSource: {
+          aiGenerated: true,
+          lastUpdated: new Date().toISOString(),
+          confidence: 0.85,
+        },
+      };
+
+      // Store comprehensive data
+      localStorage.setItem(
+        `temp_property_${propertyId}`,
+        JSON.stringify(tempPropertyData)
+      );
+      console.log(
+        "Stored comprehensive temporary property data:",
+        tempPropertyData
+      );
+
+      // Set component state
+      setData(tempPropertyData);
+      setPropertyId(propertyId);
+      setError("");
+
+      // Navigate with propertyId
+      const currentPath = window.location.pathname;
+      const newUrl = `${currentPath}?propertyId=${propertyId}`;
+      window.history.pushState({}, "", newUrl);
     } catch (error) {
-      console.error("Error handling new address:", error);
-      setError("Failed to load property");
+      console.error("Error in new address flow:", error);
+      setError("Failed to analyze property");
     } finally {
-      setIsLoading(false);
+      setLoadingAI(false);
     }
   };
 
@@ -344,14 +424,18 @@ export default function PropAnalysisDashboard({ address: propAddress }) {
   };
 
   const fetchInitialPropertyData = async (addressString) => {
+    if (hasInitialDataLoaded) return; // Prevent duplicate calls
+
     try {
       setLoadingAI(true);
+      setHasInitialDataLoaded(true);
       const response = await fetch(
         `/api/property-data?address=${encodeURIComponent(addressString)}`
       );
       const aiData = await response.json();
       setData(aiData);
     } catch (error) {
+      setHasInitialDataLoaded(false); // Reset on error
       console.error("Error fetching AI data:", error);
     } finally {
       setLoadingAI(false);
@@ -1216,9 +1300,9 @@ export default function PropAnalysisDashboard({ address: propAddress }) {
                     router.push(`/income-unit-mix?propertyId=${propertyId}`),
                 },
                 {
-                  label: "Tennancy Details",
+                  label: "Tenancy Details",
                   icon: <Plus className="w-4 h-4" />,
-                  onClick: () => console.log("Tennancy Details"),
+                  onClick: () => console.log("Tenancy Details"),
                   variant: "disabled",
                 },
                 {

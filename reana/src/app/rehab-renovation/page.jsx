@@ -12,25 +12,25 @@ import {
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import DarkLightSwitch from "@/components/mode-toggle/dark-light-switch";
 import { useRouter } from "next/navigation";
-import { Card, CardContent } from "@/components/ui/card";
 
-export default function TotalInvestmentPage() {
+export default function RehabRenovation() {
   const router = useRouter();
+  const [materialLaborCost, setMaterialLaborCost] = useState(15150);
+  const [holdingCost, setHoldingCost] = useState(1500);
+  const [bufferPercent, setBufferPercent] = useState(10);
+  const [amountFinanced, setAmountFinanced] = useState(0);
+  const [arv, setARV] = useState(175000);
   const [isEditing, setIsEditing] = useState(false);
 
-  const [investmentData, setInvestmentData] = useState([
-    { item: "Down Payment", amount: 11500 },
-    { item: "Loan Fees", amount: 5175 },
-    { item: "Settlement/Attorney/Escrow Costs", amount: 3450 },
-    { item: "Inspections", amount: 0 },
-    { item: "Operating Cost through Yr 1 (Includes Capex)", amount: -17758 },
-    { item: "Total Cash Investment Through Year One", amount: 37883 },
-  ]);
+  const subTotal = parseFloat(materialLaborCost) + parseFloat(holdingCost);
+  const bufferAmount = (bufferPercent / 100) * subTotal;
+  const totalBudget = subTotal + bufferAmount;
+  const amountPaidInCash = totalBudget - amountFinanced;
 
-  const handleAmountChange = (index, newAmount) => {
-    const updatedData = [...investmentData];
-    updatedData[index].amount = parseFloat(newAmount);
-    setInvestmentData(updatedData);
+  const handleSave = () => {
+    setIsEditing(false);
+    // TODO: replace '/dashboard' with the actual dashboard route
+    router.push("/dashboard");
   };
 
   return (
@@ -47,7 +47,8 @@ export default function TotalInvestmentPage() {
                   </BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />
-                <BreadcrumbLink>Total Investment</BreadcrumbLink>
+                <BreadcrumbLink>Rehab & Renovation</BreadcrumbLink>
+                <BreadcrumbLink>Rehab & Renovation</BreadcrumbLink>
               </BreadcrumbList>
             </Breadcrumb>
           </div>
@@ -58,39 +59,132 @@ export default function TotalInvestmentPage() {
 
         <div className="flex flex-col gap-6 px-8 pt-0 pb-12">
           <header className="mt-4">
-            <h1 className="text-4xl font-bold">Cash Considerations / My Investment</h1>
-            <button
-              onClick={() => setIsEditing(!isEditing)}
-              className="mt-2 text-blue-600 hover:underline text-sm"
-            >
-              {isEditing ? "Save" : "Edit"}
-            </button>
+            <h1 className="text-4xl font-bold">Rehab & Renovation Budget</h1>
           </header>
 
-          <div className="space-y-4">
-            {investmentData.map(({ item, amount }, index) => (
-              <Card key={index}>
-                <CardContent className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4">
-                  <div className="font-medium text-gray-800">{item}</div>
-                  <div>
+          <div className="overflow-x-auto rounded border border-gray-300 shadow-sm bg-white">
+            <table className="min-w-full text-sm">
+              <thead>
+                <tr className="bg-gray-100 border-b">
+                  <th
+                    className="px-4 py-3 text-left text-xl font-bold"
+                    colSpan={2}
+                  >
+                    Rehab / Renovate
+                  </th>
+                  <th className="px-4 py-3 text-right">
+                    <button
+                      onClick={() =>
+                        isEditing ? handleSave() : setIsEditing(true)
+                      }
+                      className="text-blue-600 hover:underline text-sm"
+                    >
+                      {isEditing ? "Save" : "Edit"}
+                    </button>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-t">
+                  <td className="px-4 py-2">
+                    Cost of Materials and Labor for Rehab
+                  </td>
+                  <td className="px-4 py-2 text-right" colSpan={2}>
                     {isEditing ? (
                       <input
                         type="number"
-                        className="border rounded px-2 py-1 w-32 text-right"
-                        value={amount}
-                        onChange={(e) => handleAmountChange(index, e.target.value)}
+                        className="border rounded p-1 w-32 text-right"
+                        value={materialLaborCost}
+                        onChange={(e) => setMaterialLaborCost(e.target.value)}
                       />
                     ) : (
-                      <span
-                        className={`text-lg font-semibold ${amount < 0 ? "text-red-600" : "text-green-700"}`}
-                      >
-                        $ {amount.toLocaleString()}
-                      </span>
+                      `$${Number(materialLaborCost).toLocaleString()}`
                     )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-2">Holding Cost during Rehab</td>
+                  <td className="px-4 py-2 text-right" colSpan={2}>
+                    {isEditing ? (
+                      <input
+                        type="number"
+                        className="border rounded p-1 w-32 text-right"
+                        value={holdingCost}
+                        onChange={(e) => setHoldingCost(e.target.value)}
+                      />
+                    ) : (
+                      `$${Number(holdingCost).toLocaleString()}`
+                    )}
+                  </td>
+                </tr>
+                <tr className="border-t font-semibold bg-gray-50">
+                  <td className="px-4 py-2">Sub-Total</td>
+                  <td className="px-4 py-2 text-right" colSpan={2}>
+                    {`$${subTotal.toLocaleString()}`}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-2">
+                    Min 10% - 15% of above for the unknown/over runs
+                  </td>
+                  <td className="px-4 py-2 text-right">
+                    {isEditing ? (
+                      <input
+                        type="number"
+                        className="border rounded p-1 w-16 text-right"
+                        value={bufferPercent}
+                        onChange={(e) => setBufferPercent(e.target.value)}
+                        min={10}
+                        max={15}
+                      />
+                    ) : (
+                      `${bufferPercent}%`
+                    )}
+                  </td>
+                  <td className="px-4 py-2 text-right">
+                    {`$${bufferAmount.toLocaleString()}`}
+                  </td>
+                </tr>
+                <tr className="border-t-2 border-black font-bold bg-yellow-50">
+                  <td className="px-4 py-2">Total Rehab Budget</td>
+                  <td className="px-4 py-2 text-right" colSpan={2}>
+                    {`$${totalBudget.toLocaleString()}`}
+                  </td>
+                </tr>
+                <tr className="border-t">
+                  <td className="px-4 py-2">
+                    Amount Financed (If using DSCR Loan)
+                    <span className="text-red-500">*</span>
+                  </td>
+                  <td className="px-4 py-2 text-right" colSpan={2}>
+                    {isEditing ? (
+                      <input
+                        type="number"
+                        className="border rounded p-1 w-32 text-right"
+                        value={amountFinanced}
+                        onChange={(e) => setAmountFinanced(e.target.value)}
+                      />
+                    ) : amountFinanced > 0 ? (
+                      `$${amountFinanced.toLocaleString()}`
+                    ) : (
+                      "-"
+                    )}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-2">Amount Paid in Cash</td>
+                  <td className="px-4 py-2 text-right" colSpan={2}>
+                    {`$${amountPaidInCash.toLocaleString()}`}
+                  </td>
+                </tr>
+                <tr className="border-t">
+                  <td className="px-4 py-2">After Rehab Value (ARV)</td>
+                  <td className="px-4 py-2 text-right" colSpan={2}>
+                    {`$${arv.toLocaleString()}`}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </SidebarInset>

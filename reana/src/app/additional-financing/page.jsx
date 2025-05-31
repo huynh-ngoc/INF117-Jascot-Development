@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/sidebar/app-sidebar';
 import {
@@ -35,13 +35,14 @@ function pmt(rate, nper, pv, fv = 0, type = 0) {
 
 export default function AdditionalFinancingPage() {
   const router = useRouter();
+  const [hasChanges, setHasChanges] = useState(false);
 
-  // Loan terms
-  const [maxLTV, setMaxLTV] = useState(90);
+  // Loan terms (percent fields as whole numbers for UI)
+  const [maxLTV, setMaxLTV] = useState(90); // e.g., 90 for 90%
   const [isIO, setIsIO] = useState(true);
-  const [rate, setRate] = useState(11);
+  const [rate, setRate] = useState(11); // e.g., 11 for 11%
   const [balloon, setBalloon] = useState(5);
-  const [lenderFee, setlenderFee] = useState(0);
+  const [lenderFee, setlenderFee] = useState(0); // e.g., 1 for 1%
 
   // Get from database
   const [asIs, setAsIs] = useState(115000);
@@ -51,7 +52,7 @@ export default function AdditionalFinancingPage() {
   // This Transaction
   const [reqDownPay, setReqDownPay] = useState(0);
   const [loanAmt2, setLoanAmt2] = useState(0);
-  const [actualLTV, setActualLTV] = useState(0);
+  const [actualLTV, setActualLTV] = useState(0); // e.g., 90 for 90%
   const[monthlyPayment, setMonthlyPayment] = useState(0);
   const[annualPayment, setAnnualPayment] = useState(0);
 
@@ -61,6 +62,112 @@ export default function AdditionalFinancingPage() {
     { key: 'lender', label: 'Use Detailed Lender Fees' },
   ];
   const [selectedFee, setSelectedFee] = useState('rule');
+
+  // Load data from Firebase when component mounts
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch conventional financing data for reference
+        const conventionalResponse = await fetch('/api/conventional-financing');
+        if (!conventionalResponse.ok) {
+          throw new Error('Failed to fetch conventional financing data');
+        }
+        const conventionalData = await conventionalResponse.json();
+
+        // Fetch additional financing data
+        const additionalResponse = await fetch('/api/additional-financing');
+        if (!additionalResponse.ok) {
+          throw new Error('Failed to fetch additional financing data');
+        }
+        const additionalData = await additionalResponse.json();
+
+        if (conventionalData.success && conventionalData.conventionalFinancing) {
+          const { asIs: savedAsIs, maxLoan: savedMaxLoan, userLoanAmt: savedUserLoanAmt } = conventionalData.conventionalFinancing;
+          if (savedAsIs !== undefined) setAsIs(savedAsIs);
+          if (savedMaxLoan !== undefined) setMaxLoanAmt(savedMaxLoan);
+          if (savedUserLoanAmt !== undefined) setUserLoanAmt(savedUserLoanAmt);
+        }
+
+        if (additionalData.success && additionalData.additionalFinancing) {
+          const {
+            maxLTV: savedMaxLTV,
+            isIO: savedIsIO,
+            rate: savedRate,
+            balloon: savedBalloon,
+            lenderFee: savedLenderFee,
+            reqDownPay: savedReqDownPay,
+            loanAmt2: savedLoanAmt2,
+            actualLTV: savedActualLTV,
+            monthlyPayment: savedMonthlyPayment,
+            annualPayment: savedAnnualPayment,
+            selectedFee: savedSelectedFee,
+          } = additionalData.additionalFinancing;
+
+          if (savedMaxLTV !== undefined) setMaxLTV(savedMaxLTV * 100); // decimal to whole
+          if (savedIsIO !== undefined) setIsIO(savedIsIO);
+          if (savedRate !== undefined) setRate(savedRate * 100); // decimal to whole
+          if (savedBalloon !== undefined) setBalloon(savedBalloon);
+          if (savedLenderFee !== undefined) setlenderFee(savedLenderFee * 100); // decimal to whole
+          if (savedReqDownPay !== undefined) setReqDownPay(savedReqDownPay);
+          if (savedLoanAmt2 !== undefined) setLoanAmt2(savedLoanAmt2);
+          if (savedActualLTV !== undefined) setActualLTV(savedActualLTV * 100); // decimal to whole
+          if (savedMonthlyPayment !== undefined) setMonthlyPayment(savedMonthlyPayment);
+          if (savedAnnualPayment !== undefined) setAnnualPayment(savedAnnualPayment);
+          if (savedSelectedFee !== undefined) setSelectedFee(savedSelectedFee);
+        }
+      } catch (error) {
+        console.error('Error fetching financing data:', error);
+      }
+    };
+    fetchData();
+  }, []);
+
+  // Handle input changes
+  const handleInputChange = (setter) => (e) => {
+    setter(+e.target.value);
+    setHasChanges(true);
+  };
+
+  // Save data to Firebase
+  const handleSave = async () => {
+    try {
+      const response = await fetch('/api/additional-financing', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          maxLTV,
+          isIO,
+          rate,
+          balloon,
+          lenderFee,
+          asIs,
+          maxLoanAmt,
+          userLoanAmt,
+          reqDownPay,
+          loanAmt2,
+          actualLTV,
+          monthlyPayment,
+          annualPayment,
+          selectedFee
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save data');
+      }
+
+      const data = await response.json();
+      if (data.success) {
+        setHasChanges(false);
+        alert('Data saved successfully!');
+      }
+    } catch (error) {
+      console.error('Error saving additional financing data:', error);
+      alert('Failed to save data. Please try again.');
+    }
+  };
 
   // Calculations
   const {
@@ -73,17 +180,16 @@ export default function AdditionalFinancingPage() {
     const downPayment = asIs - (asIs * maxLTV * 0.01);
     const loanAmt = asIs - downPayment - userLoanAmt;
     const LTV = (maxLoanAmt + loanAmt) / asIs;
-    const annualRate = 0.07;
+    const annualRate = rate / 100;
     const monthlyRate = annualRate / 12;
-    const totalPeriods = 30 * 12;
-    const loanAmount = 80500;
-    const payment = pmt(monthlyRate, totalPeriods, loanAmount);
+    const totalPeriods = balloon * 12;
+    const payment = pmt(monthlyRate, totalPeriods, loanAmt);
     let paymentMonthly;
     paymentMonthly = Math.abs(payment).toFixed(0);
     const annualDebtService = Math.abs(payment * 12).toFixed(0);
     setReqDownPay(downPayment);
     setActualLTV(LTV);
-    setLoanAmt2(loanAmt)
+    setLoanAmt2(loanAmt);
     setMonthlyPayment(paymentMonthly);
     setAnnualPayment(annualDebtService);
     return {
@@ -122,7 +228,7 @@ export default function AdditionalFinancingPage() {
 
         <div className="flex flex-1 flex-col gap-4 px-8 p-4 pt-0">
             
-          <header >
+          <header>
             <h1 className="text-5xl font-bold">Additional Financing - 2nd Position</h1>
           </header>
 
@@ -137,7 +243,7 @@ export default function AdditionalFinancingPage() {
                 <Input
                   type="number"
                   value={maxLTV}
-                  onChange={e => setMaxLTV(+e.target.value)}
+                  onChange={handleInputChange(setMaxLTV)}
                 />
               </div>
               <div>
@@ -145,7 +251,7 @@ export default function AdditionalFinancingPage() {
                 <select
                   className="mt-1 block w-full rounded border-gray-300"
                   value={isIO ? 'IO' : 'AM'}
-                  onChange={e => setIsIO(e.target.value === 'IO')}
+                  onChange={handleInputChange(setIsIO)}
                 >
                   <option value="IO">Interest Only</option>
                   <option value="AM">Amortizing</option>
@@ -157,7 +263,7 @@ export default function AdditionalFinancingPage() {
                   type="number"
                   step="0.01"
                   value={rate}
-                  onChange={e => setRate(+e.target.value)}
+                  onChange={handleInputChange(setRate)}
                 />
               </div>
               <div>
@@ -165,7 +271,7 @@ export default function AdditionalFinancingPage() {
                 <Input
                   type="number"
                   value={balloon}
-                  onChange={e => setBalloon(+e.target.value)}
+                  onChange={handleInputChange(setBalloon)}
                 />
               </div>
               <div>
@@ -173,7 +279,7 @@ export default function AdditionalFinancingPage() {
                 <Input
                   type="number"
                   value={lenderFee}
-                  onChange={e => setlenderFee(+e.target.value)}
+                  onChange={handleInputChange(setlenderFee)}
                 />
               </div>
             </CardContent>
@@ -186,7 +292,7 @@ export default function AdditionalFinancingPage() {
             </CardHeader>
             <CardContent className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <div>
-                <Label>Today’s “As-Is” Value ($)</Label>
+                <Label>Today's "As-Is" Value ($)</Label>
                 <p className="mt-1">${asIs.toLocaleString()}</p>
               </div>
               <div>
@@ -230,6 +336,18 @@ export default function AdditionalFinancingPage() {
               ))}
             </CardContent>
           </Card>
+
+          {/* Save Changes Button */}
+          {hasChanges && (
+            <div className="flex justify-end">
+              <Button
+                onClick={handleSave}
+                className="bg-[#00A3E0] hover:bg-[#0077AC] text-white px-4 py-2 rounded"
+              >
+                Save Changes
+              </Button>
+            </div>
+          )}
         </div>
       </SidebarInset>
     </SidebarProvider>

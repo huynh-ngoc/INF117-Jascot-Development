@@ -1,7 +1,8 @@
-// src/app/dscr-bridge-rehab/page.jsx
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
+
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/sidebar/app-sidebar';
 import {
@@ -15,6 +16,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 export default function DSCRBridgeRehabPage() {
+  const router = useRouter();
+
   const [maxLTV, setMaxLTV] = useState(90);
   const [isIO, setIsIO] = useState(true);
   const [rate, setRate] = useState(11.0);
@@ -27,19 +30,32 @@ export default function DSCRBridgeRehabPage() {
   const [userLoanAmt, setUserLoanAmt] = useState(0);
 
   const feeOptions = [
-    { key: 'rule', label: 'Use "Rule of Thumb" Default' },
-    { key: 'lender', label: 'Use Detailed Lender Fees' },
-    { key: 'settlement', label: 'Use Detailed Settlement Fees' },
-    { key: 'inspection', label: 'Use Detailed Inspection Costs' },
+    {
+      key: 'rule',
+      label: 'Use "Rule of Thumb" Default',
+      route: '/rule-of-thumb-metrics', // TODO: replace with your actual page path
+    },
+    {
+      key: 'lender',
+      label: 'Use Detailed Lender Fees',
+      route: '/detailed-lender-fees-1st', // TODO
+    },
+    {
+      key: 'settlement',
+      label: 'Use Detailed Settlement Fees',
+      route: '/detailed-settlement-fees', // TODO
+    },
+    {
+      key: 'inspection',
+      label: 'Use Detailed Inspection Costs',
+      route: '/detailed-inspection-fees', // TODO
+    },
   ];
   const [selectedFee, setSelectedFee] = useState('rule');
 
   const parseNum = str => parseFloat(str.replace(/[^\d.-]/g, '')) || 0;
   const fmt = (num, dec = 0) =>
-    num.toLocaleString(undefined, {
-      minimumFractionDigits: dec,
-      maximumFractionDigits: dec,
-    });
+    num.toLocaleString(undefined, { minimumFractionDigits: dec, maximumFractionDigits: dec });
 
   const {
     total,
@@ -52,12 +68,11 @@ export default function DSCRBridgeRehabPage() {
   } = useMemo(() => {
     const total = asIs + rehab;
     const maxLoanAmt = (maxLTV / 100) * total;
-    const loanAmt =
-      optionalDown > 0
-        ? total - optionalDown
-        : userLoanAmt > 0
-        ? userLoanAmt
-        : maxLoanAmt;
+    const loanAmt = optionalDown > 0
+      ? total - optionalDown
+      : userLoanAmt > 0
+      ? userLoanAmt
+      : maxLoanAmt;
     const downPayment = total - loanAmt;
     const actualLTV = total > 0 ? (loanAmt / total) * 100 : 0;
     const monthlyRate = rate / 100 / 12;
@@ -67,8 +82,7 @@ export default function DSCRBridgeRehabPage() {
     } else {
       const n = amortYears * 12;
       paymentMonthly =
-        (loanAmt * monthlyRate) /
-        (1 - Math.pow(1 + monthlyRate, -n));
+        (loanAmt * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -n));
     }
     const annualDebtService = paymentMonthly * 12;
     return {
@@ -80,17 +94,7 @@ export default function DSCRBridgeRehabPage() {
       paymentMonthly,
       annualDebtService,
     };
-  }, [
-    asIs,
-    rehab,
-    optionalDown,
-    userLoanAmt,
-    maxLTV,
-    rate,
-    balloon,
-    isIO,
-    amortYears,
-  ]);
+  }, [asIs, rehab, optionalDown, userLoanAmt, maxLTV, rate, isIO, amortYears]);
 
   return (
     <SidebarProvider>
@@ -101,6 +105,7 @@ export default function DSCRBridgeRehabPage() {
             DSCR Purchase/Rehab Bridge Loan (Brrr)
           </h1>
 
+          {/* ---- Loan Terms ---- */}
           <Card className="space-y-4">
             <CardHeader>
               <CardTitle>Loan Terms (Check with your lender)</CardTitle>
@@ -115,6 +120,7 @@ export default function DSCRBridgeRehabPage() {
                   onChange={e => setMaxLTV(parseNum(e.target.value))}
                 />
               </div>
+
               <div>
                 <Label>Amortization or IO</Label>
                 <select
@@ -126,20 +132,22 @@ export default function DSCRBridgeRehabPage() {
                   <option value="AM">Amortizing</option>
                 </select>
               </div>
+
               {!isIO && (
                 <div className="relative">
-                <Label>Term (Years)</Label>
-                <input
-                  type="range"
-                  min={1}
-                  max={30}
-                  value={amortYears}
-                  onChange={e => setAmortYears(+e.target.value)}
-                  className="w-full"
-                />
-                <div className="mt-1 text-sm">{amortYears}</div>
-              </div>
+                  <Label>Term (Years)</Label>
+                  <input
+                    type="range"
+                    min={1}
+                    max={30}
+                    value={amortYears}
+                    onChange={e => setAmortYears(+e.target.value)}
+                    className="w-full"
+                  />
+                  <div className="mt-1 text-sm">{amortYears}</div>
+                </div>
               )}
+
               <div className="relative">
                 <Label>Interest Rate</Label>
                 <Input
@@ -149,6 +157,7 @@ export default function DSCRBridgeRehabPage() {
                   onChange={e => setRate(parseNum(e.target.value))}
                 />
               </div>
+
               <div className="relative">
                 <Label>Balloon Payment Due</Label>
                 <Input
@@ -158,6 +167,7 @@ export default function DSCRBridgeRehabPage() {
                   onChange={e => setBalloon(parseNum(e.target.value))}
                 />
               </div>
+
               <div className="relative">
                 <Label>First Draw Minimum</Label>
                 <Input
@@ -170,6 +180,7 @@ export default function DSCRBridgeRehabPage() {
             </CardContent>
           </Card>
 
+          {/* ---- This Transaction ---- */}
           <Card className="space-y-4">
             <CardHeader>
               <CardTitle>This Transaction</CardTitle>
@@ -243,37 +254,52 @@ export default function DSCRBridgeRehabPage() {
               </p>
             </CardContent>
 
+            {/* ---- Actions ---- */}
             <CardFooter className="flex gap-4">
               <button
                 type="button"
                 className="flex-1 py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                onClick={() => {
+                  // TODO: replace '/bridge-to-perm' with your actual page path
+                  router.push('/dscr-bridge-perm');
+                }}
               >
                 Bridge to Perm Loan
               </button>
+
               <button
                 type="button"
                 className="flex-1 py-2 px-4 border border-gray-300 bg-white text-gray-700 rounded-md hover:bg-gray-50"
+                onClick={() => {
+                  // TODO: replace '/add-another-loan' with your actual page path
+                  router.push('/additional-financing');
+                }}
               >
                 Add Another Loan
               </button>
             </CardFooter>
           </Card>
 
+          {/* ---- Loan Fees & Settlement Costs ---- */}
           <Card className="space-y-4">
             <CardHeader>
               <CardTitle>Loan Fees and Settlement Costs</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col items-center space-y-2">
-              {feeOptions.map(({ key, label }) => (
+              {feeOptions.map(({ key, label, route }) => (
                 <button
                   key={key}
                   type="button"
-                  onClick={() => setSelectedFee(key)}
-                  className={`w-full py-2 px-4 rounded-md font-medium transition ${
-                    selectedFee === key
+                  onClick={() => {
+                    setSelectedFee(key);
+                    router.push(route);
+                  }}
+                  className={`
+                    w-full py-2 px-4 rounded-md font-medium transition
+                    ${selectedFee === key
                       ? 'bg-blue-600 text-white hover:bg-blue-700'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}
+                  `}
                 >
                   {label}
                 </button>

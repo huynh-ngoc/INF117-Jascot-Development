@@ -136,7 +136,7 @@ export function TierCards() {
   ];
 
   return (
-    <div className="h-screen w-full p-2 sm:p-3 lg:p-4">
+    <div className="h-full w-full p-2 sm:p-3 lg:p-4">
       <div className="max-w-7xl mx-auto h-full flex flex-col">
         <h1 className="text-lg sm:text-xl lg:text-3xl font-bold text-center mb-2 sm:mb-3 lg:mb-4 flex-shrink-0">
           Plans
@@ -147,10 +147,10 @@ export function TierCards() {
               key={plan.id}
               className={`bg-white shadow-lg p-2 sm:p-3 lg:p-4 flex flex-col h-full transition-all duration-300 ease-in-out cursor-pointer ${
                 hoveredCard === null
-                  ? "hover:shadow-xl hover:scale-105"
+                  ? "hover:shadow-xl hover:scale-102"
                   : hoveredCard === plan.id
-                  ? "shadow-xl scale-105 z-10"
-                  : "blur-sm opacity-70"
+                  ? "shadow-xl scale-102 z-10"
+                  : ""
               }`}
               onMouseEnter={() => setHoveredCard(plan.id)}
               onMouseLeave={() => setHoveredCard(null)}
@@ -243,7 +243,10 @@ export function TierCards() {
                 )}
 
                 <Link href="/account" className="w-full">
-                  <Button className="w-full bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm lg:text-base py-1.5 sm:py-2">
+                  <Button
+                    variant="primary"
+                    className="w-full text-white text-xs sm:text-sm lg:text-base py-1.5 sm:py-2"
+                  >
                     Subscribe
                   </Button>
                 </Link>

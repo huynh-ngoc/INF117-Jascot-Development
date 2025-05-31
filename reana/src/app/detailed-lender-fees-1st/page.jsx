@@ -1,7 +1,7 @@
-// src/app/dscr-bridge-rehab-lender-fees/page.jsx
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/sidebar/app-sidebar';
 import {
@@ -15,6 +15,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 export default function DSCRBridgeRehabLenderFeesPage() {
+  const router = useRouter();
+
   // ——— Inputs ———
   // Base amount (Total Acquisition + Rehab)
   const [baseAmt, setBaseAmt] = useState(150000);
@@ -232,13 +234,17 @@ export default function DSCRBridgeRehabLenderFeesPage() {
             <CardFooter className="flex flex-col gap-3">
               <button
                 className="w-full py-2 rounded bg-gray-100 hover:bg-gray-200"
-                onClick={() => {/* navigate to settlement fees */}}
+                onClick={() => {
+                  router.push('/detailed-settlement-fees');
+                }}
               >
                 Go To Detailed Settlement Fees
               </button>
               <button
                 className="w-full py-2 rounded bg-gray-100 hover:bg-gray-200"
-                onClick={() => {/* navigate to inspection costs */}}
+                onClick={() => {
+                  router.push('/detailed-inspection-fees');
+                }}
               >
                 Go To Detailed Inspection Costs
               </button>

@@ -1,58 +1,173 @@
 // src/app/income-unit-mix/UnitRentTable.jsx
-'use client';
+"use client";
 
-import React, { useState, useEffect, useRef } from 'react';
-import styles from './UnitRentTable.module.css';
+import React, { useState, useEffect, useRef } from "react";
+import { Button } from "@/components/ui/button";
+import styles from "./UnitRentTable.module.css";
 
-export default function UnitRentTable({ unitCount = 5 }) {
+export default function UnitRentTable({
+  unitCount = 5,
+  unitData = [],
+  onUnitDataChange,
+}) {
   const [units, setUnits] = useState([]);
+  const [originalData, setOriginalData] = useState([]);
   const fieldsRef = useRef([]);
 
-  useEffect(() => {
-    setUnits(prev =>
-      Array.from({ length: unitCount }, (_, i) => {
-        const existing = prev[i];
-        return existing
-          ? { ...existing, id: i + 1 }
-          : {
-              id: i + 1,
-              furnished: false,
-              sqFt: '',
-              beds: '',
-              baths: '',
-              perComps: '',
-              scheduledRent: '',
-              currentRent: '',
-            };
-      })
-    );
-    fieldsRef.current = [];
-  }, [unitCount]);
+  const formatDisplayValue = (value, type = "number") => {
+    if (type === "currency") {
+      const numValue = parseFloat(value) || 0;
+      return numValue === 0 ? "-" : `$${numValue.toLocaleString()}`;
+    }
+    if (type === "number") {
+      const numValue = parseFloat(value) || 0;
+      return numValue === 0 ? "-" : numValue.toString();
+    }
+    return value || "-";
+  };
 
-  const handleChange = (idx, field) => e => {
-    const val = field === 'furnished' ? e.target.checked : e.target.value;
-    setUnits(prev => {
+  useEffect(() => {
+    const initializedUnits = Array.from({ length: unitCount }, (_, i) => {
+      const existingData = unitData.find((unit) => unit.id === i + 1);
+      const defaultUnit = {
+        id: i + 1,
+        furnished: false,
+        sqft: "",
+        bedrooms: "",
+        bathrooms: "",
+        perComps: "",
+        scheduledRent: "",
+        currentRent: "",
+      };
+
+      if (existingData) {
+        return {
+          id: i + 1,
+          furnished: existingData.furnished || false,
+          sqft: existingData.sqft?.toString() || "",
+          bedrooms: existingData.bedrooms?.toString() || "",
+          bathrooms: existingData.bathrooms?.toString() || "",
+          perComps: existingData.perComps?.toString() || "",
+          scheduledRent: existingData.scheduledRent?.toString() || "",
+          currentRent: existingData.currentRent?.toString() || "",
+        };
+      }
+
+      return defaultUnit;
+    });
+
+    setUnits(initializedUnits);
+    setOriginalData(unitData);
+    fieldsRef.current = [];
+  }, [unitCount, unitData]);
+
+  const handleChange = (idx, field) => (e) => {
+    const val = field === "furnished" ? e.target.checked : e.target.value;
+
+    setUnits((prev) => {
       const copy = [...prev];
       copy[idx] = { ...copy[idx], [field]: val };
       return copy;
     });
+
+    if (onUnitDataChange) {
+      const unitId = idx + 1;
+      const value =
+        field === "furnished"
+          ? e.target.checked
+          : field === "sqft" ||
+            field === "perComps" ||
+            field === "scheduledRent" ||
+            field === "currentRent"
+          ? parseFloat(e.target.value) || 0
+          : field === "bedrooms" || field === "bathrooms"
+          ? parseInt(e.target.value) || 0
+          : e.target.value;
+
+      onUnitDataChange(unitId, field, value);
+    }
   };
 
-  const [addRev, setAddRev] = useState({ perComps: '', scheduledRent: '', currentRent: '' });
-  const handleAddRev = field => e => {
-    setAddRev(prev => ({ ...prev, [field]: e.target.value }));
+  const handleResetUnit = (unitIndex) => {
+    const unitId = unitIndex + 1;
+    const originalUnit = originalData.find((unit) => unit.id === unitId);
+
+    if (originalUnit) {
+      const resetUnit = {
+        id: unitId,
+        furnished: originalUnit.furnished || false,
+        sqft: originalUnit.sqft?.toString() || "",
+        bedrooms: originalUnit.bedrooms?.toString() || "",
+        bathrooms: originalUnit.bathrooms?.toString() || "",
+        perComps: originalUnit.perComps?.toString() || "",
+        scheduledRent: originalUnit.scheduledRent?.toString() || "",
+        currentRent: originalUnit.currentRent?.toString() || "",
+      };
+
+      setUnits((prev) => {
+        const copy = [...prev];
+        copy[unitIndex] = resetUnit;
+        return copy;
+      });
+
+      if (onUnitDataChange) {
+        Object.keys(resetUnit).forEach((field) => {
+          if (field !== "id") {
+            let value = resetUnit[field];
+            if (
+              field === "sqft" ||
+              field === "perComps" ||
+              field === "scheduledRent" ||
+              field === "currentRent"
+            ) {
+              value = parseFloat(value) || 0;
+            } else if (field === "bedrooms" || field === "bathrooms") {
+              value = parseInt(value) || 0;
+            }
+            onUnitDataChange(unitId, field, value);
+          }
+        });
+      }
+    }
   };
 
-  const totalSqFt = units.reduce((sum, u) => sum + Number(u.sqFt || 0), 0);
-  const totalBeds = units.reduce((sum, u) => sum + (parseInt(u.beds) || 0), 0);
-  const totalBaths = units.reduce((sum, u) => sum + (parseInt(u.baths) || 0), 0);
-  const totalPerComps = units.reduce((sum, u) => sum + Number(u.perComps || 0), 0);
-  const totalScheduled = units.reduce((sum, u) => sum + Number(u.scheduledRent || 0), 0);
-  const totalCurrent = units.reduce((sum, u) => sum + Number(u.currentRent || 0), 0);
+  const [addRev, setAddRev] = useState({
+    perComps: "",
+    scheduledRent: "",
+    currentRent: "",
+  });
+  const handleAddRev = (field) => (e) => {
+    setAddRev((prev) => ({ ...prev, [field]: e.target.value }));
+  };
 
-  const addPerComps = Number(addRev.perComps || 0);
-  const addScheduled = Number(addRev.scheduledRent || 0);
-  const addCurrent = Number(addRev.currentRent || 0);
+  const totalSqFt = units.reduce(
+    (sum, u) => sum + (parseFloat(u.sqft) || 0),
+    0
+  );
+  const totalBeds = units.reduce(
+    (sum, u) => sum + (parseInt(u.bedrooms) || 0),
+    0
+  );
+  const totalBaths = units.reduce(
+    (sum, u) => sum + (parseInt(u.bathrooms) || 0),
+    0
+  );
+  const totalPerComps = units.reduce(
+    (sum, u) => sum + (parseFloat(u.perComps) || 0),
+    0
+  );
+  const totalScheduled = units.reduce(
+    (sum, u) => sum + (parseFloat(u.scheduledRent) || 0),
+    0
+  );
+  const totalCurrent = units.reduce(
+    (sum, u) => sum + (parseFloat(u.currentRent) || 0),
+    0
+  );
+
+  const addPerComps = parseFloat(addRev.perComps) || 0;
+  const addScheduled = parseFloat(addRev.scheduledRent) || 0;
+  const addCurrent = parseFloat(addRev.currentRent) || 0;
 
   const combinedPerComps = totalPerComps + addPerComps;
   const combinedScheduled = totalScheduled + addScheduled;
@@ -70,11 +185,12 @@ export default function UnitRentTable({ unitCount = 5 }) {
             <th>Unit</th>
             <th>Furnished?</th>
             <th>Sq Ft</th>
-            <th>Beds</th>
+            <th>Bed</th>
             <th>Baths</th>
             <th>Per Comps</th>
             <th>Scheduled Rent</th>
             <th>Current Rent</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -87,10 +203,10 @@ export default function UnitRentTable({ unitCount = 5 }) {
                     type="checkbox"
                     className="scale-150"
                     checked={u.furnished}
-                    onChange={handleChange(i, 'furnished')}
-                    ref={el => fieldsRef.current[i * 7] = el}
-                    onKeyDown={e => {
-                      if (e.key === 'Enter') {
+                    onChange={handleChange(i, "furnished")}
+                    ref={(el) => (fieldsRef.current[i * 7] = el)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
                         e.preventDefault();
                         const next = (i * 7 + 1) % (unitCount * 7);
                         fieldsRef.current[next]?.focus();
@@ -101,12 +217,13 @@ export default function UnitRentTable({ unitCount = 5 }) {
               </td>
               <td>
                 <input
-                  type="text"
-                  value={u.sqFt}
-                  onChange={handleChange(i, 'sqFt')}
-                  ref={el => fieldsRef.current[i * 7 + 1] = el}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter') {
+                  type="number"
+                  value={u.sqft}
+                  onChange={handleChange(i, "sqft")}
+                  placeholder="0"
+                  ref={(el) => (fieldsRef.current[i * 7 + 1] = el)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
                       e.preventDefault();
                       const next = (i * 7 + 2) % (unitCount * 7);
                       fieldsRef.current[next]?.focus();
@@ -116,11 +233,11 @@ export default function UnitRentTable({ unitCount = 5 }) {
               </td>
               <td>
                 <select
-                  value={u.beds}
-                  onChange={handleChange(i, 'beds')}
-                  ref={el => fieldsRef.current[i * 7 + 2] = el}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter') {
+                  value={u.bedrooms}
+                  onChange={handleChange(i, "bedrooms")}
+                  ref={(el) => (fieldsRef.current[i * 7 + 2] = el)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
                       e.preventDefault();
                       const next = (i * 7 + 3) % (unitCount * 7);
                       fieldsRef.current[next]?.focus();
@@ -128,21 +245,21 @@ export default function UnitRentTable({ unitCount = 5 }) {
                   }}
                 >
                   <option value="">–</option>
-                  <option value="Studio">Studio</option>
+                  <option value="0">Studio</option>
                   <option value="1">1</option>
                   <option value="2">2</option>
                   <option value="3">3</option>
                   <option value="4">4</option>
-                  <option value="Commercial - Mixed Use">Commercial – Mixed Use</option>
+                  <option value="5">5+</option>
                 </select>
               </td>
               <td>
                 <select
-                  value={u.baths}
-                  onChange={handleChange(i, 'baths')}
-                  ref={el => fieldsRef.current[i * 7 + 3] = el}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter') {
+                  value={u.bathrooms}
+                  onChange={handleChange(i, "bathrooms")}
+                  ref={(el) => (fieldsRef.current[i * 7 + 3] = el)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
                       e.preventDefault();
                       const next = (i * 7 + 4) % (unitCount * 7);
                       fieldsRef.current[next]?.focus();
@@ -151,19 +268,22 @@ export default function UnitRentTable({ unitCount = 5 }) {
                 >
                   <option value="">–</option>
                   <option value="1">1</option>
+                  <option value="1.5">1.5</option>
                   <option value="2">2</option>
+                  <option value="2.5">2.5</option>
                   <option value="3">3</option>
-                  <option value="4">4</option>
+                  <option value="4">4+</option>
                 </select>
               </td>
               <td>
                 <input
-                  type="text"
+                  type="number"
                   value={u.perComps}
-                  onChange={handleChange(i, 'perComps')}
-                  ref={el => fieldsRef.current[i * 7 + 4] = el}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter') {
+                  onChange={handleChange(i, "perComps")}
+                  placeholder="0"
+                  ref={(el) => (fieldsRef.current[i * 7 + 4] = el)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
                       e.preventDefault();
                       const next = (i * 7 + 5) % (unitCount * 7);
                       fieldsRef.current[next]?.focus();
@@ -173,12 +293,13 @@ export default function UnitRentTable({ unitCount = 5 }) {
               </td>
               <td>
                 <input
-                  type="text"
+                  type="number"
                   value={u.scheduledRent}
-                  onChange={handleChange(i, 'scheduledRent')}
-                  ref={el => fieldsRef.current[i * 7 + 5] = el}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter') {
+                  onChange={handleChange(i, "scheduledRent")}
+                  placeholder="0"
+                  ref={(el) => (fieldsRef.current[i * 7 + 5] = el)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
                       e.preventDefault();
                       const next = (i * 7 + 6) % (unitCount * 7);
                       fieldsRef.current[next]?.focus();
@@ -188,12 +309,13 @@ export default function UnitRentTable({ unitCount = 5 }) {
               </td>
               <td>
                 <input
-                  type="text"
+                  type="number"
                   value={u.currentRent}
-                  onChange={handleChange(i, 'currentRent')}
-                  ref={el => fieldsRef.current[i * 7 + 6] = el}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter') {
+                  onChange={handleChange(i, "currentRent")}
+                  placeholder="0"
+                  ref={(el) => (fieldsRef.current[i * 7 + 6] = el)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
                       e.preventDefault();
                       const next = ((i + 1) * 7) % (unitCount * 7);
                       fieldsRef.current[next]?.focus();
@@ -201,31 +323,42 @@ export default function UnitRentTable({ unitCount = 5 }) {
                   }}
                 />
               </td>
+              <td>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleResetUnit(i)}
+                  className="text-xs"
+                  disabled={!originalData.find((unit) => unit.id === u.id)}
+                >
+                  Reset
+                </Button>
+              </td>
             </tr>
           ))}
 
           <tr className={styles.totalsRow}>
-            <td colSpan="2">Totals Rental Income</td>
+            <td colSpan="3">Totals Rental Income</td>
+            <td>{formatDisplayValue(totalBeds, "number")}</td>
+            <td>{formatDisplayValue(totalBaths, "number")}</td>
+            <td>{formatDisplayValue(totalPerComps, "currency")}</td>
+            <td>{formatDisplayValue(totalScheduled, "currency")}</td>
+            <td>{formatDisplayValue(totalCurrent, "currency")}</td>
             <td></td>
-            <td></td>
-            <td></td>
-            <td>${totalPerComps.toLocaleString()}</td>
-            <td>${totalScheduled.toLocaleString()}</td>
-            <td>${totalCurrent.toLocaleString()}</td>
           </tr>
 
           <tr className={styles.totalsRow}>
             <td colSpan="5">Additional Revenue (Laundry, Storage)</td>
             <td>
               <input
-                type="text"
+                type="number"
                 placeholder="0"
                 value={addRev.perComps}
-                onChange={handleAddRev('perComps')}
+                onChange={handleAddRev("perComps")}
                 className={styles.inputCell}
-                ref={el => fieldsRef.current[units.length * 7] = el}
-                onKeyDown={e => {
-                  if (e.key === 'Enter') {
+                ref={(el) => (fieldsRef.current[units.length * 7] = el)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
                     e.preventDefault();
                     fieldsRef.current[units.length * 7 + 1]?.focus();
                   }
@@ -234,14 +367,14 @@ export default function UnitRentTable({ unitCount = 5 }) {
             </td>
             <td>
               <input
-                type="text"
+                type="number"
                 placeholder="0"
                 value={addRev.scheduledRent}
-                onChange={handleAddRev('scheduledRent')}
+                onChange={handleAddRev("scheduledRent")}
                 className={styles.inputCell}
-                ref={el => fieldsRef.current[units.length * 7 + 1] = el}
-                onKeyDown={e => {
-                  if (e.key === 'Enter') {
+                ref={(el) => (fieldsRef.current[units.length * 7 + 1] = el)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
                     e.preventDefault();
                     fieldsRef.current[units.length * 7 + 2]?.focus();
                   }
@@ -250,36 +383,38 @@ export default function UnitRentTable({ unitCount = 5 }) {
             </td>
             <td>
               <input
-                type="text"
+                type="number"
                 placeholder="0"
                 value={addRev.currentRent}
-                onChange={handleAddRev('currentRent')}
+                onChange={handleAddRev("currentRent")}
                 className={styles.inputCell}
-                ref={el => fieldsRef.current[units.length * 7 + 2] = el}
-                onKeyDown={e => {
-                  if (e.key === 'Enter') {
+                ref={(el) => (fieldsRef.current[units.length * 7 + 2] = el)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
                     e.preventDefault();
                   }
                 }}
               />
             </td>
+            <td></td>
           </tr>
 
           <tr className={styles.totalsRow}>
-            <td colSpan="2">Totals</td>
-            <td>{totalSqFt.toLocaleString()}</td>
-            <td>{totalBeds}</td>
-            <td>{totalBaths}</td>
-            <td>${combinedPerComps.toLocaleString()}</td>
-            <td>${combinedScheduled.toLocaleString()}</td>
-            <td>${combinedCurrent.toLocaleString()}</td>
+            <td colSpan="3">Totals</td>
+            <td>{formatDisplayValue(totalBeds, "number")}</td>
+            <td>{formatDisplayValue(totalBaths, "number")}</td>
+            <td>{formatDisplayValue(combinedPerComps, "currency")}</td>
+            <td>{formatDisplayValue(combinedScheduled, "currency")}</td>
+            <td>{formatDisplayValue(combinedCurrent, "currency")}</td>
+            <td></td>
           </tr>
 
           <tr className={styles.totalsRow}>
             <td colSpan="5">Annual Totals</td>
-            <td>${annualPerComps.toLocaleString()}</td>
-            <td>${annualScheduled.toLocaleString()}</td>
-            <td>${annualCurrent.toLocaleString()}</td>
+            <td>{formatDisplayValue(annualPerComps, "currency")}</td>
+            <td>{formatDisplayValue(annualScheduled, "currency")}</td>
+            <td>{formatDisplayValue(annualCurrent, "currency")}</td>
+            <td></td>
           </tr>
         </tbody>
       </table>

@@ -2,8 +2,6 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/firebase";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 
-const userId = process.env.DEFAULT_USER_ID;
-
 // Helper to convert percent string to decimal
 function percentStrToDecimal(str) {
   if (typeof str === 'string' && str.includes('%')) {
@@ -36,23 +34,31 @@ const percentFields = [
   'costOfSale',
 ];
 
-// Send Rule of Thumb Metrics data to backend
+const userId = process.env.DEFAULT_USER_ID;
+
+// POST: Save Rule of Thumb Metrics data as a map under users/{user_id}/properties/{property_id}
 export async function POST(request) {
   try {
     const body = await request.json();
+    const { propertyId } = body;
+    if (!propertyId) {
+      return NextResponse.json({ error: "Property ID is required" }, { status: 400 });
+    }
+    // Remove propertyId from body if present
+    const { propertyId: _omit, ...metrics } = body;
     // Convert percent fields to decimals
-    const dataToSave = { ...body };
+    const dataToSave = { ...metrics };
     percentFields.forEach(field => {
       if (dataToSave[field] !== undefined) {
         dataToSave[field] = percentStrToDecimal(dataToSave[field]);
       }
     });
-    // DSCR stays as number/string
-    const userDocRef = doc(db, "users", userId);
+    // Reference to: users/{userId}/properties/{propertyId}
+    const propertyDocRef = doc(db, `users/${userId}/properties/${propertyId}`);
     await setDoc(
-      userDocRef,
+      propertyDocRef,
       {
-        ruleOfThumbMetrics: {
+        'local-rule-of-thumb': {
           ...dataToSave,
           updatedAt: new Date().toISOString(),
         },
@@ -72,18 +78,21 @@ export async function POST(request) {
   }
 }
 
-// Retrieve Rule of Thumb Metrics fields
-export async function GET() {
+// GET: Retrieve Rule of Thumb Metrics map from users/{user_id}/properties/{property_id}
+export async function GET(request) {
   try {
-    const userDocRef = doc(db, "users", userId);
-    const userSnapshot = await getDoc(userDocRef);
-
-    if (!userSnapshot.exists()) {
-      return NextResponse.json({ error: "Profile not found" }, { status: 404 });
+    const { searchParams } = new URL(request.url);
+    const propertyId = searchParams.get('propertyId');
+    if (!propertyId) {
+      return NextResponse.json({ error: "Property ID is required" }, { status: 400 });
     }
-
-    const userData = userSnapshot.data();
-    const ruleOfThumbMetrics = userData.ruleOfThumbMetrics || {};
+    const propertyDocRef = doc(db, `users/${userId}/properties/${propertyId}`);
+    const propertySnapshot = await getDoc(propertyDocRef);
+    if (!propertySnapshot.exists()) {
+      return NextResponse.json({ error: "Property not found" }, { status: 404 });
+    }
+    const propertyData = propertySnapshot.data() || {};
+    const ruleOfThumbMetrics = propertyData['local-rule-of-thumb'] || {};
     // Convert decimals to percent strings for percent fields
     const result = { ...ruleOfThumbMetrics };
     percentFields.forEach(field => {

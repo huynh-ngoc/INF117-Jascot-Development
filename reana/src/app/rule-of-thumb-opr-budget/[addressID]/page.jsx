@@ -2,4 +2,4 @@ import RuleOfThumbOprBudgetClient from '@/components/rule-of-thumb/RuleOfThumbOp
 
 export default function Page({ params }) {
   return <RuleOfThumbOprBudgetClient addressID={params.addressID} />;
-}
+} 

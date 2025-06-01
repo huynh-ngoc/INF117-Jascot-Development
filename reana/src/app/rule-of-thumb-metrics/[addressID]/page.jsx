@@ -2,4 +2,4 @@ import RuleOfThumbMetricsClient from '@/components/rule-of-thumb/RuleOfThumbMetr
 
 export default function Page({ params }) {
   return <RuleOfThumbMetricsClient addressID={params.addressID} />;
-}
+} 

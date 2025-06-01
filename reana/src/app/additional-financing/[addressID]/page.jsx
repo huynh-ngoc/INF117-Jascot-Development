@@ -2,4 +2,4 @@ import AdditionalFinancingClient from '@/components/additional-financing/Additio
 
 export default function Page({ params }) {
   return <AdditionalFinancingClient addressID={params.addressID} />;
-}
+} 

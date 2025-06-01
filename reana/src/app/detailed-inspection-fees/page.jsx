@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 
 export default function DetailedInspectionFeesPage() {
   const [appraisal, setAppraisal] = useState(650);
@@ -40,9 +41,12 @@ export default function DetailedInspectionFeesPage() {
   const [other1, setOther1] = useState(0);
   const [other2, setOther2] = useState(0);
 
-  const parseNum = str => parseFloat(str.replace(/[^\d.-]/g, '')) || 0;
+  const parseNum = (str) => parseFloat(str.replace(/[^\d.-]/g, '')) || 0;
   const fmt = (n, dec = 0) =>
-    n.toLocaleString(undefined, { minimumFractionDigits: dec, maximumFractionDigits: dec });
+    n.toLocaleString(undefined, {
+      minimumFractionDigits: dec,
+      maximumFractionDigits: dec,
+    });
 
   const totalInspection = useMemo(() => {
     return (
@@ -95,223 +99,297 @@ export default function DetailedInspectionFeesPage() {
       <AppSidebar />
       <SidebarInset>
         <main className="p-6 max-w-4xl mx-auto space-y-6">
-          <h1 className="text-2xl font-bold">Detailed Inspection Fees</h1>
+          {/* 1. Main Heading: Montserrat, black text */}
+          <h1 className="text-4xl font-montserrat font-bold text-black">
+            Detailed Inspection Fees
+          </h1>
 
-          <Card className="space-y-4">
+          {/* 2. Card: White background, Steel Gray border */}
+          <Card className="space-y-4 bg-white border border-[#4F5D75] shadow-md rounded-lg">
             <CardHeader>
-              <CardTitle>Inspection Fees</CardTitle>
+              <CardTitle className="font-montserrat text-black">
+                Inspection Fees
+              </CardTitle>
             </CardHeader>
+
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* Appraisal */}
                 <div>
-                  <Label>Appraisal</Label>
+                  <Label className="font-lato text-black">Appraisal</Label>
                   <Input
                     type="text"
-                    className="pl-7 pr-2"
+                    className="pl-7 pr-2 border border-[#4F5D75] text-black font-lato rounded"
                     value={`$${fmt(appraisal)}`}
-                    onChange={e => setAppraisal(parseNum(e.target.value))}
-                  />
-                </div>
-                <div>
-                  <Label>General Property Inspection</Label>
-                  <Input
-                    type="text"
-                    className="pl-7 pr-2"
-                    value={`$${fmt(generalInspection)}`}
-                    onChange={e => setGeneralInspection(parseNum(e.target.value))}
+                    onChange={(e) => setAppraisal(parseNum(e.target.value))}
                   />
                 </div>
 
-                <div className="col-span-full bg-gray-100 px-2 py-1 font-semibold">
+                {/* General Property Inspection */}
+                <div>
+                  <Label className="font-lato text-black">
+                    General Property Inspection
+                  </Label>
+                  <Input
+                    type="text"
+                    className="pl-7 pr-2 border border-[#4F5D75] text-black font-lato rounded"
+                    value={`$${fmt(generalInspection)}`}
+                    onChange={(e) =>
+                      setGeneralInspection(parseNum(e.target.value))
+                    }
+                  />
+                </div>
+
+                {/* Section Header: Structural (light gray bg, black text, Steel Gray bottom border) */}
+                <div className="col-span-full bg-[#E5E5E5] px-2 py-1 border-b border-[#4F5D75] font-montserrat font-semibold text-black">
                   Structural
                 </div>
+
+                {/* Structural Engineer */}
                 <div>
-                  <Label>Structural Engineer</Label>
+                  <Label className="font-lato text-black">
+                    Structural Engineer
+                  </Label>
                   <Input
                     type="text"
-                    className="pl-7 pr-2"
+                    className="pl-7 pr-2 border border-[#4F5D75] text-black font-lato rounded"
                     value={`$${fmt(structuralEngineer)}`}
-                    onChange={e => setStructuralEngineer(parseNum(e.target.value))}
-                  />
-                </div>
-                <div>
-                  <Label>Foundation Specialist</Label>
-                  <Input
-                    type="text"
-                    className="pl-7 pr-2"
-                    value={`$${fmt(foundationSpecialist)}`}
-                    onChange={e => setFoundationSpecialist(parseNum(e.target.value))}
-                  />
-                </div>
-                <div>
-                  <Label>Pest and Termite</Label>
-                  <Input
-                    type="text"
-                    className="pl-7 pr-2"
-                    value={`$${fmt(pestTermite)}`}
-                    onChange={e => setPestTermite(parseNum(e.target.value))}
-                  />
-                </div>
-                <div>
-                  <Label>Zoning &amp; Code Compliance</Label>
-                  <Input
-                    type="text"
-                    className="pl-7 pr-2"
-                    value={`$${fmt(zoningCode)}`}
-                    onChange={e => setZoningCode(parseNum(e.target.value))}
+                    onChange={(e) =>
+                      setStructuralEngineer(parseNum(e.target.value))
+                    }
                   />
                 </div>
 
-                <div className="col-span-full bg-gray-100 px-2 py-1 font-semibold">
+                {/* Foundation Specialist */}
+                <div>
+                  <Label className="font-lato text-black">
+                    Foundation Specialist
+                  </Label>
+                  <Input
+                    type="text"
+                    className="pl-7 pr-2 border border-[#4F5D75] text-black font-lato rounded"
+                    value={`$${fmt(foundationSpecialist)}`}
+                    onChange={(e) =>
+                      setFoundationSpecialist(parseNum(e.target.value))
+                    }
+                  />
+                </div>
+
+                {/* Pest and Termite */}
+                <div>
+                  <Label className="font-lato text-black">
+                    Pest and Termite
+                  </Label>
+                  <Input
+                    type="text"
+                    className="pl-7 pr-2 border border-[#4F5D75] text-black font-lato rounded"
+                    value={`$${fmt(pestTermite)}`}
+                    onChange={(e) => setPestTermite(parseNum(e.target.value))}
+                  />
+                </div>
+
+                {/* Zoning & Code Compliance */}
+                <div>
+                  <Label className="font-lato text-black">
+                    Zoning &amp; Code Compliance
+                  </Label>
+                  <Input
+                    type="text"
+                    className="pl-7 pr-2 border border-[#4F5D75] text-black font-lato rounded"
+                    value={`$${fmt(zoningCode)}`}
+                    onChange={(e) => setZoningCode(parseNum(e.target.value))}
+                  />
+                </div>
+
+                {/* Section Header: Systems (light gray bg, black text, Steel Gray bottom border) */}
+                <div className="col-span-full bg-[#E5E5E5] px-2 py-1 border-b border-[#4F5D75] font-montserrat font-semibold text-black">
                   Systems
                 </div>
+
+                {/* Plumbing */}
                 <div>
-                  <Label>Plumbing</Label>
+                  <Label className="font-lato text-black">Plumbing</Label>
                   <Input
                     type="text"
-                    className="pl-7 pr-2"
+                    className="pl-7 pr-2 border border-[#4F5D75] text-black font-lato rounded"
                     value={`$${fmt(plumbing)}`}
-                    onChange={e => setPlumbing(parseNum(e.target.value))}
-                  />
-                </div>
-                <div>
-                  <Label>Electrical</Label>
-                  <Input
-                    type="text"
-                    className="pl-7 pr-2"
-                    value={`$${fmt(electrical)}`}
-                    onChange={e => setElectrical(parseNum(e.target.value))}
-                  />
-                </div>
-                <div>
-                  <Label>HVAC</Label>
-                  <Input
-                    type="text"
-                    className="pl-7 pr-2"
-                    value={`$${fmt(hvac)}`}
-                    onChange={e => setHvac(parseNum(e.target.value))}
-                  />
-                </div>
-                <div>
-                  <Label>Roof</Label>
-                  <Input
-                    type="text"
-                    className="pl-7 pr-2"
-                    value={`$${fmt(roof)}`}
-                    onChange={e => setRoof(parseNum(e.target.value))}
-                  />
-                </div>
-                <div>
-                  <Label>Sewer &amp; Septic</Label>
-                  <Input
-                    type="text"
-                    className="pl-7 pr-2"
-                    value={`$${fmt(sewerSeptic)}`}
-                    onChange={e => setSewerSeptic(parseNum(e.target.value))}
-                  />
-                </div>
-                <div>
-                  <Label>Environmental</Label>
-                  <Input
-                    type="text"
-                    className="pl-7 pr-2"
-                    value={`$${fmt(environmental)}`}
-                    onChange={e => setEnvironmental(parseNum(e.target.value))}
+                    onChange={(e) => setPlumbing(parseNum(e.target.value))}
                   />
                 </div>
 
-                <div className="col-span-full bg-gray-100 px-2 py-1 font-semibold">
+                {/* Electrical */}
+                <div>
+                  <Label className="font-lato text-black">Electrical</Label>
+                  <Input
+                    type="text"
+                    className="pl-7 pr-2 border border-[#4F5D75] text-black font-lato rounded"
+                    value={`$${fmt(electrical)}`}
+                    onChange={(e) => setElectrical(parseNum(e.target.value))}
+                  />
+                </div>
+
+                {/* HVAC */}
+                <div>
+                  <Label className="font-lato text-black">HVAC</Label>
+                  <Input
+                    type="text"
+                    className="pl-7 pr-2 border border-[#4F5D75] text-black font-lato rounded"
+                    value={`$${fmt(hvac)}`}
+                    onChange={(e) => setHvac(parseNum(e.target.value))}
+                  />
+                </div>
+
+                {/* Roof */}
+                <div>
+                  <Label className="font-lato text-black">Roof</Label>
+                  <Input
+                    type="text"
+                    className="pl-7 pr-2 border border-[#4F5D75] text-black font-lato rounded"
+                    value={`$${fmt(roof)}`}
+                    onChange={(e) => setRoof(parseNum(e.target.value))}
+                  />
+                </div>
+
+                {/* Sewer & Septic */}
+                <div>
+                  <Label className="font-lato text-black">
+                    Sewer &amp; Septic
+                  </Label>
+                  <Input
+                    type="text"
+                    className="pl-7 pr-2 border border-[#4F5D75] text-black font-lato rounded"
+                    value={`$${fmt(sewerSeptic)}`}
+                    onChange={(e) => setSewerSeptic(parseNum(e.target.value))}
+                  />
+                </div>
+
+                {/* Environmental */}
+                <div>
+                  <Label className="font-lato text-black">Environmental</Label>
+                  <Input
+                    type="text"
+                    className="pl-7 pr-2 border border-[#4F5D75] text-black font-lato rounded"
+                    value={`$${fmt(environmental)}`}
+                    onChange={(e) => setEnvironmental(parseNum(e.target.value))}
+                  />
+                </div>
+
+                {/* Section Header: Safety (light gray bg, black text, Steel Gray bottom border) */}
+                <div className="col-span-full bg-[#E5E5E5] px-2 py-1 border-b border-[#4F5D75] font-montserrat font-semibold text-black">
                   Safety
                 </div>
+
+                {/* Mold Inspector */}
                 <div>
-                  <Label>Mold Inspector</Label>
+                  <Label className="font-lato text-black">Mold Inspector</Label>
                   <Input
                     type="text"
-                    className="pl-7 pr-2"
+                    className="pl-7 pr-2 border border-[#4F5D75] text-black font-lato rounded"
                     value={`$${fmt(moldInspector)}`}
-                    onChange={e => setMoldInspector(parseNum(e.target.value))}
-                  />
-                </div>
-                <div>
-                  <Label>Asbestos Inspector</Label>
-                  <Input
-                    type="text"
-                    className="pl-7 pr-2"
-                    value={`$${fmt(asbestosInspector)}`}
-                    onChange={e => setAsbestosInspector(parseNum(e.target.value))}
-                  />
-                </div>
-                <div>
-                  <Label>Lead-Based Paint</Label>
-                  <Input
-                    type="text"
-                    className="pl-7 pr-2"
-                    value={`$${fmt(leadBasedPaint)}`}
-                    onChange={e => setLeadBasedPaint(parseNum(e.target.value))}
-                  />
-                </div>
-                <div>
-                  <Label>Fire &amp; Safety</Label>
-                  <Input
-                    type="text"
-                    className="pl-7 pr-2"
-                    value={`$${fmt(fireSafety)}`}
-                    onChange={e => setFireSafety(parseNum(e.target.value))}
-                  />
-                </div>
-                <div>
-                  <Label>Radon Inspector</Label>
-                  <Input
-                    type="text"
-                    className="pl-7 pr-2"
-                    value={`$${fmt(radonInspector)}`}
-                    onChange={e => setRadonInspector(parseNum(e.target.value))}
-                  />
-                </div>
-                <div>
-                  <Label>Well Water</Label>
-                  <Input
-                    type="text"
-                    className="pl-7 pr-2"
-                    value={`$${fmt(wellWater)}`}
-                    onChange={e => setWellWater(parseNum(e.target.value))}
-                  />
-                </div>
-                <div>
-                  <Label>Other</Label>
-                  <Input
-                    type="text"
-                    className="pl-7 pr-2"
-                    value={`$${fmt(other1)}`}
-                    onChange={e => setOther1(parseNum(e.target.value))}
-                  />
-                </div>
-                <div>
-                  <Label>Other</Label>
-                  <Input
-                    type="text"
-                    className="pl-7 pr-2"
-                    value={`$${fmt(other2)}`}
-                    onChange={e => setOther2(parseNum(e.target.value))}
+                    onChange={(e) => setMoldInspector(parseNum(e.target.value))}
                   />
                 </div>
 
-                <div className="col-span-full mt-4 text-center font-semibold">
+                {/* Asbestos Inspector */}
+                <div>
+                  <Label className="font-lato text-black">
+                    Asbestos Inspector
+                  </Label>
+                  <Input
+                    type="text"
+                    className="pl-7 pr-2 border border-[#4F5D75] text-black font-lato rounded"
+                    value={`$${fmt(asbestosInspector)}`}
+                    onChange={(e) => setAsbestosInspector(parseNum(e.target.value))}
+                  />
+                </div>
+
+                {/* Lead-Based Paint */}
+                <div>
+                  <Label className="font-lato text-black">
+                    Lead-Based Paint
+                  </Label>
+                  <Input
+                    type="text"
+                    className="pl-7 pr-2 border border-[#4F5D75] text-black font-lato rounded"
+                    value={`$${fmt(leadBasedPaint)}`}
+                    onChange={(e) => setLeadBasedPaint(parseNum(e.target.value))}
+                  />
+                </div>
+
+                {/* Fire & Safety */}
+                <div>
+                  <Label className="font-lato text-black">Fire &amp; Safety</Label>
+                  <Input
+                    type="text"
+                    className="pl-7 pr-2 border border-[#4F5D75] text-black font-lato rounded"
+                    value={`$${fmt(fireSafety)}`}
+                    onChange={(e) => setFireSafety(parseNum(e.target.value))}
+                  />
+                </div>
+
+                {/* Radon Inspector */}
+                <div>
+                  <Label className="font-lato text-black">Radon Inspector</Label>
+                  <Input
+                    type="text"
+                    className="pl-7 pr-2 border border-[#4F5D75] text-black font-lato rounded"
+                    value={`$${fmt(radonInspector)}`}
+                    onChange={(e) => setRadonInspector(parseNum(e.target.value))}
+                  />
+                </div>
+
+                {/* Well Water */}
+                <div>
+                  <Label className="font-lato text-black">Well Water</Label>
+                  <Input
+                    type="text"
+                    className="pl-7 pr-2 border border-[#4F5D75] text-black font-lato rounded"
+                    value={`$${fmt(wellWater)}`}
+                    onChange={(e) => setWellWater(parseNum(e.target.value))}
+                  />
+                </div>
+
+                {/* Other 1 */}
+                <div>
+                  <Label className="font-lato text-black">Other</Label>
+                  <Input
+                    type="text"
+                    className="pl-7 pr-2 border border-[#4F5D75] text-black font-lato rounded"
+                    value={`$${fmt(other1)}`}
+                    onChange={(e) => setOther1(parseNum(e.target.value))}
+                  />
+                </div>
+
+                {/* Other 2 */}
+                <div>
+                  <Label className="font-lato text-black">Other</Label>
+                  <Input
+                    type="text"
+                    className="pl-7 pr-2 border border-[#4F5D75] text-black font-lato rounded"
+                    value={`$${fmt(other2)}`}
+                    onChange={(e) => setOther2(parseNum(e.target.value))}
+                  />
+                </div>
+
+                {/* Total line: Montserrat bold, black text */}
+                <div className="col-span-full mt-4 text-center font-montserrat text-xl font-bold text-black">
                   Total Lender Costs: ${fmt(totalInspection)}
                 </div>
               </div>
             </CardContent>
+
+            {/* Footer buttons use shared Button component with asChild */}
             <CardFooter className="flex flex-col space-y-3">
-              <Link href="/detailed-lender-fees-2nd">
-                <button className="w-full py-2 px-4 bg-gray-100 rounded-md hover:bg-gray-200">
-                  Go to Detailed Lender Fees
-                </button>
-              </Link>
-              <Link href="/detailed-settlement-fees">
-                <button className="w-full py-2 px-4 bg-gray-100 rounded-md hover:bg-gray-200">
-                  Go to detailed Settlement Costs
-                </button>
-              </Link>
+              <Button asChild variant="secondary">
+                <Link href="/detailed-lender-fees-2nd">
+                  <span className="text-white">Go to Detailed Lender Fees</span>
+                </Link>
+              </Button>
+              <Button asChild variant="secondary">
+                <Link href="/detailed-settlement-fees">
+                  <span className="text-white">Go to Detailed Settlement Costs</span>
+                </Link>
+              </Button>
             </CardFooter>
           </Card>
         </main>

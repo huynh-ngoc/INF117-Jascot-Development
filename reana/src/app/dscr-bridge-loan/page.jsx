@@ -36,28 +36,28 @@ export default function DSCRBridgeLoanPage() {
     {
       key: 'rule',
       label: 'Use "Rule of Thumb" Default',
-      route: '/rule-of-thumb-metrics',       // TODO: update to your actual page path
+      route: '/rule-of-thumb-metrics',
     },
     {
       key: 'lender',
       label: 'Use Detailed Lender Fees',
-      route: '/detailed-lender-fees-1st',        // TODO: update
+      route: '/detailed-lender-fees-1st',
     },
     {
       key: 'settlement',
       label: 'Use Detailed Settlement Fees',
-      route: '/detailed-settlement-fees',    // TODO: update
+      route: '/detailed-settlement-fees',
     },
     {
       key: 'inspection',
       label: 'Use Detailed Inspection Costs',
-      route: '/detailed-inspection-fees',   // TODO: update
+      route: '/detailed-inspection-fees',
     },
   ];
   const [selectedFee, setSelectedFee] = useState('rule');
 
   // Utility for parsing and formatting
-  const parseNum = str => parseFloat(str.replace(/[^\d.-]/g, '')) || 0;
+  const parseNum = (str) => parseFloat(str.replace(/[^\d.-]/g, '')) || 0;
   const fmt = (num, dec = 0) =>
     num.toLocaleString(undefined, { minimumFractionDigits: dec, maximumFractionDigits: dec });
 
@@ -97,7 +97,23 @@ export default function DSCRBridgeLoanPage() {
       paymentMonthly,
       annualDebtService,
     };
-  }, [asIs, rehab, maxLTV, rate, balloon, isIO, amortTerm, userLoanAmt]);
+  }, [asIs, rehab, maxLTV, rate, amortTerm, isIO, userLoanAmt]);
+
+  // ---- Save Handler ----
+  const handleSave = () => {
+    const dataToSave = {
+      loanTerms: { maxLTV, isIO, rate, balloon, firstDraw, amortTerm },
+      transaction: { asIs, rehab, userLoanAmt },
+      calculated: { total, maxLoanAmt, loanAmt, downPayment, actualLTV, paymentMonthly, annualDebtService },
+    };
+    try {
+      localStorage.setItem('dscrBridgeLoanData', JSON.stringify(dataToSave));
+      alert('📥 Data saved successfully!');
+    } catch (e) {
+      console.error('Error saving to localStorage', e);
+      alert('⚠️ Could not save data.');
+    }
+  };
 
   return (
     <SidebarProvider>
@@ -119,9 +135,9 @@ export default function DSCRBridgeLoanPage() {
                 <Label>Max Loan-to-Value</Label>
                 <Input
                   type="text"
-                  className="pl-2 pr-7"
+                  className="pl-2 pr-7 border border-[#4F5D75] text-black font-lato rounded"
                   value={`${fmt(maxLTV, 3)}%`}
-                  onChange={e => setMaxLTV(parseNum(e.target.value))}
+                  onChange={(e) => setMaxLTV(parseNum(e.target.value))}
                 />
               </div>
               {/* IO or AM */}
@@ -130,7 +146,7 @@ export default function DSCRBridgeLoanPage() {
                 <select
                   className="mt-1 block w-full rounded border-gray-300"
                   value={isIO ? 'IO' : 'AM'}
-                  onChange={e => setIsIO(e.target.value === 'IO')}
+                  onChange={(e) => setIsIO(e.target.value === 'IO')}
                 >
                   <option value="IO">Interest Only</option>
                   <option value="AM">Amortizing</option>
@@ -141,9 +157,9 @@ export default function DSCRBridgeLoanPage() {
                 <Label>Interest Rate</Label>
                 <Input
                   type="text"
-                  className="pl-2 pr-7"
+                  className="pl-2 pr-7 border border-[#4F5D75] text-black font-lato rounded"
                   value={`${fmt(rate, 2)}%`}
-                  onChange={e => setRate(parseNum(e.target.value))}
+                  onChange={(e) => setRate(parseNum(e.target.value))}
                 />
               </div>
               {/* Balloon (yrs) */}
@@ -151,9 +167,9 @@ export default function DSCRBridgeLoanPage() {
                 <Label>Balloon Payment Due</Label>
                 <Input
                   type="text"
-                  className="pl-2 pr-2"
+                  className="pl-2 pr-2 border border-[#4F5D75] text-black font-lato rounded"
                   value={`${fmt(balloon, 0)}`}
-                  onChange={e => setBalloon(parseNum(e.target.value))}
+                  onChange={(e) => setBalloon(parseNum(e.target.value))}
                 />
               </div>
               {/* First Draw $ */}
@@ -161,9 +177,9 @@ export default function DSCRBridgeLoanPage() {
                 <Label>First Draw Minimum</Label>
                 <Input
                   type="text"
-                  className="pl-7 pr-2"
+                  className="pl-7 pr-2 border border-[#4F5D75] text-black font-lato rounded"
                   value={`$${fmt(firstDraw)}`}
-                  onChange={e => setFirstDraw(parseNum(e.target.value))}
+                  onChange={(e) => setFirstDraw(parseNum(e.target.value))}
                 />
               </div>
               {/* Term 1-30 */}
@@ -175,7 +191,7 @@ export default function DSCRBridgeLoanPage() {
                     min={1}
                     max={30}
                     value={amortTerm}
-                    onChange={e => setAmortTerm(+e.target.value)}
+                    onChange={(e) => setAmortTerm(+e.target.value)}
                     className="w-full"
                   />
                   <div className="mt-1 text-sm">{amortTerm} yrs</div>
@@ -194,34 +210,18 @@ export default function DSCRBridgeLoanPage() {
                 <Label>Asking Price / Your Offer</Label>
                 <Input
                   type="text"
-                  className="pl-7 pr-2"
+                  className="pl-7 pr-2 border border-[#4F5D75] text-black font-lato rounded"
                   value={`$${fmt(asIs)}`}
-                  onChange={e => setAsIs(parseNum(e.target.value))}
+                  onChange={(e) => setAsIs(parseNum(e.target.value))}
                 />
               </div>
               <div className="relative">
                 <Label>Rehab Costs Financed</Label>
                 <Input
                   type="text"
-                  className="pl-7 pr-2"
+                  className="pl-7 pr-2 border border-[#4F5D75] text-black font-lato rounded"
                   value={`$${fmt(rehab)}`}
-                  onChange={e => setRehab(parseNum(e.target.value))}
-                />
-              </div>
-            </CardContent>
-
-            <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <Label>Max Acquisition + Rehab Loan Amt</Label>
-                <p className="mt-1">${fmt(maxLoanAmt)}</p>
-              </div>
-              <div className="relative">
-                <Label>Loan Amount (you wish to finance)</Label>
-                <Input
-                  type="text"
-                  className="pl-7 pr-2"
-                  value={`$${fmt(userLoanAmt)}`}
-                  onChange={e => setUserLoanAmt(parseNum(e.target.value))}
+                  onChange={(e) => setRehab(parseNum(e.target.value))}
                 />
               </div>
             </CardContent>
@@ -235,6 +235,17 @@ export default function DSCRBridgeLoanPage() {
               <p>Payment Amount (Monthly): <strong>${fmt(paymentMonthly, 2)}</strong></p>
               <p>Payment Amount (Annual Debt Service): <strong>${fmt(annualDebtService, 2)}</strong></p>
             </CardContent>
+
+            {/* ---- Save Button ---- */}
+            <CardFooter className="flex justify-start pb-6">
+              <button
+                type="button"
+                className="py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                onClick={handleSave}
+              >
+                Save
+              </button>
+            </CardFooter>
 
             {/* ---- Add Another Loan ---- */}
             <CardFooter>
@@ -266,9 +277,11 @@ export default function DSCRBridgeLoanPage() {
                   }}
                   className={`
                     w-full py-2 px-4 rounded-md font-medium transition
-                    ${selectedFee === key
-                      ? 'bg-blue-600 text-white hover:bg-blue-700'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}
+                    ${
+                      selectedFee === key
+                        ? 'bg-blue-600 text-white hover:bg-blue-700'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }
                   `}
                 >
                   {label}

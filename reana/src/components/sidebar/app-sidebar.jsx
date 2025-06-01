@@ -27,7 +27,7 @@ const data = {
   app: {
     name: "Reana",
     slogan: "Real Estate Investment Assistant",
-    logo: "/image/logo.jpg",
+    logo: "/reana-logo.png",
   },
   user: {
     name: "User",

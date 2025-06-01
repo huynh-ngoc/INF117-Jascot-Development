@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 
 export default function DetailedLenderFees2ndPage() {
   const router = useRouter();
@@ -26,7 +27,7 @@ export default function DetailedLenderFees2ndPage() {
   const [overnight, setOvernight] = useState(25);
   const [creditReport, setCreditReport] = useState(87);
 
-  const parseNum = str => parseFloat(str.replace(/[^\d.-]/g, '')) || 0;
+  const parseNum = (str) => parseFloat(str.replace(/[^\d.-]/g, '')) || 0;
   const fmt = (n, dec = 0) =>
     n.toLocaleString(undefined, {
       minimumFractionDigits: dec,
@@ -50,112 +51,107 @@ export default function DetailedLenderFees2ndPage() {
       <AppSidebar />
       <SidebarInset>
         <main className="p-6 max-w-4xl mx-auto space-y-6">
-          <h1 className="text-2xl font-bold">Detailed Lender Fees (2nd Mtg)</h1>
+          <h1 className="text-2xl font-bold text-black">
+            Detailed Lender Fees (2nd Mtg)
+          </h1>
 
-          <Card className="space-y-4">
+          <Card className="space-y-4 bg-white border border-[#4F5D75] shadow-md rounded-lg">
             <CardHeader>
-              <CardTitle>Fees</CardTitle>
+              <CardTitle className="text-black">Fees</CardTitle>
             </CardHeader>
+
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
-                  <Label>Origination Fee (Points)</Label>
+                  <Label className="text-black">Origination Fee (Points)</Label>
                   <Input
                     type="text"
-                    className="pl-2 pr-7"
+                    className="pl-2 pr-7 border border-[#4F5D75] text-black font-lato rounded"
                     value={`${fmt(origPoints, 2)}%`}
-                    onChange={e => setOrigPoints(parseNum(e.target.value))}
+                    onChange={(e) => setOrigPoints(parseNum(e.target.value))}
                   />
                 </div>
                 <div>
-                  <Label>Origination Fee</Label>
+                  <Label className="text-black">Origination Fee ($)</Label>
                   <Input
                     type="text"
-                    className="pl-7 pr-2"
+                    className="pl-7 pr-2 border border-[#4F5D75] text-black font-lato rounded"
                     value={`$${fmt(origFee)}`}
-                    onChange={e => setOrigFee(parseNum(e.target.value))}
+                    onChange={(e) => setOrigFee(parseNum(e.target.value))}
                   />
                 </div>
                 <div>
-                  <Label>Underwriting Fee</Label>
+                  <Label className="text-black">Underwriting Fee ($)</Label>
                   <Input
                     type="text"
-                    className="pl-7 pr-2"
+                    className="pl-7 pr-2 border border-[#4F5D75] text-black font-lato rounded"
                     value={`$${fmt(underwriting)}`}
-                    onChange={e => setUnderwriting(parseNum(e.target.value))}
+                    onChange={(e) => setUnderwriting(parseNum(e.target.value))}
                   />
                 </div>
                 <div>
-                  <Label>Processing Fee</Label>
+                  <Label className="text-black">Processing Fee ($)</Label>
                   <Input
                     type="text"
-                    className="pl-7 pr-2"
+                    className="pl-7 pr-2 border border-[#4F5D75] text-black font-lato rounded"
                     value={`$${fmt(processing)}`}
-                    onChange={e => setProcessing(parseNum(e.target.value))}
+                    onChange={(e) => setProcessing(parseNum(e.target.value))}
                   />
                 </div>
                 <div>
-                  <Label>Lender Funding Fee</Label>
+                  <Label className="text-black">Lender Funding Fee ($)</Label>
                   <Input
                     type="text"
-                    className="pl-7 pr-2"
+                    className="pl-7 pr-2 border border-[#4F5D75] text-black font-lato rounded"
                     value={`$${fmt(lenderFunding)}`}
-                    onChange={e => setLenderFunding(parseNum(e.target.value))}
+                    onChange={(e) => setLenderFunding(parseNum(e.target.value))}
                   />
                 </div>
                 <div>
-                  <Label>Document Prep Fee</Label>
+                  <Label className="text-black">Document Prep Fee ($)</Label>
                   <Input
                     type="text"
-                    className="pl-7 pr-2"
+                    className="pl-7 pr-2 border border-[#4F5D75] text-black font-lato rounded"
                     value={`$${fmt(docPrep)}`}
-                    onChange={e => setDocPrep(parseNum(e.target.value))}
+                    onChange={(e) => setDocPrep(parseNum(e.target.value))}
                   />
                 </div>
                 <div>
-                  <Label>Overnight Delivery Fee</Label>
+                  <Label className="text-black">Overnight Delivery Fee ($)</Label>
                   <Input
                     type="text"
-                    className="pl-7 pr-2"
+                    className="pl-7 pr-2 border border-[#4F5D75] text-black font-lato rounded"
                     value={`$${fmt(overnight)}`}
-                    onChange={e => setOvernight(parseNum(e.target.value))}
+                    onChange={(e) => setOvernight(parseNum(e.target.value))}
                   />
                 </div>
                 <div>
-                  <Label>Credit Report</Label>
+                  <Label className="text-black">Credit Report ($)</Label>
                   <Input
                     type="text"
-                    className="pl-7 pr-2"
+                    className="pl-7 pr-2 border border-[#4F5D75] text-black font-lato rounded"
                     value={`$${fmt(creditReport)}`}
-                    onChange={e => setCreditReport(parseNum(e.target.value))}
+                    onChange={(e) => setCreditReport(parseNum(e.target.value))}
                   />
                 </div>
               </div>
 
-              <div className="mt-4 text-center font-semibold">
+              <div className="mt-4 text-center font-semibold text-black">
                 Total Lender Costs: ${fmt(total)}
               </div>
             </CardContent>
 
             <CardFooter className="flex flex-col space-y-3">
-              <button
-                type="button"
-                className="w-full py-2 px-4 bg-gray-100 rounded-md hover:bg-gray-200"
-                onClick={() => {
-                  router.push('/detailed-settlement-fees');
-                }}
-              >
-                Go to Detailed Settlement Fees
-              </button>
-              <button
-                type="button"
-                className="w-full py-2 px-4 bg-gray-100 rounded-md hover:bg-gray-200"
-                onClick={() => {
-                  router.push('/detailed-inspection-fees');
-                }}
-              >
-                Go to Detailed Inspection Costs
-              </button>
+              <Button asChild variant="secondary">
+                <button onClick={() => router.push('/detailed-settlement-fees')}>
+                  <span className="text-white">Go to Detailed Settlement Fees</span>
+                </button>
+              </Button>
+              <Button asChild variant="secondary">
+                <button onClick={() => router.push('/detailed-inspection-fees')}>
+                  <span className="text-white">Go to Detailed Inspection Costs</span>
+                </button>
+              </Button>
             </CardFooter>
           </Card>
         </main>

@@ -22,7 +22,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import DarkLightSwitch from '@/components/mode-toggle/dark-light-switch';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 function pmt(rate, nper, pv, fv = 0, type = 0) {
     if (rate === 0) return -(pv + fv) / nper;
@@ -35,6 +35,8 @@ function pmt(rate, nper, pv, fv = 0, type = 0) {
   
 export default function ConventionalFinancingPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const propertyId = 'addr_052939197dfa6b29';
   const [hasChanges, setHasChanges] = useState(false);
   const [hasAdditionalFinancing, setHasAdditionalFinancing] = useState(false);
 
@@ -66,16 +68,21 @@ export default function ConventionalFinancingPage() {
   // Load data from Firebase when component mounts
   useEffect(() => {
     const fetchData = async () => {
+      if (!propertyId) {
+        console.error('No propertyId provided');
+        return;
+      }
+
       try {
         // Fetch conventional financing data
-        const conventionalResponse = await fetch('/api/conventional-financing');
+        const conventionalResponse = await fetch(`/api/conventional-financing`);
         if (!conventionalResponse.ok) {
           throw new Error('Failed to fetch conventional financing data');
         }
         const conventionalData = await conventionalResponse.json();
         
         // Fetch additional financing data
-        const additionalResponse = await fetch('/api/additional-financing');
+        const additionalResponse = await fetch(`/api/additional-financing`);
         if (!additionalResponse.ok) {
           throw new Error('Failed to fetch additional financing data');
         }
@@ -118,7 +125,7 @@ export default function ConventionalFinancingPage() {
       }
     };
     fetchData();
-  }, []);
+  }, [propertyId]);
 
   // Handle input changes
   const handleInputChange = (setter) => (e) => {
@@ -128,8 +135,13 @@ export default function ConventionalFinancingPage() {
 
   // Save data to Firebase
   const handleSave = async () => {
+    if (!propertyId) {
+      console.error('No propertyId provided');
+      return;
+    }
+
     try {
-      const response = await fetch('/api/conventional-financing', {
+      const response = await fetch(`/api/conventional-financing`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

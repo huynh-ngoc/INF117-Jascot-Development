@@ -20,16 +20,25 @@ function percentToDecimal(val) {
 export async function POST(request) {
   try {
     const body = await request.json();
-    let { maxLTV, isIO, rate, balloon, asIs, reqDownPay, optDownPay, actualLTV, maxLoan, userLoanAmt, monthlyPayment, annualPayment } = body;
+    // const { propertyId, ...data } = body;
+    const data = body;
+    let { maxLTV, isIO, rate, balloon, asIs, reqDownPay, optDownPay, actualLTV, maxLoan, userLoanAmt, monthlyPayment, annualPayment } = data;
+
+    // const propertyId = 'addr_052939197dfa6b29';
+    const propertyId = 'addr_052939197dfa6b29';
+
+    if (!propertyId) {
+      return NextResponse.json({ error: "Property ID is required" }, { status: 400 });
+    }
 
     // Convert percentage fields to decimals
     maxLTV = percentToDecimal(maxLTV);
     rate = percentToDecimal(rate);
     actualLTV = percentToDecimal(actualLTV);
 
-    const userDocRef = doc(db, "users", userId);
+    const propertyDocRef = doc(db, "users", userId, "properties", propertyId);
     await setDoc(
-      userDocRef,
+      propertyDocRef,
       {
         conventionalFinancing: {
           maxLTV,
@@ -57,16 +66,24 @@ export async function POST(request) {
 }
 
 // GET: Retrieve conventional financing data
-export async function GET() {
+export async function GET(request) {
   try {
-    const userDocRef = doc(db, "users", userId);
-    const userSnapshot = await getDoc(userDocRef);
-    if (!userSnapshot.exists()) {
-      return NextResponse.json({ error: "Profile not found" }, { status: 404 });
+    const { searchParams } = new URL(request.url);
+    const propertyId = searchParams.get('propertyId');
+
+    if (!propertyId) {
+      return NextResponse.json({ error: "Property ID is required" }, { status: 400 });
+    }
+
+    const propertyDocRef = doc(db, "users", userId, "properties", propertyId);
+    const propertySnapshot = await getDoc(propertyDocRef);
+    
+    if (!propertySnapshot.exists()) {
+      return NextResponse.json({ error: "Property not found" }, { status: 404 });
     }
     
-    const userData = userSnapshot.data();
-    const conventionalFinancing = userData.conventionalFinancing || {};
+    const propertyData = propertySnapshot.data();
+    const conventionalFinancing = propertyData.conventionalFinancing || {};
     
     return NextResponse.json({ success: true, conventionalFinancing });
   } catch (error) {

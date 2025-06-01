@@ -92,7 +92,7 @@ const defaultData = [
     },
 ];
 
-export default function RuleOfThumbTable() {
+export default function RuleOfThumbTable({ propertyId }) {
     const [tableData, setTableData] = useState(defaultData);
     const [hasChanges, setHasChanges] = useState(false);
 
@@ -100,7 +100,7 @@ export default function RuleOfThumbTable() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await fetch('/api/rule-of-thumb-metrics');
+                const response = await fetch(`/api/rule-of-thumb-metrics?propertyId=${propertyId}`);
                 if (!response.ok) {
                     throw new Error('Failed to fetch data');
                 }

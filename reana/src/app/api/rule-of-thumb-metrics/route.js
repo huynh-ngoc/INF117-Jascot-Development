@@ -58,7 +58,7 @@ export async function POST(request) {
     await setDoc(
       propertyDocRef,
       {
-        'local-rule-of-thumb': {
+        'localRuleOfThumb': {
           ...dataToSave,
           updatedAt: new Date().toISOString(),
         },

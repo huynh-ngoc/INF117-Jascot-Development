@@ -1354,7 +1354,13 @@ export default function PropAnalysisDashboard({ address: propAddress }) {
                   content: ruleOfThumb.contingency + "%",
                 },
               ]}
-              buttons={[]}
+              buttons={[
+                {
+                  label: "Detail Your Projections",
+                  icon: <ClipboardPlus className="w-4 h-4" />,
+                  onClick: () => router.push(`/rule-of-thumb-metrics?propertyId=${propertyId}`),
+                },
+              ]}
             />
 
             {/* Operating Budget */}
@@ -1411,7 +1417,7 @@ export default function PropAnalysisDashboard({ address: propAddress }) {
                   label: "Detail Your Projections",
                   icon: <ClipboardPlus className="w-4 h-4" />,
                   onClick: () =>
-                    router.push(`/operating-budget?propertyId=${propertyId}`),
+                    router.push(`/rule-of-thumb-opr-budget?propertyId=${propertyId}`),
                 },
               ]}
             />
@@ -1496,11 +1502,7 @@ export default function PropAnalysisDashboard({ address: propAddress }) {
                   label: "Detail Loan Terms",
                   icon: <ClipboardPlus className="w-4 h-4" />,
                   onClick: () =>
-                    router.push(
-                      `/financing/${propertyId}/${
-                        activeLoanScenario?.scenarioId || "new"
-                      }`
-                    ),
+                    router.push(`/conventional-financing?propertyId=${propertyId}`),
                 },
               ]}
             />

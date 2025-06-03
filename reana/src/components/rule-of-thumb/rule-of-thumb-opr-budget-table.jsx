@@ -1,55 +1,149 @@
 'use client';
-
-import React, { useState } from 'react';
+export const dynamic = "force-dynamic";
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 
-export default function RuleOfThumbOprBudgetTable() {
-  // Mock data for now
-    const budgetData = [
-    {
-        title: 'Gross Scheduled Income (GSI)',
-        ruleOfThumb: '',
-        monthly: '$2,550',
-        annual: '$30,600',
-    },
-    {
-      title: 'Total Operating Expenses',
-      ruleOfThumb: '50.00%',
-      monthly: '$1,275',
-      annual: '$15,300',
-    },
-    {
-      title: 'Net Operating Income (NOI)',
-      ruleOfThumb: '',
-      monthly: '$1,275',
-      annual: '$15,300',
-    },
-    {
-      title: 'Less Debt Service',
-      ruleOfThumb: '',
-      monthly: '$755',
-      annual: '$9,055',
-    },
-    {
-      title: 'Less Non-Financed Capital Expenditures',
-      ruleOfThumb: '',
-      monthly: '$1,526',
-      annual: '$18,315',
-    },
-    {
-      title: 'Cash Flow (Year 1)',
-      ruleOfThumb: '',
-      monthly: '($1,006)',
-      annual: '($12,070)',
-    },
-  ];
-
+export default function RuleOfThumbOprBudgetTable({ propertyId }) {
   const [incomeType, setIncomeType] = useState('Projected Rent Per Comps');
   const incomeOptions = [
     'Projected Rent Per Comps',
     'Current Rent',
     'Scheduled Rent',
+  ];
+  const [unitMix, setUnitMix] = useState([]);
+  const [gsi, setGsi] = useState({ monthly: 0, annual: 0 });
+  const [operatingExpensesPct, setOperatingExpensesPct] = useState(0.5); // default 50%
+
+  // Fetch property data from backend
+  useEffect(() => {
+    const fetchProperty = async () => {
+      try {
+        const res = await fetch(`/api/property/${propertyId}`);
+        if (!res.ok) throw new Error('Failed to fetch property');
+        const data = await res.json();
+        if (data.success && data.property) {
+          setUnitMix(data.property.unitMix || []);
+          if (data.property.incomeSelection) {
+            setIncomeType(data.property.incomeSelection);
+          }
+          // Get the rule of thumb operating expenses percentage
+          if (
+            data.property['local-rule-of-thumb'] &&
+            typeof data.property['local-rule-of-thumb'].operatingExpenses === 'number'
+          ) {
+            setOperatingExpensesPct(data.property['local-rule-of-thumb'].operatingExpenses);
+          }
+          // Set conventional and additional financing monthly payments
+          setConventionalMonthlyPayment(
+            data.property.conventionalFinancing?.monthlyPayment || 0
+          );
+          setAdditionalMonthlyPayment(
+            data.property.additionalFinancing?.monthlyPayment || 0
+          );
+          // Set rehabData cashPaid
+          setCashPaid(
+            data.property.rehabData?.cashPaid || 0
+          );
+        }
+      } catch (err) {
+        setUnitMix([]);
+      }
+    };
+    fetchProperty();
+  }, []);
+
+  // Calculate GSI
+  useEffect(() => {
+    setGsi(calculateGSI(unitMix, incomeType));
+  }, [unitMix, incomeType]);
+
+  // New state for financing and rehab
+  const [conventionalMonthlyPayment, setConventionalMonthlyPayment] = useState(0);
+  const [additionalMonthlyPayment, setAdditionalMonthlyPayment] = useState(0);
+  const [cashPaid, setCashPaid] = useState(0);
+
+  // --- Updated formulas ---
+  const totalOperatingExpensesMonthly = gsi.monthly * operatingExpensesPct;
+  const totalOperatingExpensesAnnual = totalOperatingExpensesMonthly * 12;
+  const noiMonthly = gsi.monthly - totalOperatingExpensesMonthly;
+  const noiAnnual = noiMonthly * 12;
+  const debtServiceMonthly = Number(conventionalMonthlyPayment) + Number(additionalMonthlyPayment);
+  const debtServiceAnnual = debtServiceMonthly * 12;
+  const capexMonthly = cashPaid / 12;
+  const capexAnnual = capexMonthly * 12;
+  const cashFlowMonthly = noiMonthly - debtServiceMonthly - capexMonthly;
+  const cashFlowAnnual = cashFlowMonthly * 12;
+
+  // Persist selection and all operating budget fields to backend
+  useEffect(() => {
+    if (!unitMix.length) return;
+    const saveSelection = async () => {
+      await fetch(`/api/property/${propertyId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          operatingBudget: {
+            incomeSelection: incomeType,
+            GSI_monthly: gsi.monthly,
+            GSI_annual: gsi.annual,
+            gsiSource: incomeType.toLowerCase().includes('projected') ? 'projected' : incomeType.toLowerCase().includes('current') ? 'current' : 'scheduled',
+            totalOperatingExpensesMonthly,
+            totalOperatingExpensesAnnual,
+            NOI_monthly: noiMonthly,
+            NOI_annual: noiAnnual,
+            debtServiceMonthly,
+            debtServiceAnnual,
+            capexMonthly,
+            capexAnnual,
+            cashFlowMonthly,
+            cashFlowAnnual,
+            updatedAt: new Date().toISOString(),
+          },
+        }),
+      });
+    };
+    saveSelection();
+  }, [incomeType, gsi.monthly, gsi.annual, totalOperatingExpensesMonthly, totalOperatingExpensesAnnual, noiMonthly, noiAnnual, debtServiceMonthly, debtServiceAnnual, capexMonthly, capexAnnual, cashFlowMonthly, cashFlowAnnual]);
+
+  const budgetData = [
+    {
+      title: 'Gross Scheduled Income (GSI)',
+      ruleOfThumb: '',
+      monthly: `$${gsi.monthly.toLocaleString()}`,
+      annual: `$${gsi.annual.toLocaleString()}`,
+    },
+    {
+      title: 'Total Operating Expenses',
+      ruleOfThumb: `${(operatingExpensesPct * 100).toFixed(2)}%`,
+      monthly: `$${totalOperatingExpensesMonthly.toLocaleString()}`,
+      annual: `$${totalOperatingExpensesAnnual.toLocaleString()}`,
+    },
+    {
+      title: 'Net Operating Income (NOI)',
+      ruleOfThumb: '',
+      monthly: `$${noiMonthly.toLocaleString()}`,
+      annual: `$${noiAnnual.toLocaleString()}`,
+    },
+    {
+      title: 'Less Debt Service',
+      ruleOfThumb: '',
+      monthly: `$${debtServiceMonthly.toLocaleString()}`,
+      annual: `$${debtServiceAnnual.toLocaleString()}`,
+    },
+    {
+      title: 'Less Non-Financed Capital Expenditures',
+      ruleOfThumb: '',
+      monthly: `$${capexMonthly.toLocaleString()}`,
+      annual: `$${capexAnnual.toLocaleString()}`,
+    },
+    {
+      title: 'Cash Flow (Year 1)',
+      ruleOfThumb: '',
+      monthly: cashFlowMonthly < 0 ? `$${Math.abs(cashFlowMonthly).toLocaleString()}` : `$${cashFlowMonthly.toLocaleString()}`,
+      annual: cashFlowAnnual < 0 ? `$${Math.abs(cashFlowAnnual).toLocaleString()}` : `$${cashFlowAnnual.toLocaleString()}`,
+      isNegative: cashFlowMonthly < 0 || cashFlowAnnual < 0,
+    },
   ];
 
   return (
@@ -88,14 +182,14 @@ export default function RuleOfThumbOprBudgetTable() {
                 const isNOI = row.title === 'Net Operating Income (NOI)';
                 const isCashFlow = row.title === 'Cash Flow (Year 1)';
                 const isTotalOpEx = row.title === 'Total Operating Expenses';
-                const isNegative = row.monthly.includes('(') || row.annual.includes('(');
+                const isNegative = isCashFlow && (cashFlowMonthly < 0 || cashFlowAnnual < 0);
                 
                 return (
-                  <tr key={index} className="border-t border-[#4F5D75]">
+                  <tr key={index} className={`border-t border-[#4F5D75]`}>
                     <td className={`p-3 font-lato ${(isNOI || isCashFlow || isTotalOpEx) ? 'font-semibold' : ''}`}>
                       {row.title}
                     </td>
-                    <td className={`p-3 font-lato ${(isNOI || isCashFlow) ? 'font-semibold' : ''} ${row.ruleOfThumb.includes('%') ? 'text-[#00A3E0]' : ''}`}>
+                    <td className={`p-3 font-lato ${(isNOI || isCashFlow) ? 'font-semibold' : ''} ${row.ruleOfThumb && row.ruleOfThumb.includes('%') ? 'text-[#00A3E0]' : ''}`}>
                       {row.ruleOfThumb && (
                         <div className="relative w-32">
                           <Input
@@ -145,4 +239,19 @@ export default function RuleOfThumbOprBudgetTable() {
       </CardContent>
     </Card>
   );
+}
+
+function calculateGSI(unitMix, selection) {
+  let monthly = 0;
+  if (!Array.isArray(unitMix)) return { monthly: 0, annual: 0 };
+  unitMix.forEach(unit => {
+    if (selection === 'Projected Rent Per Comps') {
+      monthly += Number(unit.perComps || 0);
+    } else if (selection === 'Current Rent') {
+      monthly += Number(unit.currentRent || 0);
+    } else if (selection === 'Scheduled Rent') {
+      monthly += Number(unit.scheduledRent || 0);
+    }
+  });
+  return { monthly, annual: monthly * 12 };
 }

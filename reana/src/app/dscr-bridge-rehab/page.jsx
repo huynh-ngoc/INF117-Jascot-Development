@@ -33,27 +33,27 @@ export default function DSCRBridgeRehabPage() {
     {
       key: 'rule',
       label: 'Use "Rule of Thumb" Default',
-      route: '/rule-of-thumb-metrics', // TODO: replace with your actual page path
+      route: '/rule-of-thumb-metrics',
     },
     {
       key: 'lender',
       label: 'Use Detailed Lender Fees',
-      route: '/detailed-lender-fees-1st', // TODO
+      route: '/detailed-lender-fees-1st',
     },
     {
       key: 'settlement',
       label: 'Use Detailed Settlement Fees',
-      route: '/detailed-settlement-fees', // TODO
+      route: '/detailed-settlement-fees',
     },
     {
       key: 'inspection',
       label: 'Use Detailed Inspection Costs',
-      route: '/detailed-inspection-fees', // TODO
+      route: '/detailed-inspection-fees',
     },
   ];
   const [selectedFee, setSelectedFee] = useState('rule');
 
-  const parseNum = str => parseFloat(str.replace(/[^\d.-]/g, '')) || 0;
+  const parseNum = (str) => parseFloat(str.replace(/[^\d.-]/g, '')) || 0;
   const fmt = (num, dec = 0) =>
     num.toLocaleString(undefined, { minimumFractionDigits: dec, maximumFractionDigits: dec });
 
@@ -95,6 +95,22 @@ export default function DSCRBridgeRehabPage() {
       annualDebtService,
     };
   }, [asIs, rehab, optionalDown, userLoanAmt, maxLTV, rate, isIO, amortYears]);
+
+  // Handler to save the current state to localStorage
+  const handleSave = () => {
+    const dataToSave = {
+      loanTerms: { maxLTV, isIO, rate, balloon, firstDraw, amortYears },
+      transaction: { asIs, rehab, optionalDown, userLoanAmt },
+      calculated: { total, maxLoanAmt, loanAmt, downPayment, actualLTV, paymentMonthly, annualDebtService },
+    };
+    try {
+      localStorage.setItem('dscrBridgeRehabData', JSON.stringify(dataToSave));
+      alert('📥 Data saved successfully!');
+    } catch (e) {
+      console.error('Error saving to localStorage', e);
+      alert('⚠️ Could not save data.');
+    }
+  };
 
   return (
     <SidebarProvider>
@@ -245,8 +261,7 @@ export default function DSCRBridgeRehabPage() {
                 <strong>${fmt(maxLoanAmt)}</strong>
               </p>
               <p>
-                Payment Amount (Monthly):{' '}
-                <strong>${fmt(paymentMonthly, 2)}</strong>
+                Payment Amount (Monthly): <strong>${fmt(paymentMonthly, 2)}</strong>
               </p>
               <p>
                 Payment Amount (Annual Debt Service):{' '}
@@ -254,13 +269,23 @@ export default function DSCRBridgeRehabPage() {
               </p>
             </CardContent>
 
+            {/* ---- Save Button ---- */}
+            <CardFooter className="flex justify-start">
+              <button
+                type="button"
+                className="py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                onClick={handleSave}
+              >
+                Save
+              </button>
+            </CardFooter>
+
             {/* ---- Actions ---- */}
             <CardFooter className="flex gap-4">
               <button
                 type="button"
                 className="flex-1 py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                 onClick={() => {
-                  // TODO: replace '/bridge-to-perm' with your actual page path
                   router.push('/dscr-bridge-perm');
                 }}
               >
@@ -271,7 +296,6 @@ export default function DSCRBridgeRehabPage() {
                 type="button"
                 className="flex-1 py-2 px-4 border border-gray-300 bg-white text-gray-700 rounded-md hover:bg-gray-50"
                 onClick={() => {
-                  // TODO: replace '/add-another-loan' with your actual page path
                   router.push('/additional-financing');
                 }}
               >
@@ -296,9 +320,11 @@ export default function DSCRBridgeRehabPage() {
                   }}
                   className={`
                     w-full py-2 px-4 rounded-md font-medium transition
-                    ${selectedFee === key
-                      ? 'bg-blue-600 text-white hover:bg-blue-700'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}
+                    ${
+                      selectedFee === key
+                        ? 'bg-blue-600 text-white hover:bg-blue-700'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }
                   `}
                 >
                   {label}

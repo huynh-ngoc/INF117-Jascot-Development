@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 
 export default function DSCRBridgeRehabLenderFeesPage() {
   const router = useRouter();
@@ -81,173 +82,167 @@ export default function DSCRBridgeRehabLenderFeesPage() {
       <AppSidebar />
       <SidebarInset>
         <main className="p-6 max-w-4xl mx-auto space-y-6">
-          <h1 className="text-2xl font-bold">
+          <h1 className="text-2xl font-bold text-black">
             Purch & Rehab Lender Fees — 1st Mtg
           </h1>
 
-          <Card className="space-y-4">
+          <Card className="space-y-4 bg-white border border-[#4F5D75] shadow-md rounded-lg">
             <CardHeader>
-              <CardTitle>Fees Input</CardTitle>
+              <CardTitle className="text-black">Fees Input</CardTitle>
             </CardHeader>
-            <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
+            <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* base amount */}
               <div className="relative">
-                <Label>Origination Fee (WIP) ($)</Label>
+                <Label className="text-black">Origination Fee (WIP) ($)</Label>
                 <Input
                   type="text"
-                  className="pl-7"
+                  className="pl-7 border border-[#4F5D75] text-black font-lato rounded"
                   value={`$${fmt(baseAmt)}`}
-                  onChange={e => setBaseAmt(parseNum(e.target.value))}
+                  onChange={(e) => setBaseAmt(parseNum(e.target.value))}
                 />
               </div>
 
               {/* origination points */}
               <div className="relative">
-                <Label>Origination Fee (Points)</Label>
+                <Label className="text-black">Origination Fee (Points)</Label>
                 <Input
                   type="text"
-                  className="pr-7"
-                  value={`${fmt(origPoints,2)}%`}
-                  onChange={e => setOrigPoints(parseNum(e.target.value))}
+                  className="pr-7 border border-[#4F5D75] text-black font-lato rounded"
+                  value={`${fmt(origPoints, 2)}%`}
+                  onChange={(e) => setOrigPoints(parseNum(e.target.value))}
                 />
               </div>
 
               {/* underwriting */}
               <div className="relative">
-                <Label>Underwriting Fee</Label>
+                <Label className="text-black">Underwriting Fee ($)</Label>
                 <Input
                   type="text"
-                  className="pl-7"
+                  className="pl-7 border border-[#4F5D75] text-black font-lato rounded"
                   value={`$${fmt(underwriting)}`}
-                  onChange={e => setUnderwriting(parseNum(e.target.value))}
+                  onChange={(e) => setUnderwriting(parseNum(e.target.value))}
                 />
               </div>
 
               {/* processing */}
               <div className="relative">
-                <Label>Processing Fee</Label>
+                <Label className="text-black">Processing Fee ($)</Label>
                 <Input
                   type="text"
-                  className="pl-7"
+                  className="pl-7 border border-[#4F5D75] text-black font-lato rounded"
                   value={`$${fmt(processing)}`}
-                  onChange={e => setProcessing(parseNum(e.target.value))}
+                  onChange={(e) => setProcessing(parseNum(e.target.value))}
                 />
               </div>
 
               {/* funding */}
               <div className="relative">
-                <Label>Lender Funding Fee</Label>
+                <Label className="text-black">Lender Funding Fee ($)</Label>
                 <Input
                   type="text"
-                  className="pl-7"
+                  className="pl-7 border border-[#4F5D75] text-black font-lato rounded"
                   value={`$${fmt(funding)}`}
-                  onChange={e => setFunding(parseNum(e.target.value))}
+                  onChange={(e) => setFunding(parseNum(e.target.value))}
                 />
               </div>
 
               {/* document prep */}
               <div className="relative">
-                <Label>Document Prep Fee</Label>
+                <Label className="text-black">Document Prep Fee ($)</Label>
                 <Input
                   type="text"
-                  className="pl-7"
+                  className="pl-7 border border-[#4F5D75] text-black font-lato rounded"
                   value={`$${fmt(docPrep)}`}
-                  onChange={e => setDocPrep(parseNum(e.target.value))}
+                  onChange={(e) => setDocPrep(parseNum(e.target.value))}
                 />
               </div>
 
               {/* overnight */}
               <div className="relative">
-                <Label>Overnight Delivery Fee</Label>
+                <Label className="text-black">Overnight Delivery Fee ($)</Label>
                 <Input
                   type="text"
-                  className="pl-7"
+                  className="pl-7 border border-[#4F5D75] text-black font-lato rounded"
                   value={`$${fmt(overnight)}`}
-                  onChange={e => setOvernight(parseNum(e.target.value))}
+                  onChange={(e) => setOvernight(parseNum(e.target.value))}
                 />
               </div>
 
               {/* appraisal */}
               <div className="relative">
-                <Label>Appraisal</Label>
+                <Label className="text-black">Appraisal ($)</Label>
                 <Input
                   type="text"
-                  className="pl-7"
+                  className="pl-7 border border-[#4F5D75] text-black font-lato rounded"
                   value={`$${fmt(appraisal)}`}
-                  onChange={e => setAppraisal(parseNum(e.target.value))}
+                  onChange={(e) => setAppraisal(parseNum(e.target.value))}
                 />
               </div>
 
               {/* inspection */}
               <div className="relative">
-                <Label>Property Inspection</Label>
+                <Label className="text-black">Property Inspection ($)</Label>
                 <Input
                   type="text"
-                  className="pl-7"
+                  className="pl-7 border border-[#4F5D75] text-black font-lato rounded"
                   value={`$${fmt(inspection)}`}
-                  onChange={e => setInspection(parseNum(e.target.value))}
+                  onChange={(e) => setInspection(parseNum(e.target.value))}
                 />
               </div>
 
               {/* credit report */}
               <div className="relative">
-                <Label>Credit Report</Label>
+                <Label className="text-black">Credit Report ($)</Label>
                 <Input
                   type="text"
-                  className="pl-7"
+                  className="pl-7 border border-[#4F5D75] text-black font-lato rounded"
                   value={`$${fmt(creditReport)}`}
-                  onChange={e => setCreditReport(parseNum(e.target.value))}
+                  onChange={(e) => setCreditReport(parseNum(e.target.value))}
                 />
               </div>
 
               {/* flood cert */}
               <div className="relative">
-                <Label>Flood Cert</Label>
+                <Label className="text-black">Flood Cert ($)</Label>
                 <Input
                   type="text"
-                  className="pl-7"
+                  className="pl-7 border border-[#4F5D75] text-black font-lato rounded"
                   value={`$${fmt(floodCert)}`}
-                  onChange={e => setFloodCert(parseNum(e.target.value))}
+                  onChange={(e) => setFloodCert(parseNum(e.target.value))}
                 />
               </div>
 
               {/* title update */}
               <div className="relative">
-                <Label>Title Update Fee</Label>
+                <Label className="text-black">Title Update Fee ($)</Label>
                 <Input
                   type="text"
-                  className="pl-7"
+                  className="pl-7 border border-[#4F5D75] text-black font-lato rounded"
                   value={`$${fmt(titleUpdate)}`}
-                  onChange={e => setTitleUpdate(parseNum(e.target.value))}
+                  onChange={(e) => setTitleUpdate(parseNum(e.target.value))}
                 />
               </div>
             </CardContent>
 
             <CardContent className="space-y-2">
-              <p>
+              <p className="text-black">
                 <strong>Total Lender Costs:</strong>{' '}
-                ${fmt(totalLenderCosts,2)}
+                ${fmt(totalLenderCosts, 2)}
               </p>
             </CardContent>
 
             <CardFooter className="flex flex-col gap-3">
-              <button
-                className="w-full py-2 rounded bg-gray-100 hover:bg-gray-200"
-                onClick={() => {
-                  router.push('/detailed-settlement-fees');
-                }}
-              >
-                Go To Detailed Settlement Fees
-              </button>
-              <button
-                className="w-full py-2 rounded bg-gray-100 hover:bg-gray-200"
-                onClick={() => {
-                  router.push('/detailed-inspection-fees');
-                }}
-              >
-                Go To Detailed Inspection Costs
-              </button>
+              <Button asChild variant="secondary">
+                <button onClick={() => router.push('/detailed-settlement-fees')}>
+                  <span className="text-white">Go To Detailed Settlement Fees</span>
+                </button>
+              </Button>
+              <Button asChild variant="secondary">
+                <button onClick={() => router.push('/detailed-inspection-fees')}>
+                  <span className="text-white">Go To Detailed Inspection Costs</span>
+                </button>
+              </Button>
             </CardFooter>
           </Card>
         </main>

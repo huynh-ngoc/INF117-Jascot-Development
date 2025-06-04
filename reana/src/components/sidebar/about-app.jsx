@@ -30,9 +30,6 @@ export function AboutApp({ app }) {
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              {/*
-                Change h-8 w-8 → h-12 w-12 (48×48px) for a larger logo container:
-              */}
               <div className="flex aspect-square h-12 w-12 items-center justify-center rounded-lg overflow-hidden">
                 <img
                   src={app.logo}
@@ -65,33 +62,44 @@ export function AboutApp({ app }) {
               <div className="flex h-6 w-6 items-center justify-center rounded-md border bg-transparent">
                 <img
                   src={app.logo}
-                  alt="Page 1"
+                  alt="Our Story"
                   className="max-h-4 max-w-4 object-contain"
                 />
               </div>
-              <div className="text-muted-foreground font-medium">Page 1</div>
+              <div className="text-muted-foreground font-medium">Our Story</div>
             </DropdownMenuItem>
 
             <DropdownMenuItem className="gap-2 p-2">
               <div className="flex h-6 w-6 items-center justify-center rounded-md border bg-transparent">
                 <img
                   src={app.logo}
-                  alt="Page 2"
+                  alt="Terms & Conditions"
                   className="max-h-4 max-w-4 object-contain"
                 />
               </div>
-              <div className="text-muted-foreground font-medium">Page 2</div>
+              <div className="text-muted-foreground font-medium">Terms & Conditions</div>
             </DropdownMenuItem>
 
             <DropdownMenuItem className="gap-2 p-2">
               <div className="flex h-6 w-6 items-center justify-center rounded-md border bg-transparent">
                 <img
                   src={app.logo}
-                  alt="Page 3"
+                  alt="Help Center"
                   className="max-h-4 max-w-4 object-contain"
                 />
               </div>
-              <div className="text-muted-foreground font-medium">Page 3</div>
+              <div className="text-muted-foreground font-medium">Help Center</div>
+            </DropdownMenuItem>
+
+            <DropdownMenuItem className="gap-2 p-2">
+              <div className="flex h-6 w-6 items-center justify-center rounded-md border bg-transparent">
+                <img
+                  src={app.logo}
+                  alt="Q&A"
+                  className="max-h-4 max-w-4 object-contain"
+                />
+              </div>
+              <div className="text-muted-foreground font-medium">Q&A</div>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

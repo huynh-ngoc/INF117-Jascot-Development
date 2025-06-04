@@ -1,18 +1,20 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Search, Home, TrendingUp, Calculator, MapPin, X } from "lucide-react";
 import { TierCards } from "@/components/tiers/card-tiers";
 
 export default function WelcomePage() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [hoveredCard, setHoveredCard] = useState(null);
   const [predictions, setPredictions] = useState([]);
   const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState("");
   const [isGoogleMapsLoaded, setIsGoogleMapsLoaded] = useState(false);
-  
+
   const autocompleteService = useRef(null);
   const searchInputRef = useRef(null);
 
@@ -24,11 +26,11 @@ export default function WelcomePage() {
       return;
     }
 
-    const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`;
+    const script = document.createElement("script");
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`;
     script.async = true;
     script.defer = true;
-    
+
     script.onload = () => {
       setIsGoogleMapsLoaded(true);
       autocompleteService.current = new window.google.maps.places.AutocompleteService();
@@ -37,27 +39,26 @@ export default function WelcomePage() {
     document.head.appendChild(script);
 
     return () => {
-      // Cleanup if needed
       if (document.head.contains(script)) {
         document.head.removeChild(script);
       }
     };
   }, []);
 
-  // Handle search input change and get predictions
+  // Handle input change and fetch predictions
   const handleSearchChange = (value) => {
     setSearchQuery(value);
-    
+
     if (value.length > 2 && isGoogleMapsLoaded && autocompleteService.current) {
       const request = {
         input: value,
-        types: ['address'],
-        componentRestrictions: { country: 'us' } // Optional: restrict to US
+        types: ["address"],
+        componentRestrictions: { country: "us" },
       };
 
       autocompleteService.current.getPlacePredictions(request, (predictions, status) => {
         if (status === window.google.maps.places.PlacesServiceStatus.OK) {
-          setPredictions(predictions.slice(0, 5)); // Limit to 5 suggestions
+          setPredictions(predictions.slice(0, 5));
         } else {
           setPredictions([]);
         }
@@ -67,7 +68,7 @@ export default function WelcomePage() {
     }
   };
 
-  // Handle address selection - trigger subscription modal
+  // Select an address from the suggestions
   const handleAddressSelect = (address) => {
     setSelectedAddress(address);
     setSearchQuery(address);
@@ -75,7 +76,7 @@ export default function WelcomePage() {
     setShowSubscriptionModal(true);
   };
 
-  // Handle search button click
+  // Open subscription modal when clicking "Search"
   const handleSearch = () => {
     if (searchQuery.trim()) {
       setSelectedAddress(searchQuery);
@@ -83,38 +84,39 @@ export default function WelcomePage() {
     }
   };
 
-  // Close subscription modal
+  // Close modal
   const closeSubscriptionModal = () => {
     setShowSubscriptionModal(false);
     setSelectedAddress("");
   };
 
-  // Handle subscription (you can customize this)
+  // ✅ Redirect to /account with selected plan
   const handleSubscribe = (planType) => {
-    console.log(`Subscribing to ${planType} plan for address: ${selectedAddress}`);
-    // Add your subscription logic here
-    closeSubscriptionModal();
-    // Redirect to actual search results or property analysis page
+    console.log(`Subscribing to ${planType} for: ${selectedAddress}`);
+    router.push(`/account?plan=${encodeURIComponent(planType)}`);
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
-      {/* Hero Section */}
       <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 to-green-600 text-white">
-        <div className="absolute inset-0 bg-black opacity-10"></div>
+        <div className="absolute inset-0 bg-black opacity-10" />
         <div className="relative max-w-7xl mx-auto px-4 py-16 sm:py-24">
           {/* Logo and Brand */}
           <div className="text-center mb-8">
             <div className="flex items-center justify-center mb-6">
-              <div className="bg-white p-3 rounded-full mr-4">
-                <Home className="h-8 w-8 text-blue-600" />
+              <div className="flex aspect-square h-12 w-12 items-center justify-center rounded-lg overflow-hidden bg-white mr-4">
+                <img
+                  src="/reana-logo.png"
+                  alt="Reana logo"
+                  className="max-h-10 max-w-10 object-contain"
+                />
               </div>
               <div>
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold">Reana</h1>
                 <p className="text-lg sm:text-xl text-blue-100">Real Estate Investment Assistant</p>
               </div>
             </div>
-            
+
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold mb-4">
               Smart Real Estate Investment Analysis
             </h2>
@@ -134,11 +136,11 @@ export default function WelcomePage() {
                   placeholder="Enter property address or ZIP code..."
                   value={searchQuery}
                   onChange={(e) => handleSearchChange(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                  onKeyPress={(e) => e.key === "Enter" && handleSearch()}
                   className="flex-1 px-4 py-4 text-gray-700 focus:outline-none text-lg"
                   autoComplete="off"
                 />
-                <Button 
+                <Button
                   onClick={handleSearch}
                   className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-r-full transition-colors"
                 >
@@ -146,8 +148,7 @@ export default function WelcomePage() {
                   Search
                 </Button>
               </div>
-              
-              {/* Address Predictions Dropdown */}
+
               {predictions.length > 0 && (
                 <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg mt-1 z-50 max-h-60 overflow-y-auto">
                   {predictions.map((prediction) => (
@@ -174,72 +175,12 @@ export default function WelcomePage() {
             </div>
           </div>
         </div>
-        
-        {/* Decorative Elements */}
-        <div className="absolute top-20 left-10 opacity-20">
-          <Home className="h-16 w-16 text-white" />
-        </div>
-        <div className="absolute bottom-20 right-10 opacity-20">
-          <TrendingUp className="h-20 w-20 text-white" />
-        </div>
-        <div className="absolute top-40 right-20 opacity-15">
-          <Calculator className="h-12 w-12 text-white" />
-        </div>
-      </div>
-
-      {/* Features Section */}
-      <div className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h3 className="text-3xl font-bold text-gray-900 mb-4">Why Choose Reana?</h3>
-            <p className="text-lg text-gray-600">Powerful tools for smart real estate investments</p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center p-6">
-              <div className="bg-blue-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                <Calculator className="h-8 w-8 text-blue-600" />
-              </div>
-              <h4 className="text-xl font-semibold mb-2">Advanced Analysis</h4>
-              <p className="text-gray-600">Comprehensive financial analysis including cash flow, ROI, and risk assessment</p>
-            </div>
-            
-            <div className="text-center p-6">
-              <div className="bg-green-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                <TrendingUp className="h-8 w-8 text-green-600" />
-              </div>
-              <h4 className="text-xl font-semibold mb-2">Market Data</h4>
-              <p className="text-gray-600">Real-time market comparisons, rental rates, and neighborhood analytics</p>
-            </div>
-            
-            <div className="text-center p-6">
-              <div className="bg-purple-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                <Home className="h-8 w-8 text-purple-600" />
-              </div>
-              <h4 className="text-xl font-semibold mb-2">Property Reports</h4>
-              <p className="text-gray-600">Detailed investment reports and side-by-side property comparisons</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Pricing Section - Tier Cards */}
-      <div className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h3 className="text-3xl font-bold text-gray-900 mb-4">Choose Your Plan</h3>
-            <p className="text-lg text-gray-600">Select the perfect tier for your investment needs</p>
-          </div>
-          
-          <TierCards />
-        </div>
       </div>
 
       {/* Subscription Modal */}
       {showSubscriptionModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-            {/* Modal Header */}
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">
@@ -257,7 +198,6 @@ export default function WelcomePage() {
               </button>
             </div>
 
-            {/* Modal Content */}
             <div className="p-6">
               <div className="text-center mb-6">
                 <div className="bg-blue-100 p-3 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
@@ -269,24 +209,21 @@ export default function WelcomePage() {
                 </p>
               </div>
 
-              {/* Quick Subscription Options */}
               <div className="space-y-3">
                 <button
-                  onClick={() => handleSubscribe('Basic')}
+                  onClick={() => handleSubscribe("Basic")}
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg transition-colors font-medium"
                 >
                   Start with Plus Plan - $14.95/month
                 </button>
-                
                 <button
-                  onClick={() => handleSubscribe('Professional')}
+                  onClick={() => handleSubscribe("Professional")}
                   className="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded-lg transition-colors font-medium"
                 >
                   Get DoublePlus++ Plan - $24.95/month
                 </button>
-                
                 <button
-                  onClick={() => handleSubscribe('Enterprise')}
+                  onClick={() => handleSubscribe("Enterprise")}
                   className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 px-4 rounded-lg transition-colors font-medium"
                 >
                   Choose Pro Plan - $32.99/month
@@ -302,6 +239,17 @@ export default function WelcomePage() {
           </div>
         </div>
       )}
+
+      {/* Pricing Section */}
+      <div className="py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <h3 className="text-3xl font-bold text-gray-900 mb-4">Choose Your Plan</h3>
+            <p className="text-lg text-gray-600">Select the perfect tier for your investment needs</p>
+          </div>
+          <TierCards />
+        </div>
+      </div>
     </div>
   );
 }

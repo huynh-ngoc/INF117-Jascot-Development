@@ -2,6 +2,7 @@
 "use client";
 
 import * as React from "react";
+import { usePathname } from "next/navigation";
 import {
   BookOpen,
   Bot,
@@ -216,6 +217,71 @@ To restore archived items:
 */
 
 export function AppSidebar({ ...props }) {
+  const pathname = usePathname();
+  const [navItems, setNavItems] = React.useState(data.navMain);
+
+  // useEffect to update active state based on current route
+  React.useEffect(() => {
+    const updatedItems = data.navMain.map(item => ({
+      ...item,
+      isActive: pathname === item.url || pathname.startsWith(item.url + '/')
+    }));
+    setNavItems(updatedItems);
+  }, [pathname]);
+
+  // useEffect for sidebar state persistence (if needed)
+  React.useEffect(() => {
+    // Save sidebar state to localStorage when it changes
+    const handleSidebarStateChange = () => {
+      const sidebarState = document.querySelector('[data-sidebar]')?.getAttribute('data-state');
+      if (sidebarState) {
+        localStorage.setItem('sidebar-state', sidebarState);
+      }
+    };
+
+    // Restore sidebar state from localStorage
+    const savedState = localStorage.getItem('sidebar-state');
+    if (savedState) {
+      const sidebarElement = document.querySelector('[data-sidebar]');
+      if (sidebarElement) {
+        sidebarElement.setAttribute('data-state', savedState);
+      }
+    }
+
+    // Listen for sidebar state changes
+    const observer = new MutationObserver(handleSidebarStateChange);
+    const sidebarElement = document.querySelector('[data-sidebar]');
+    if (sidebarElement) {
+      observer.observe(sidebarElement, {
+        attributes: true,
+        attributeFilter: ['data-state']
+      });
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  // useEffect for keyboard shortcuts (optional)
+  React.useEffect(() => {
+    const handleKeyDown = (event) => {
+      // Toggle sidebar with Ctrl/Cmd + B
+      if ((event.ctrlKey || event.metaKey) && event.key === 'b') {
+        event.preventDefault();
+        const trigger = document.querySelector('[data-sidebar-trigger]');
+        if (trigger) {
+          trigger.click();
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -224,7 +290,7 @@ export function AppSidebar({ ...props }) {
       </SidebarHeader>
 
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={navItems} />
       </SidebarContent>
 
       <SidebarFooter>

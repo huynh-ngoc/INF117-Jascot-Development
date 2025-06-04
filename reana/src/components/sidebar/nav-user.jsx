@@ -74,8 +74,10 @@ export function NavUser({
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem>
-                <Sparkles />
+                <a href="/upgradetopro" className="flex items-center gap-2">
+                <Sparkles classname="h-4 w-4"/>
                 Upgrade to Pro
+                </a>
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
@@ -87,12 +89,16 @@ export function NavUser({
                 </a>
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <CreditCard />
-                Billing
+                <a href="/billing" className="flex items-center gap-2">
+                  <CreditCard className="h-4 w-4" />
+                  Billing
+                </a>
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <Bell />
-                Notifications
+                <a href="/notifications" className="flex items-center gap-2">
+                  <Bell className="h-4 w-4" />
+                  Notifications
+                </a>
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />

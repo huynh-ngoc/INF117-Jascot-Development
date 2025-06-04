@@ -14,6 +14,7 @@ export default function WelcomePage() {
   const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState("");
   const [isGoogleMapsLoaded, setIsGoogleMapsLoaded] = useState(false);
+  const [mapsError, setMapsError] = useState(false);
 
   const autocompleteService = useRef(null);
   const searchInputRef = useRef(null);
@@ -26,14 +27,27 @@ export default function WelcomePage() {
       return;
     }
 
+    // Check if API key exists
+    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+    if (!apiKey) {
+      console.warn("Google Maps API key not found. Address autocomplete will be disabled.");
+      setMapsError(true);
+      return;
+    }
+
     const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
     script.async = true;
     script.defer = true;
 
     script.onload = () => {
       setIsGoogleMapsLoaded(true);
       autocompleteService.current = new window.google.maps.places.AutocompleteService();
+    };
+
+    script.onerror = () => {
+      console.error("Failed to load Google Maps API");
+      setMapsError(true);
     };
 
     document.head.appendChild(script);
@@ -49,7 +63,7 @@ export default function WelcomePage() {
   const handleSearchChange = (value) => {
     setSearchQuery(value);
 
-    if (value.length > 2 && isGoogleMapsLoaded && autocompleteService.current) {
+    if (value.length > 2 && isGoogleMapsLoaded && autocompleteService.current && !mapsError) {
       const request = {
         input: value,
         types: ["address"],
@@ -57,7 +71,7 @@ export default function WelcomePage() {
       };
 
       autocompleteService.current.getPlacePredictions(request, (predictions, status) => {
-        if (status === window.google.maps.places.PlacesServiceStatus.OK) {
+        if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions) {
           setPredictions(predictions.slice(0, 5));
         } else {
           setPredictions([]);
@@ -90,7 +104,7 @@ export default function WelcomePage() {
     setSelectedAddress("");
   };
 
-  // ✅ Redirect to /account with selected plan
+  // Redirect to /account with selected plan
   const handleSubscribe = (planType) => {
     console.log(`Subscribing to ${planType} for: ${selectedAddress}`);
     router.push(`/account?plan=${encodeURIComponent(planType)}`);
@@ -100,6 +114,18 @@ export default function WelcomePage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
       <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 to-green-600 text-white">
         <div className="absolute inset-0 bg-black opacity-10" />
+        
+        {/* Decorative Elements - moved inside relative container */}
+        <div className="absolute top-20 left-10 opacity-20">
+          <Home className="h-16 w-16 text-white" />
+        </div>
+        <div className="absolute bottom-20 right-10 opacity-20">
+          <TrendingUp className="h-20 w-20 text-white" />
+        </div>
+        <div className="absolute top-40 right-20 opacity-15">
+          <Calculator className="h-12 w-12 text-white" />
+        </div>
+
         <div className="relative max-w-7xl mx-auto px-4 py-16 sm:py-24">
           {/* Logo and Brand */}
           <div className="text-center mb-8">
@@ -109,6 +135,9 @@ export default function WelcomePage() {
                   src="/reana-logo.png"
                   alt="Reana logo"
                   className="max-h-10 max-w-10 object-contain"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                  }}
                 />
               </div>
               <div>
@@ -161,17 +190,55 @@ export default function WelcomePage() {
                         <MapPin className="h-4 w-4 text-gray-400 mr-3 flex-shrink-0" />
                         <div className="flex-1">
                           <p className="text-sm font-medium text-gray-900">
-                            {prediction.structured_formatting.main_text}
+                            {prediction.structured_formatting?.main_text || prediction.description}
                           </p>
-                          <p className="text-xs text-gray-500">
-                            {prediction.structured_formatting.secondary_text}
-                          </p>
+                          {prediction.structured_formatting?.secondary_text && (
+                            <p className="text-xs text-gray-500">
+                              {prediction.structured_formatting.secondary_text}
+                            </p>
+                          )}
                         </div>
                       </div>
                     </div>
                   ))}
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Features Section */}
+      <div className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <h3 className="text-3xl font-bold text-gray-900 mb-4">Why Choose Reana?</h3>
+            <p className="text-lg text-gray-600">Powerful tools for smart real estate investments</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="text-center p-6">
+              <div className="bg-blue-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                <Calculator className="h-8 w-8 text-blue-600" />
+              </div>
+              <h4 className="text-xl font-semibold mb-2">Advanced Analysis</h4>
+              <p className="text-gray-600">Comprehensive financial analysis including cash flow, ROI, and risk assessment</p>
+            </div>
+            
+            <div className="text-center p-6">
+              <div className="bg-green-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                <TrendingUp className="h-8 w-8 text-green-600" />
+              </div>
+              <h4 className="text-xl font-semibold mb-2">Market Data</h4>
+              <p className="text-gray-600">Real-time market comparisons, rental rates, and neighborhood analytics</p>
+            </div>
+            
+            <div className="text-center p-6">
+              <div className="bg-purple-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                <Home className="h-8 w-8 text-purple-600" />
+              </div>
+              <h4 className="text-xl font-semibold mb-2">Property Reports</h4>
+              <p className="text-gray-600">Detailed investment reports and side-by-side property comparisons</p>
             </div>
           </div>
         </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -22,6 +22,33 @@ export default function PropAnalysisList() {
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
     libraries: LIBRARIES,
   });
+
+  // Fetch existing properties
+  useEffect(() => {
+    async function fetchProperties() {
+      try {
+        const res = await fetch("/api/property-list");
+        if (!res.ok) {
+          throw new Error(`Failed to fetch data from /api/property-list. Error: ${res.status}`);
+        }
+        const data = await res.json();
+        if (Array.isArray(data.properties)) {
+          const properties = data.properties.map((p) => ({
+            id: p.id,
+            text: p.address,
+          }));
+          setAddressList(properties);
+        } else {
+          console.warn("GET /api/property-list returned unexpected formate:", data);
+        }
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load properties.");
+      }
+    }
+
+    fetchProperties();
+  }, []);
 
   const onLoadAutocomplete = useCallback((autocompleteInstance) => {
     setAutoComplete(autocompleteInstance);
@@ -64,48 +91,52 @@ export default function PropAnalysisList() {
 
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-10">
-      <Card className="flex justify-between">
-        <CardContent className="flex-grow flex justify-between space-x-2">
-          <Autocomplete
-            onLoad={onLoadAutocomplete}
-            onPlaceChanged={onPlaceChanged}
-            className="flex-grow"
-          >
-            <Input
-              placeholder="Enter the property's address to start analysis"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
+      <Card>
+        <CardContent className="p-6 -mb-4">
+          <div className="flex items-center justify-between space-x-2">
+            <Autocomplete
+              onLoad={onLoadAutocomplete}
+              onPlaceChanged={onPlaceChanged}
               className="flex-grow"
-            />
-          </Autocomplete>
-          <Button onClick={handleAddAddress}>
-            <Plus />
-            Add
-          </Button>
+            >
+              <Input
+                placeholder="Enter the property's address to start analysis"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                className="flex-grow"
+              />
+            </Autocomplete>
+            <Button onClick={handleAddAddress}>
+              <Plus />
+              Add
+            </Button>
+          </div>
+          {error && <p className="text-red-500 text-sm mt-4">Error: {error}</p>}
         </CardContent>
-        {error && <p className="text-red-500 text-sm p-4">Error: {error}</p>}
       </Card>
-
+      
       <div className="space-y-4">
         {addressList.map((addr) => (
-          <Card key={addr.id} className="flex justify-between hover:scale-103">
-            <CardContent className="flex-grow flex justify-between">
-              <div>{addr.text}</div>
-              <div className="flex justify-center gap-2">
-                <Button
-                  size="sm"
-                  variant="primary"
-                  onClick={() => handleAnalysis(addr)}
-                >
-                  <FileChartColumn /> Analysis
-                </Button>
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  onClick={() => handleRemove(addr.id)}
-                >
-                  <Trash2 /> Remove
-                </Button>
+          <Card key={addr.id} className="hover:scale-103 transition-transform">
+            <CardContent className="p-6 -mb-6">
+              <div className="flex items-center justify-between">
+                <div className="flex-grow text-xl">{addr.text}</div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="primary"
+                    onClick={() => handleAnalysis(addr)}
+                  >
+                    <FileChartColumn /> Analysis
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => handleRemove(addr.id)}
+                  >
+                    <Trash2 /> Remove
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>

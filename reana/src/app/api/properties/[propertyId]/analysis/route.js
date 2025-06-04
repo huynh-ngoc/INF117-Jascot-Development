@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/firebase.js";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 
+const userId = process.env.DEFAULT_USER_ID;
+
 // GET /api/properties/[propertyId]/analysis - Get user's analysis
 export async function GET(request, { params }) {
   try {
@@ -10,7 +12,7 @@ export async function GET(request, { params }) {
 
     console.log("Fetching analysis for property:", propertyId);
 
-    const docRef = doc(db, "analyses", propertyId);
+    const docRef = doc(db, 'users', userId, 'properties', propertyId);
     const docSnap = await getDoc(docRef);
 
     if (!docSnap.exists()) {
@@ -19,6 +21,7 @@ export async function GET(request, { params }) {
         success: true,
         analysis: {
           unitMix: [],
+          ruleOfThumb: {},
           financing: {},
           operatingBudget: {},
           rehabData: {},
@@ -48,13 +51,16 @@ export async function POST(request, { params }) {
   try {
     const resolvedParams = await params;
     const { propertyId } = resolvedParams;
-    const { analysisData } = await request.json();
+    const { analysisData, address } = await request.json();
 
+    console.log(analysisData);
     console.log("Saving analysis for property:", propertyId, analysisData);
 
     const analysisDoc = {
       propertyId,
+      address,
       unitMix: analysisData.unitMix || [],
+      ruleOfThumb: analysisData.ruleOfThumb || {},
       financing: analysisData.financing || {},
       operatingBudget: analysisData.operatingBudget || {},
       rehabData: analysisData.rehabData || {},
@@ -63,8 +69,8 @@ export async function POST(request, { params }) {
       savedAt: new Date(),
     };
 
-    const docRef = doc(db, "analyses", propertyId);
-    await setDoc(docRef, analysisDoc, { merge: true });
+    const analysisDocRef = doc(db, "users", userId, "properties", propertyId);
+    await setDoc(analysisDocRef, analysisDoc, { merge: true });
 
     console.log("Analysis saved successfully for:", propertyId);
 

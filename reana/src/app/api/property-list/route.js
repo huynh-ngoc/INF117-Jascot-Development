@@ -11,7 +11,10 @@ export async function GET() {
     const snapshot = await getDocs(propertiesRef);
     
     if (snapshot.empty) {
-      return [];
+      return NextResponse.json(
+        { properties: [] },
+        { status: 200 }
+      );
     }
 
     const properties = [];

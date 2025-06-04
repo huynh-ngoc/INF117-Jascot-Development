@@ -128,7 +128,8 @@ export default function RuleOfThumbTable({ propertyId }) {
     }, [propertyId]);
 
     const formatNumberWithTwoDecimals = (value) => {
-        const cleanValue = value.replace('%', '').trim();
+        const stringValue = String(value || '');
+        const cleanValue = stringValue.replace('%', '').trim();
         const formattedValue = Number(cleanValue).toFixed(2);
         return formattedValue;
     };
@@ -142,7 +143,8 @@ export default function RuleOfThumbTable({ propertyId }) {
 
     const isPercentageField = (row) => {
         // DSCR should NOT be treated as a percentage
-        return row.key !== 'dscr' && row.value.includes('%');
+        const stringValue = String(row.value || '');
+        return row.key !== 'dscr' && stringValue.includes('%');
     };
 
     const handleInputBlur = (index) => {
@@ -215,7 +217,8 @@ export default function RuleOfThumbTable({ propertyId }) {
                         <tbody>
                             {tableData.map((row, index) => {
                                 const isPercent = isPercentageField(row);
-                                const numericValue = row.value.replace(/[^0-9.]/g, '');
+                                const stringValue = String(row.value || '');
+                                const numericValue = stringValue.replace(/[^0-9.]/g, '');
                                 return (
                                     <tr key={index} className="border-t border-[#4F5D75]">
                                         <td className="p-3 font-lato">{row.title}</td>

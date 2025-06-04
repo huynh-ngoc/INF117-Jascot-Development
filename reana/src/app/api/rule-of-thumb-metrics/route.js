@@ -19,12 +19,12 @@ function decimalToPercentStr(num) {
 
 // List of percent fields
 const percentFields = [
-  'areaAppreciationRate',
-  'rentAppreciationRate',
-  'propertyTaxRate',
-  'vacancyRate',
+  'appreciation',
+  'rentAppreciation',
+  'taxRate',
+  'vacancy',
   'operatingExpenses',
-  'operatingCostsChange',
+  'opCostChange',
   'contingency',
   'propertyManagerPro',
   'propertyManagerSelf',

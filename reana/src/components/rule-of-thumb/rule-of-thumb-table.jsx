@@ -158,6 +158,7 @@ export default function RuleOfThumbTable({ propertyId }) {
                 acc[item.key] = item.value;
                 return acc;
             }, {});
+            metricsData.propertyId = propertyId;
 
             const response = await fetch('/api/rule-of-thumb-metrics', {
                 method: 'POST',

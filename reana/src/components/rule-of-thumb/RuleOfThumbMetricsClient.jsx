@@ -11,8 +11,11 @@ import {
 } from '@/components/ui/breadcrumb';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import RuleOfThumbTable from '@/components/rule-of-thumb/rule-of-thumb-table';
+import { useSearchParams } from 'next/navigation';
 
 export default function RuleOfThumbMetricsClient({ addressID }) {
+    const searchParams = useSearchParams();
+    const propertyId = addressID || searchParams.get('propertyId');
     return (
     <SidebarProvider>
         <AppSidebar />
@@ -31,7 +34,7 @@ export default function RuleOfThumbMetricsClient({ addressID }) {
             </Breadcrumb>
         </header>
         <main className="p-8 space-y-6">
-            <RuleOfThumbTable propertyId={addressID} />
+            <RuleOfThumbTable propertyId={propertyId} />
         </main>
         </SidebarInset>
     </SidebarProvider>

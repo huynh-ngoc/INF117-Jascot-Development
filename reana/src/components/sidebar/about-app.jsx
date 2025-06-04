@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { ChevronsUpDown } from "lucide-react";
 
 import {
@@ -30,9 +31,6 @@ export function AboutApp({ app }) {
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              {/*
-                Change h-8 w-8 → h-12 w-12 (48×48px) for a larger logo container:
-              */}
               <div className="flex aspect-square h-12 w-12 items-center justify-center rounded-lg overflow-hidden">
                 <img
                   src={app.logo}
@@ -61,38 +59,57 @@ export function AboutApp({ app }) {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
 
-            <DropdownMenuItem className="gap-2 p-2">
-              <div className="flex h-6 w-6 items-center justify-center rounded-md border bg-transparent">
-                <img
-                  src={app.logo}
-                  alt="Page 1"
-                  className="max-h-4 max-w-4 object-contain"
-                />
-              </div>
-              <div className="text-muted-foreground font-medium">Page 1</div>
-            </DropdownMenuItem>
+            <Link href="/about/our-story" passHref>
+              <DropdownMenuItem className="gap-2 p-2 cursor-pointer">
+                <div className="flex h-6 w-6 items-center justify-center rounded-md border bg-transparent">
+                  <img
+                    src={app.logo}
+                    alt="Our Story"
+                    className="max-h-4 max-w-4 object-contain"
+                  />
+                </div>
+                <div className="text-muted-foreground font-medium">Our Story</div>
+              </DropdownMenuItem>
+            </Link>
 
-            <DropdownMenuItem className="gap-2 p-2">
-              <div className="flex h-6 w-6 items-center justify-center rounded-md border bg-transparent">
-                <img
-                  src={app.logo}
-                  alt="Page 2"
-                  className="max-h-4 max-w-4 object-contain"
-                />
-              </div>
-              <div className="text-muted-foreground font-medium">Page 2</div>
-            </DropdownMenuItem>
+            <Link href="/about/terms" passHref>
+              <DropdownMenuItem className="gap-2 p-2 cursor-pointer">
+                <div className="flex h-6 w-6 items-center justify-center rounded-md border bg-transparent">
+                  <img
+                    src={app.logo}
+                    alt="Terms & Conditions"
+                    className="max-h-4 max-w-4 object-contain"
+                  />
+                </div>
+                <div className="text-muted-foreground font-medium">Terms & Conditions</div>
+              </DropdownMenuItem>
+            </Link>
 
-            <DropdownMenuItem className="gap-2 p-2">
-              <div className="flex h-6 w-6 items-center justify-center rounded-md border bg-transparent">
-                <img
-                  src={app.logo}
-                  alt="Page 3"
-                  className="max-h-4 max-w-4 object-contain"
-                />
-              </div>
-              <div className="text-muted-foreground font-medium">Page 3</div>
-            </DropdownMenuItem>
+            <Link href="/about/help" passHref>
+              <DropdownMenuItem className="gap-2 p-2 cursor-pointer">
+                <div className="flex h-6 w-6 items-center justify-center rounded-md border bg-transparent">
+                  <img
+                    src={app.logo}
+                    alt="Help Center"
+                    className="max-h-4 max-w-4 object-contain"
+                  />
+                </div>
+                <div className="text-muted-foreground font-medium">Help Center</div>
+              </DropdownMenuItem>
+            </Link>
+
+            <Link href="/about/faq" passHref>
+              <DropdownMenuItem className="gap-2 p-2 cursor-pointer">
+                <div className="flex h-6 w-6 items-center justify-center rounded-md border bg-transparent">
+                  <img
+                    src={app.logo}
+                    alt="Q&A"
+                    className="max-h-4 max-w-4 object-contain"
+                  />
+                </div>
+                <div className="text-muted-foreground font-medium">Q&A</div>
+              </DropdownMenuItem>
+            </Link>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>

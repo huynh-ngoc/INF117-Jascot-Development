@@ -58,7 +58,7 @@ export async function POST(request) {
     await setDoc(
       propertyDocRef,
       {
-        'local-rule-of-thumb': {
+        'localRuleOfThumb': {
           ...dataToSave,
           updatedAt: new Date().toISOString(),
         },
@@ -92,7 +92,7 @@ export async function GET(request) {
       return NextResponse.json({ error: "Property not found" }, { status: 404 });
     }
     const propertyData = propertySnapshot.data() || {};
-    const ruleOfThumbMetrics = propertyData['local-rule-of-thumb'] || {};
+    const ruleOfThumbMetrics = propertyData['localRuleOfThumb'] || {};
     // Convert decimals to percent strings for percent fields
     const result = { ...ruleOfThumbMetrics };
     percentFields.forEach(field => {

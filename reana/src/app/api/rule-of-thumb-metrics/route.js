@@ -20,12 +20,13 @@ function decimalToPercentStr(num) {
 // List of percent fields
 const percentFields = [
   'appreciation',
+  'contingency',
+  'opCostChange',
+  'operatingExpenses',
   'rentAppreciation',
   'taxRate',
   'vacancy',
-  'operatingExpenses',
-  'opCostChange',
-  'contingency',
+
   'propertyManagerPro',
   'propertyManagerSelf',
   'repairsAndMaintenance',
@@ -58,7 +59,7 @@ export async function POST(request) {
     await setDoc(
       propertyDocRef,
       {
-        'localRuleOfThumb': {
+        'ruleOfThumb': {
           ...dataToSave,
           updatedAt: new Date().toISOString(),
         },
@@ -92,7 +93,7 @@ export async function GET(request) {
       return NextResponse.json({ error: "Property not found" }, { status: 404 });
     }
     const propertyData = propertySnapshot.data() || {};
-    const ruleOfThumbMetrics = propertyData['localRuleOfThumb'] || {};
+    const ruleOfThumbMetrics = propertyData['ruleOfThumb'] || {};
     // Convert decimals to percent strings for percent fields
     const result = { ...ruleOfThumbMetrics };
     percentFields.forEach(field => {

@@ -10,31 +10,31 @@ const defaultData = [
         title: 'Area Appreciation Rate (5 yr running avg.)',
         value: '6.00%',
         notes: 'Pulled from DB, RE Data, or AI API. Know your market.',
-        key: 'areaAppreciationRate'
+        key: 'appreciation'
     },
     {
         title: 'Rent Appreciation Rate (5 yr running avg.)',
         value: '4.50%',
         notes: 'Pulled from DB, RE Data, or AI API.',
-        key: 'rentAppreciationRate'
+        key: 'rentAppreciation'
     },
     {
         title: 'DSCR Requirement (Check with your Lender)',
         value: '1.15',
         notes: 'The default is 1.15; confirm with lender.',
-        key: 'dscrRequirement'
+        key: 'dscr'
     },
     {
         title: 'Area Property Tax Rate',
         value: '2.16%',
         notes: 'User input; local property tax rate.',
-        key: 'propertyTaxRate'
+        key: 'taxRate'
     },
     {
         title: 'Area Vacancy Rate (Current)',
         value: '9.90%',
         notes: 'Pulled from DB, RE Data, or AI API.',
-        key: 'vacancyRate'
+        key: 'vacancy'
     },
     {
         title: 'Operating Expenses',
@@ -46,7 +46,7 @@ const defaultData = [
         title: 'Annual change in Operating Costs',
         value: '3.00%',
         notes: 'Default is 3%.',
-        key: 'operatingCostsChange'
+        key: 'opCostChange'
     },
     {
         title: 'Less Contingency for unexpected Costs (10-15%)',
@@ -105,19 +105,27 @@ export default function RuleOfThumbTable({ propertyId }) {
                     throw new Error('Failed to fetch data');
                 }
                 const data = await response.json();
+                console.log('Fetched data from API:', data);
                 if (data.success && data.ruleOfThumbMetrics) {
-                    const updatedData = tableData.map(item => ({
+                    console.log('Rule of thumb metrics from API:', data.ruleOfThumbMetrics);
+                    console.log('Default data keys:', defaultData.map(item => item.key));
+                    
+                    const updatedData = defaultData.map(item => ({
                         ...item,
                         value: data.ruleOfThumbMetrics[item.key] || item.value
                     }));
+                    console.log('Updated data:', updatedData);
                     setTableData(updatedData);
                 }
             } catch (error) {
                 console.error('Error fetching rule of thumb metrics:', error);
             }
         };
-        fetchData();
-    }, []);
+        
+        if (propertyId) {
+            fetchData();
+        }
+    }, [propertyId]);
 
     const formatNumberWithTwoDecimals = (value) => {
         const cleanValue = value.replace('%', '').trim();
@@ -134,7 +142,7 @@ export default function RuleOfThumbTable({ propertyId }) {
 
     const isPercentageField = (row) => {
         // DSCR should NOT be treated as a percentage
-        return row.key !== 'dscrRequirement' && row.value.includes('%');
+        return row.key !== 'dscr' && row.value.includes('%');
     };
 
     const handleInputBlur = (index) => {
@@ -144,7 +152,7 @@ export default function RuleOfThumbTable({ propertyId }) {
         let formattedValue = formatNumberWithTwoDecimals(currentValue);
 
         // Only append % if it's a percentage field (not DSCR)
-        if (row.key !== 'dscrRequirement' && formattedValue !== '') {
+        if (row.key !== 'dscr' && formattedValue !== '') {
             formattedValue += '%';
         }
 
@@ -159,6 +167,9 @@ export default function RuleOfThumbTable({ propertyId }) {
                 return acc;
             }, {});
             metricsData.propertyId = propertyId;
+            
+            console.log('Saving metrics data:', metricsData);
+            console.log('Field names being saved:', Object.keys(metricsData));
 
             const response = await fetch('/api/rule-of-thumb-metrics', {
                 method: 'POST',

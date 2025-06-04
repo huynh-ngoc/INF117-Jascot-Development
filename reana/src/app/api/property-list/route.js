@@ -3,10 +3,9 @@ import { db } from "@/lib/firebase";
 import { doc, getDocs, setDoc, collection } from "firebase/firestore";
 
 const userId = process.env.DEFAULT_USER_ID;
-const COLLECTION_NAME = 'properties';
 
 // GET: return an array of all properties of the user
-export async function GET(request) {
+export async function GET() {
   try {
     const propertiesRef = collection(db, 'users', userId, 'properties');
     const snapshot = await getDocs(propertiesRef);

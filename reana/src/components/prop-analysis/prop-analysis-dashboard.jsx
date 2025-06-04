@@ -571,7 +571,7 @@ export default function PropAnalysisDashboard({ address: propAddress }) {
   // Sample card data
   const cardData = {
     title: address || "Property Address",
-    description: "A brief overview of the property.",
+    description: "✅ This property meets your investment strategy",
     image: "/api/placeholder/600/400",
   };
 

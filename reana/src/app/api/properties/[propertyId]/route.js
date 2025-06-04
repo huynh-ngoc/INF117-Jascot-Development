@@ -82,7 +82,7 @@ export async function POST(request, { params }) {
   try {
     const resolvedParams = await params;
     const body = await request.json();
-    const { address, mlsNumber, basicInfo, marketData, standardUnitMix } = body;
+    const { address, mlsNumber, propertyMetrics, askingPrice, standardUnitMix } = body;
 
     console.log("Creating property with body:", body);
 
@@ -153,12 +153,12 @@ export async function POST(request, { params }) {
       id: propertyId,
       mlsNumber: mlsNumber || null,
       address: normalizeAddress(address),
+      askingPrice: askingPrice || 0,
       originalAddress:
         typeof address === "string"
           ? address
           : `${address.street}, ${address.city}, ${address.state} ${address.zip}`,
-      basicInfo: basicInfo || {},
-      marketData: marketData || {},
+          propertyMetrics: propertyMetrics || {},
       standardUnitMix: standardUnitMix || [],
       dataSource: {
         aiGenerated: true,

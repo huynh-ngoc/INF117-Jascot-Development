@@ -86,6 +86,11 @@ function parseAddressString(addressString) {
   };
 }
 
+function toPctString(valueDecimal) {
+  const num = Number(valueDecimal ?? 0);
+  return (num * 100).toFixed(2) + "%";
+}
+
 async function checkPropertyExists(propertyId) {
   try {
     const response = await fetch(`/api/properties/${propertyId}`);
@@ -166,6 +171,7 @@ export default function PropAnalysisDashboard({ address: propAddress }) {
   // Analysis state
   const [analysisState, setAnalysisState] = useState({
     unitMix: [],
+    ruleOfThumb: {},
     financing: {},
     operatingBudget: {},
     rehabData: {},
@@ -180,6 +186,7 @@ export default function PropAnalysisDashboard({ address: propAddress }) {
   const backdropVariants = { hidden: { opacity: 0 }, visible: { opacity: 1 } };
   const [isExpanded, setIsExpanded] = useState(false);
   const [data, setData] = useState(null);
+  const [defaultData, setDefaultData] = useState(null);
   const [loadingAI, setLoadingAI] = useState(false);
   const [loadingDatabase, setLoadingDatabase] = useState(false);
   const [selectedInvestmentType, setSelectedInvestmentType] = useState(
@@ -188,7 +195,6 @@ export default function PropAnalysisDashboard({ address: propAddress }) {
   const [selectedFinancingType, setSelectedFinancingType] = useState(
     "Pay Cash(No Financing)"
   );
-  const [ruleOfThumb, setRuleOfThumb] = useState({});
   const [rehabData, setRehabData] = useState({ totalBudget: 0, cashPaid: 0 });
   const [open, setOpen] = useState(false);
   const [hasInitialDataLoaded, setHasInitialDataLoaded] = useState(false);
@@ -273,7 +279,10 @@ export default function PropAnalysisDashboard({ address: propAddress }) {
 
         // Operating data for operating budget pages
         operatingData: {
-          grossScheduledIncome: 0,
+          gsi: 32000,
+          operatingExpenses: 12960,
+          noi: 19000,
+          cashFlow: 3000,
           vacancy: 5, // 5% default
           operatingExpenseRatio: 35, // 35% default
           propertyTaxRate: 1.2, // 1.2% default
@@ -294,8 +303,12 @@ export default function PropAnalysisDashboard({ address: propAddress }) {
           contingency: 0.1,
         },
 
-        // Standard unit mix (initialized but empty)
-        standardUnitMix: [],
+        // Standard unit mix
+        standardUnitMix: {
+          currentRevenue: 18600,
+          scheduledRevenue: 24600,
+          projectedRevenue: 33000,
+        },
 
         // Rehab data
         rehab: {
@@ -334,7 +347,7 @@ export default function PropAnalysisDashboard({ address: propAddress }) {
       );
 
       // Set component state
-      setData(tempPropertyData);
+      setDefaultData(tempPropertyData);
       setPropertyId(propertyId);
       setError("");
 
@@ -356,9 +369,11 @@ export default function PropAnalysisDashboard({ address: propAddress }) {
 
       // Try to load from database first
       const response = await fetch(`/api/properties/${propertyId}`);
+      console.log(response);
 
       if (response.ok) {
         const { property } = await response.json();
+        console.log(property);
         setPropertyData(property);
         setPropertyId(propertyId);
         setData(property); // For backward compatibility
@@ -451,15 +466,13 @@ export default function PropAnalysisDashboard({ address: propAddress }) {
     try {
       // Get AI data for the property
       const aiData = await fetchAIPropertyData(propertyData.address);
-
       const propertyPayload = {
         address: propertyData.address,
-        basicInfo: aiData.basicInfo,
-        marketData: aiData.marketData,
+        propertyMetrics: aiData.propertyMetrics,
+        askingPrice: aiData.askingPrice,
         standardUnitMix: aiData.unitMix,
         mlsNumber: aiData.mlsNumber || null,
       };
-
       const response = await fetch(`/api/properties/${propertyId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -516,6 +529,7 @@ export default function PropAnalysisDashboard({ address: propAddress }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           analysisData: updatedState,
+          address: address,
         }),
       });
 
@@ -544,11 +558,11 @@ export default function PropAnalysisDashboard({ address: propAddress }) {
   }, [analysisState.hasUnsavedChanges]);
 
   // Load existing data
-  useEffect(() => {
-    if (data) {
-      fetchProperty();
-    }
-  }, [data]);
+  // useEffect(() => {
+  //   if (data) {
+  //     fetchProperty();
+  //   }
+  // }, [data]);
 
   const streetViewUrl = address ? getStreetViewUrl(address) : "";
   const offerPrice = data?.askingPrice || 0;
@@ -577,32 +591,33 @@ export default function PropAnalysisDashboard({ address: propAddress }) {
 
   const arv = 175000;
   const incomeData = {
-    current: 18600,
-    scheduled: 24600,
-    projected: 33000,
+    current: analysisState?.unitMix?.scheduled ?? defaultData?.standardUnitMix?.currentRevenue ?? 0,
+    scheduled:  analysisState?.unitMix?.current ?? defaultData?.standardUnitMix?.scheduledRevenue ?? 0,
+    projected: analysisState?.unitMix?.projected ?? defaultData?.standardUnitMix?.projectedRevenue ?? 0,
   };
 
-  const ruleOfThumbVars = {
-    appreciation: 0,
-    rentAppreciation: 0,
-    dscr: 0,
-    taxRate: 0,
-    vacancy: 0,
-    operatingExpenses: 0,
-    opCostChange: 0,
-    contingency: 0,
+  const ruleOfThumb = {
+    appreciation: analysisState?.ruleOfThumb?.appreciation ?? defaultData?.localRuleOfThumb.areaAppreciationRate ?? 0,
+    rentAppreciation: analysisState?.ruleOfThumb?.rentAppreciation ?? defaultData?.localRuleOfThumb.rentAppreciationRate?? 0,
+    dscr: analysisState?.ruleOfThumb?.dscr ?? defaultData?.localRuleOfThumb.dscrRequirement ?? 0,
+    taxRate: analysisState?.ruleOfThumb?.taxRate ?? defaultData?.localRuleOfThumb.propertyTaxRate ?? 0,
+    vacancy: analysisState?.ruleOfThumb?.vacancy ?? defaultData?.localRuleOfThumb.vacancyRate ?? 0,
+    operatingExpenses: analysisState?.ruleOfThumb?.operatingExpenses ?? defaultData?.localRuleOfThumb.operatingExpenses ?? 0,
+    opCostChange: analysisState?.ruleOfThumb?.opCostChange ?? defaultData?.localRuleOfThumb.operatingCostsChange ?? 0,
+    contingency: analysisState?.ruleOfThumb?.contingency ?? defaultData?.localRuleOfThumb.contingency ?? 0,
   };
 
   const operatingBudget = {
-    gsi: 32440,
-    expenses: 12960,
-    noi: 19440,
-    cashFlow: 3120,
+    gsi: analysisState?.operatingBudget?.gsi ?? defaultData?.operatingData.gsi ?? 0,
+    expenses: analysisState?.operatingBudget?.expenses ?? defaultData?.operatingData.operatingExpenses ?? 0,
+    noi: analysisState?.operatingBudget?.noi ?? defaultData?.operatingData.noi ?? 0,
+    cashFlow: analysisState?.operatingBudget?.cashFlow ?? defaultData?.operatingData.cashFlow ?? 0,
   };
 
+  // Only display Financing type: conventional financing 
   const financingTerms = {
-    annualDebtService: activeLoanScenario?.monthlyPayment * 12 || 9055,
-    totalBorrowed: activeLoanScenario?.loanAmount || 103500,
+    annualDebtService: analysisState?.financing?.annualDebtService ?? 0,
+    totalBorrowed: analysisState?.financing?.totalBorrowed ?? 0
   };
 
   const rehabActions = ["Light-Rehab", "Medium Rehab", "Heavy Rehab"];
@@ -668,6 +683,11 @@ export default function PropAnalysisDashboard({ address: propAddress }) {
       icon: <ImageIcon className="w-4 h-4" />,
       label: "Lot Characteristics",
       action: () => console.log("Showing Lot Characteristics"),
+    },
+    {
+      icon: <ImageIcon className="w-4 h-4" />,
+    label: "Lot Characteristics",
+    action: () => console.log("Showing Lot Characteristics"),
     },
     {
       icon: <ImageIcon className="w-4 h-4" />,
@@ -829,58 +849,6 @@ export default function PropAnalysisDashboard({ address: propAddress }) {
     rehabData,
   ]);
 
-  const fetchProperty = async () => {
-    setLoadingDatabase(true);
-    setError("");
-
-    try {
-      const response = await fetch("/api/property-analysis", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        // Local Rule of Thumb
-        ruleOfThumbVars.appreciation =
-          data.property?.localRuleOfThumb?.areaAppreciationRate * 100;
-        ruleOfThumbVars.rentAppreciation =
-          data.property?.localRuleOfThumb?.rentAppreciationRate * 100;
-        ruleOfThumbVars.dscr = data.property?.localRuleOfThumb?.dscrRequirement;
-        ruleOfThumbVars.taxRate =
-          data.property?.localRuleOfThumb?.propertyTaxRate * 100;
-        ruleOfThumbVars.vacancy =
-          data.property?.localRuleOfThumb?.vacancyRate * 100;
-        ruleOfThumbVars.operatingExpenses =
-          data.property?.localRuleOfThumb?.operatingExpenses * 100;
-        ruleOfThumbVars.opCostChange =
-          data.property?.localRuleOfThumb?.operatingCostsChange * 100;
-        ruleOfThumbVars.contingency =
-          data.property?.localRuleOfThumb?.contingency * 100;
-        setRuleOfThumb(ruleOfThumbVars);
-
-        // Rehab/Renovate - FIX: Define rehabDataVars
-        const rehabDataVars = {
-          totalBudget: (
-            data.property?.rehab?.totalRehabBudget || 0
-          ).toLocaleString(),
-          cashPaid: (data.property?.rehab?.amountPaid || 0).toLocaleString(),
-        };
-        setRehabData(rehabDataVars);
-      } else {
-        setError(data.error || "Failed to fetch user profile");
-      }
-    } catch (err) {
-      setError("Network error occurred");
-      console.error("Error fetching profile:", err);
-    } finally {
-      setLoadingDatabase(false);
-    }
-  };
-
   // Loading and error states
   const loading = isLoading || loadingAI || loadingDatabase;
   if (loading)
@@ -953,8 +921,20 @@ export default function PropAnalysisDashboard({ address: propAddress }) {
     });
   };
 
+  const handleSave = () => {
+    const newState = {
+      unitMix:      incomeData,
+      ruleOfThumb:  ruleOfThumb,
+      operatingBudget: operatingBudget,
+      financing:    financingTerms,
+      rehabData:    rehabData,
+    };
+    saveAnalysisState(newState);
+  };
+
   return (
     <div className="flex flex-col min-h-screen p-4 relative">
+      {console.log(analysisState)}
       {/* Property Status Indicators */}
       {propertyData?.isTemporary && (
         <div className="mb-4 bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded-lg flex items-center">
@@ -999,8 +979,8 @@ export default function PropAnalysisDashboard({ address: propAddress }) {
             <MotionCard
               className={`overflow-visible ${
                 isExpanded
-                  ? "z-20 fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
-                  : "self-start mb-6"
+                ? "z-20 fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-lg"
+                : "self-start mb-6 bg-white"
               }`}
               initial="collapsed"
               animate={isExpanded ? "expanded" : "collapsed"}
@@ -1131,7 +1111,7 @@ export default function PropAnalysisDashboard({ address: propAddress }) {
                             Asking / List Price
                           </label>
                           <div className="text-lg font-semibold">
-                            {offerPrice}
+                            ${offerPrice.toLocaleString()}
                           </div>
                         </div>
                       </div>
@@ -1281,15 +1261,15 @@ export default function PropAnalysisDashboard({ address: propAddress }) {
               items={[
                 {
                   title: "Total Current Revenue (Annual)",
-                  content: "$ " + incomeData.current,
+                  content: "$ " + incomeData.current.toLocaleString(),
                 },
                 {
                   title: "Total Scheduled Revenue (Annual)",
-                  content: "$ " + incomeData.scheduled,
+                  content: "$ " + incomeData.scheduled.toLocaleString(),
                 },
                 {
                   title: "Total Projected Revenue (Annual)",
-                  content: "$ " + incomeData.projected,
+                  content: "$ " + incomeData.projected.toLocaleString(),
                 },
               ]}
               buttons={[
@@ -1323,11 +1303,11 @@ export default function PropAnalysisDashboard({ address: propAddress }) {
               items={[
                 {
                   title: "Area Appreciation Rate (5 yr running avg.)",
-                  content: ruleOfThumb.appreciation + "%",
+                  content: toPctString(ruleOfThumb.appreciation),
                 },
                 {
                   title: "Rent Appreciation Rate (5 yr running avg.)",
-                  content: ruleOfThumb.rentAppreciation + "%",
+                  content: toPctString(ruleOfThumb.rentAppreciation),
                 },
                 {
                   title: "DSCR Requirement (Check with your Lender)",
@@ -1335,23 +1315,23 @@ export default function PropAnalysisDashboard({ address: propAddress }) {
                 },
                 {
                   title: "Area Property Tax Rate",
-                  content: ruleOfThumb.taxRate + "%",
+                  content: toPctString(ruleOfThumb.taxRate),
                 },
                 {
                   title: "Area Vacancy Rate (Current)",
-                  content: ruleOfThumb.vacancy + "%",
+                  content: toPctString(ruleOfThumb.vacancy),
                 },
                 {
                   title: "Operating Expenses",
-                  content: ruleOfThumb.operatingExpenses + "%",
+                  content: toPctString(ruleOfThumb.operatingExpenses),
                 },
                 {
                   title: "Annual change in Operating Costs",
-                  content: ruleOfThumb.opCostChange + "%",
+                  content: toPctString(ruleOfThumb.opCostChange),
                 },
                 {
                   title: "Less Contingency for unexpected Costs (10-15%)",
-                  content: ruleOfThumb.contingency + "%",
+                  content: toPctString(ruleOfThumb.contingency),
                 },
               ]}
               buttons={[
@@ -1370,19 +1350,19 @@ export default function PropAnalysisDashboard({ address: propAddress }) {
               items={[
                 {
                   title: "Gross Scheduled Inc. (GSI)",
-                  content: operatingBudget.gsi,
+                  content: "$ " + operatingBudget.gsi.toLocaleString(),
                 },
                 {
                   title: "Operating Expenses",
-                  content: operatingBudget.expenses,
+                  content: "$ " + operatingBudget.expenses.toLocaleString(),
                 },
                 {
                   title: "Net Operating Inc. (NOI)",
-                  content: operatingBudget.noi,
+                  content: "$ " + operatingBudget.noi.toLocaleString(),
                 },
                 {
                   title: "Cash Flow Yr 1",
-                  content: operatingBudget.cashFlow,
+                  content: "$ " + operatingBudget.cashFlow.toLocaleString(),
                 },
                 {
                   title: "Operating Budget Option",
@@ -1390,21 +1370,21 @@ export default function PropAnalysisDashboard({ address: propAddress }) {
                     <span className="flex space-x-2">
                       <Button
                         variant="secondary"
-                        onClick={() =>
-                          saveAnalysisState({
-                            operatingBudgetMethod: "rule-of-thumb",
-                          })
-                        }
+                        // onClick={() =>
+                        //   saveAnalysisState({
+                        //     operatingBudgetMethod: "rule-of-thumb",
+                        //   })
+                        // }
                       >
                         Use "Rule of Thumb"
                       </Button>
                       <Button
                         variant="secondary"
-                        onClick={() =>
-                          saveAnalysisState({
-                            operatingBudgetMethod: "detailed",
-                          })
-                        }
+                        // onClick={() =>
+                        //   saveAnalysisState({
+                        //     operatingBudgetMethod: "detailed",
+                        //   })
+                        // }
                       >
                         Use "Detailed"
                       </Button>
@@ -1428,35 +1408,12 @@ export default function PropAnalysisDashboard({ address: propAddress }) {
               icon={<PiggyBank className="text-red-500" />}
               items={[
                 {
-                  title: "Active Scenario",
-                  content: (
-                    <Select
-                      value={activeLoanScenario?.scenarioId || ""}
-                      onValueChange={handleScenarioChange}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select loan scenario" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {loanScenarios.map((scenario) => (
-                          <SelectItem
-                            key={scenario.scenarioId}
-                            value={scenario.scenarioId}
-                          >
-                            {scenario.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  ),
-                },
-                {
                   title: "Payment Amount (Annual Debt Service)",
-                  content: "$ " + financingTerms.annualDebtService,
+                  content: "$ " + financingTerms.annualDebtService.toLocaleString(),
                 },
                 {
                   title: "Total Amount Borrowed",
-                  content: "$ " + financingTerms.totalBorrowed,
+                  content: "$ " + financingTerms.totalBorrowed.toLocaleString(),
                 },
                 {
                   title: "Loan Cost Method",
@@ -1468,9 +1425,9 @@ export default function PropAnalysisDashboard({ address: propAddress }) {
                             ? "default"
                             : "secondary"
                         }
-                        onClick={() =>
-                          saveAnalysisState({ loanCostMethod: "rule-of-thumb" })
-                        }
+                        // onClick={() =>
+                        //   saveAnalysisState({ loanCostMethod: "rule-of-thumb" })
+                        // }
                       >
                         Use "Rule of Thumb"
                       </Button>
@@ -1480,11 +1437,11 @@ export default function PropAnalysisDashboard({ address: propAddress }) {
                             ? "default"
                             : "secondary"
                         }
-                        onClick={() =>
-                          router.push(
-                            `/detailed-lender-fees/${propertyId}/${activeLoanScenario?.scenarioId}`
-                          )
-                        }
+                        // onClick={() =>
+                        //   router.push(
+                        //     `/detailed-lender-fees/${propertyId}/${activeLoanScenario?.scenarioId}`
+                        //   )
+                        // }
                       >
                         Use "Detailed"
                       </Button>
@@ -1493,11 +1450,6 @@ export default function PropAnalysisDashboard({ address: propAddress }) {
                 },
               ]}
               buttons={[
-                {
-                  label: "Add Loan Scenario",
-                  icon: <Plus className="w-4 h-4" />,
-                  onClick: () => router.push(`/financing/${propertyId}/new`),
-                },
                 {
                   label: "Detail Loan Terms",
                   icon: <ClipboardPlus className="w-4 h-4" />,
@@ -1827,8 +1779,8 @@ export default function PropAnalysisDashboard({ address: propAddress }) {
           <div className="flex justify-center items-center mt-4">
             <Button
               className="text-center px-12 py-4"
-              onClick={() => saveAnalysisState()}
-              disabled={!analysisState.hasUnsavedChanges}
+              onClick={() => handleSave()}
+              // disabled={!analysisState.hasUnsavedChanges}
             >
               Save Analysis
             </Button>

@@ -2,6 +2,7 @@
 "use client";
 
 import * as React from "react";
+import { useEffect,useState } from "react";
 import { usePathname } from "next/navigation";
 import {
   BookOpen,
@@ -28,11 +29,6 @@ const data = {
     name: "Reana",
     slogan: "Real Estate Investment Assistant",
     logo: "/reana-logo.png",
-  },
-  user: {
-    name: "User",
-    email: "user@example.com",
-    avatar: "/image/user.jpg",
   },
   navMain: [
     {
@@ -220,6 +216,14 @@ export function AppSidebar({ ...props }) {
   const pathname = usePathname();
   const [navItems, setNavItems] = React.useState(data.navMain);
 
+  const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    fetchUserProfile();
+  }, []);
+
   // useEffect to update active state based on current route
   React.useEffect(() => {
     const updatedItems = data.navMain.map(item => ({
@@ -282,6 +286,49 @@ export function AppSidebar({ ...props }) {
     };
   }, []);
 
+
+  const fetchUserProfile = async () => {
+    setLoading(true);
+    setError('');
+    
+    try {
+      const response = await fetch('/api/user-profile', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+
+      console.log(data);
+      if (response.ok && data.success) {
+        setUserData(data);
+      } else {
+        setError(data.error || 'Failed to fetch user profile');
+      }
+    } catch (err) {
+      setError('Network error occurred');
+      console.error('Error fetching profile:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading || !userData) {
+    return (
+      <div className="flex justify-center items-center p-8">
+        <div className="text-lg">Loading ...</div>
+      </div>
+    );
+  }
+
+  const user = {
+    name: userData?.userProfile?.username || "User",
+    email: userData?.userProfile?.email || "user@example.com",
+    avatar: "/image/user.jpg",
+  };
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -294,7 +341,7 @@ export function AppSidebar({ ...props }) {
       </SidebarContent>
 
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={user} />
       </SidebarFooter>
 
       <SidebarRail />

@@ -63,7 +63,7 @@ export function NavUser({
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-lg">U</AvatarFallback>
+                  <AvatarFallback className="rounded-lg">{Array.from(user.name)[0]}</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{user.name}</span>
@@ -75,7 +75,7 @@ export function NavUser({
             <DropdownMenuGroup>
               <DropdownMenuItem>
                 <a href="/upgradetopro" className="flex items-center gap-2">
-                <Sparkles classname="h-4 w-4"/>
+                <Sparkles className="h-4 w-4"/>
                 Upgrade to Pro
                 </a>
               </DropdownMenuItem>

@@ -59,8 +59,9 @@ export async function GET() {
 
     return NextResponse.json({
       success: true,
-      uesrProfile: {
+      userProfile: {
         username: userData.profileName || "",
+        email: userData.email || "",
       },
     });
   } catch (error) {

@@ -36,7 +36,7 @@ export default function Dashboard() {
         const data = await response.json();
   
         if (response.ok && data.success) {
-          setProfileName(data.uesrProfile?.username || '');
+          setProfileName(data.userProfile?.username || '');
         } else {
           setError(data.error || 'Failed to fetch user profile');
         }
@@ -59,11 +59,11 @@ export default function Dashboard() {
     return (
       <div className="flex flex-1 flex-col gap-4 px-8 p-4 pt-0">
         <header >
-            <h1 className="text-5xl font-bold">Hello {profileName}!</h1>
+            <h1 className="text-5xl font-bold">Hello, {profileName}!</h1>
             <p className="mt-1 text-xl">Welcome to Your Reana Dashboard</p>
         </header>
         <div
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch mt-8"
             style={{ gridAutoRows: '1fr' }}>
             {[{ 
                 id: 1,

@@ -170,11 +170,11 @@ export default function RentalComps({ address, propertyData, propertyId }) {
 
   return (
     <div className="p-6 space-y-8">
-      <Card>
-        <CardContent className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <Card className="flex justify-center">
+        <CardContent className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-6">
           {/* Subject Property */}
           <Card className="col-span-1">
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 mt-6">
               <img
                 src={getStreetViewUrl(address)}
                 alt="Street View"
@@ -195,7 +195,7 @@ export default function RentalComps({ address, propertyData, propertyId }) {
 
           {compsProps.map((comp, idx) => (
             <Card key={idx} className="col-span-1">
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 mt-6">
                 <img
                   src={getStreetViewUrl(comp.address)}
                   alt="Street View"

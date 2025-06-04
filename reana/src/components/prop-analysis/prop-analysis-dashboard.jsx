@@ -1253,7 +1253,7 @@ export default function PropAnalysisDashboard({ address: propAddress }) {
 
         {/* Right Column - 2/3 width */}
         <div className="w-2/3 flex flex-col">
-          <div className="overflow-y-auto flex-1 space-y-4">
+          <div className="overflow-y-auto flex-1 space-y-6">
             {/* Income */}
             <SectionCard
               title="Income"
